@@ -1,0 +1,11 @@
+[project]
+name = "ComfyUI-RE-CustomUtils"
+version = "0.1.0"
+description = "A collection of custom nodes for ComfyUI."
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/relhamdi/ComfyUI-RE-CustomUtils"
