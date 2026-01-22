@@ -60,3 +60,5 @@ A `cleanup` option is also provided, to clean spaces before comas, double or emp
 
 - Add JS to transform the preset_index in a dynamic dropdown, based on the configured presets
 - Add field to name the different presets
+- Add field to easily concatenate text at the end of the prompt
+- Colored text to highlight the presets
