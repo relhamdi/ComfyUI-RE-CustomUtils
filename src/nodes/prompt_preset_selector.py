@@ -34,6 +34,7 @@ class PromptPresetSelector:
                         "step": 1,
                     },
                 ),
+                "cleanup": ("BOOLEAN", {"default": True}),
                 "text": ("STRING", {"multiline": True}),
             },
         }
@@ -45,7 +46,7 @@ class PromptPresetSelector:
     TEMPLATE_PATTERN = r"{%(.*?)%}"
 
     @classmethod
-    def VALIDATE_INPUTS(cls, separator, preset_index, text):
+    def VALIDATE_INPUTS(cls, separator, preset_index, cleanup, text):
         if not separator:
             return "Separator cannot be empty"
 
@@ -64,7 +65,7 @@ class PromptPresetSelector:
 
         return True
 
-    def process(self, separator, preset_index, text):
+    def process(self, separator, preset_index, cleanup, text):
         def replace_block(match: re.Match[str]) -> str:
             content = match.group(1)
             parts = [p.strip() for p in content.split(separator)]
@@ -72,14 +73,15 @@ class PromptPresetSelector:
             # index is 1-based
             return parts[preset_index - 1]
 
-        def cleanup(text: str) -> str:
-            text = re.sub(r"\s+,", ",", text)
-            text = re.sub(r",\s*,", ",", text)
-            text = re.sub(r"\n\s*\n", "\n", text)
+        def clean_prompt(text: str) -> str:
+            text = re.sub(r"\s+,", ",", text)     # Delete spaces before comas
+            text = re.sub(r",\s*,", ",", text)    # Delete double or empty comas
+            text = re.sub(r"\n\s*\n", "\n", text) # Delete empty lines
             return text.strip()
 
         result = re.sub(self.TEMPLATE_PATTERN, replace_block, text, flags=re.DOTALL)
-        result = cleanup(result)
+        if cleanup:
+            result = clean_prompt(result)
 
         return (result, preset_index)
 

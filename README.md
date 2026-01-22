@@ -24,6 +24,7 @@ Input:
 - `separator` (str), default to |
 - `preset_index` (int) in range 1 to 50, default to 1
 - `text` (str), a multiline textarea
+- `cleanup` (bool), default to **True**
 
 Output:
 - `prompt` (str), the formatted prompt
@@ -51,6 +52,8 @@ If we fix `preset_index` to 3:
 
 - *This is **{% a text | a message %}** for **{% the PromptPresetSelector %}*** => Error, first template with 2 presets while the second only got 1
 - *This is **{% a text | a message %}** for **{% the PromptPresetSelector | the README %}*** => Error, only 2 presets were configured
+
+A `cleanup` option is also provided, to clean spaces before comas, double or empty comas and empty lines, that may result from the preset application.
 
 
 ## TODO
