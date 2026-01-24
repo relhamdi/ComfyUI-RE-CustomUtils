@@ -74,9 +74,9 @@ class PromptPresetSelector:
             return parts[preset_index - 1]
 
         def clean_prompt(text: str) -> str:
-            text = re.sub(r"\s+,", ",", text)     # Delete spaces before comas
-            text = re.sub(r",\s*,", ",", text)    # Delete double or empty comas
-            text = re.sub(r"\n\s*\n", "\n", text) # Delete empty lines
+            text = re.sub(r"\s+,", ",", text)  # Delete spaces before comas
+            text = re.sub(r",\s*,", ",", text)  # Delete double or empty comas
+            text = re.sub(r"\n\s*\n", "\n", text)  # Delete empty lines
             return text.strip()
 
         result = re.sub(self.TEMPLATE_PATTERN, replace_block, text, flags=re.DOTALL)
