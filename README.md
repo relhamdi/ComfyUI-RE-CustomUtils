@@ -56,9 +56,17 @@ If we fix `preset_index` to 3:
 A `cleanup` option is also provided, to clean spaces before comas, double or empty comas and empty lines, that may result from the preset application.
 
 
+### Web folder
+
+#### PromptColorEditor
+
+This extension adds a `contentEditable` div on top of the `text` textarea of the **PromptPresetSelector** to display the tags with some color. The colors will be displayed when the textarea loses focus, and will disappear when focused.
+
+Currently, tags and separators will have the same color, and the unselected presets will be grayed out. The colors are also updated live when the `selector` or `preset_index` values are changed
+
+
 ## TODO
 
 - Add JS to transform the preset_index in a dynamic dropdown, based on the configured presets
 - Add field to name the different presets
 - Add field to easily concatenate text at the end of the prompt
-- Colored text to highlight the presets
