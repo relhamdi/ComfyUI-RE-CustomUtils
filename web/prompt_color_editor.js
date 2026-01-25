@@ -123,10 +123,9 @@ function attachEditor(node) {
     recolor(true);
 }
 
-
 // Register the extension
 app.registerExtension({
-    name: "PromptColorEditor",
+    name: "PromptPresetColorEditor",
     beforeRegisterNodeDef(nodeType) {
         nodeType.prototype.onNodeCreated = function () {
             const node = this;
