@@ -22,6 +22,13 @@ class PromptPresetSelector:
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "syntax": (
+                    "STRING",
+                    {
+                        "default": "{% | %}",
+                        "tooltip": "Format: open_tag separator close_tag. Ex: {% | %}",
+                    },
+                ),
                 "text": (
                     "STRING",
                     {
@@ -39,38 +46,6 @@ class PromptPresetSelector:
                         "tooltip": "0-based index of the preset to select.",
                     },
                 ),
-                "open_tag": (
-                    "STRING",
-                    {
-                        "default": "{%",
-                        "tooltip": "Opening tag for preset blocks.",
-                    },
-                ),
-                "close_tag": (
-                    "STRING",
-                    {
-                        "default": "%}",
-                        "tooltip": "Closing tag for preset blocks.",
-                    },
-                ),
-                "separator": (
-                    "STRING",
-                    {
-                        "default": "|",
-                        "tooltip": "Separator between presets. Spaces around it are mandatory.",
-                    },
-                ),
-                "on_error": (
-                    ["strict", "clamp", "empty"],
-                    {
-                        "default": "strict",
-                        "tooltip": (
-                            "strict: stops the workflow on error. "
-                            "clamp: uses the last available preset. "
-                            "empty: replaces the block with an empty string."
-                        ),
-                    },
-                ),
                 "cleanup": (
                     "BOOLEAN",
                     {
@@ -86,16 +61,29 @@ class PromptPresetSelector:
     FUNCTION = "process"
 
     @classmethod
-    def VALIDATE_INPUTS(cls, open_tag, close_tag, separator, **kwargs):
-        if not open_tag or not open_tag.strip():
-            return "open_tag cannot be empty"
-        if not close_tag or not close_tag.strip():
-            return "close_tag cannot be empty"
-        if not separator or not separator.strip():
-            return "separator cannot be empty"
+    def VALIDATE_INPUTS(cls, syntax, **kwargs):
+        parts = syntax.split()
+        if len(parts) != 3:
+            return (
+                f"Invalid syntax '{syntax}'. Expected: 'open_tag separator close_tag'"
+            )
+        open_tag, _, close_tag = parts
         if open_tag == close_tag:
             return "open_tag and close_tag must be different"
         return True
+
+    def _parse_syntax(self, syntax: str) -> tuple[str, str, str]:
+        """
+        Parse the syntax string into (open_tag, separator, close_tag).
+        Expected format: 'open_tag separator close_tag', ex: '{% | %}'
+        """
+        parts = syntax.split()
+        if len(parts) != 3:
+            raise ValueError(
+                f"PromptPresetSelector: invalid syntax '{syntax}'. "
+                "Expected format: 'open_tag separator close_tag', ex: '{% | %}'"
+            )
+        return parts[0], parts[1], parts[2]
 
     def _build_pattern(self, open_tag: str, close_tag: str) -> str:
         """Build the regex pattern from the configured tags."""
@@ -108,15 +96,10 @@ class PromptPresetSelector:
             [p.strip() for p in block.strip().split(separator)] for block in raw_blocks
         ]
 
-    def _validate(
-        self,
-        blocks: list[list[str]],
-        preset_index: int,
-        on_error: str,
-    ) -> str | None:
+    def _validate(self, blocks: list[list[str]], preset_index: int) -> str | None:
         """
         Validate blocks consistency.
-        Returns an error message string if strict mode and an error is found, else None.
+        Raises an error message string if an error is found, else None.
         """
         if not blocks:
             return None
@@ -126,20 +109,16 @@ class PromptPresetSelector:
         max_count = max(counts)
 
         if min_count != max_count:
-            msg = (
+            raise ValueError(
                 f"PromptPresetSelector: blocks have inconsistent option counts "
                 f"(found between {min_count} and {max_count})."
             )
-            if on_error == "strict":
-                raise ValueError(msg)
 
         if preset_index >= max_count:
-            msg = (
+            raise ValueError(
                 f"PromptPresetSelector: preset_index {preset_index} is out of range "
                 f"(max index is {max_count - 1})."
             )
-            if on_error == "strict":
-                raise ValueError(msg)
 
         return None
 
@@ -149,20 +128,11 @@ class PromptPresetSelector:
         pattern: str,
         separator: str,
         preset_index: int,
-        on_error: str,
     ) -> str:
         """Replace each block with the selected option."""
 
         def replace_block(match: re.Match) -> str:
             parts = [opt.strip() for opt in match.group(1).split(separator)]
-            count = len(parts)
-
-            if preset_index >= count:
-                if on_error == "clamp":
-                    return parts[-1]
-                else:  # empty
-                    return ""
-
             return parts[preset_index]
 
         return re.sub(pattern, replace_block, text, flags=re.DOTALL)
@@ -175,22 +145,20 @@ class PromptPresetSelector:
 
     def process(
         self,
+        syntax: str,
         text: str,
         preset_index: int,
-        open_tag: str,
-        close_tag: str,
-        separator: str,
-        on_error: str,
         cleanup: bool,
     ) -> tuple[str, int, int]:
+        open_tag, separator, close_tag = self._parse_syntax(syntax)
+
         pattern = self._build_pattern(open_tag, close_tag)
         blocks = self._parse_blocks(text, pattern, separator)
 
-        self._validate(blocks, preset_index, on_error)
+        self._validate(blocks, preset_index)
 
         preset_count = max((len(b) for b in blocks), default=0)
-
-        result = self._replace_blocks(text, pattern, separator, preset_index, on_error)
+        result = self._replace_blocks(text, pattern, separator, preset_index)
 
         if cleanup:
             result = self._clean_prompt(result)

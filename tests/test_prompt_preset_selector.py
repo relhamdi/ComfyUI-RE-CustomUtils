@@ -7,14 +7,11 @@ def node():
     return PromptPresetSelector()
 
 
-def run(node, text, index=0, on_error="strict", cleanup=False):
+def run(node, text, index=0, cleanup=False):
     return node.process(
+        syntax="{% | %}",
         text=text,
         preset_index=index,
-        open_tag="{%",
-        close_tag="%}",
-        separator="|",
-        on_error=on_error,
         cleanup=cleanup,
     )
 
@@ -63,39 +60,17 @@ def test_three_presets(node):
     assert count == 3
 
 
-# --- Mode strict ---
+# --- Error raised ---
 
 
-def test_strict_index_out_of_range(node):
+def test_index_out_of_range(node):
     with pytest.raises(ValueError, match="out of range"):
-        run(node, "{% a | b %}", index=5, on_error="strict")
+        run(node, "{% a | b %}", index=5)
 
 
-def test_strict_inconsistent_counts(node):
+def test_inconsistent_counts(node):
     with pytest.raises(ValueError, match="inconsistent"):
-        run(node, "{% a | b %} and {% c | d | e %}", on_error="strict")
-
-
-# --- Mode clamp ---
-
-
-def test_clamp_index_out_of_range(node):
-    text, _, _ = run(node, "{% a | b %}", index=5, on_error="clamp")
-    assert text == "b"
-
-
-def test_clamp_inconsistent_uses_last(node):
-    # bloc 1 with 2 options, bloc 2 with 3 — index 2 clamp on bloc 1
-    text, _, _ = run(node, "{% a | b %} and {% c | d | e %}", index=2, on_error="clamp")
-    assert text == "b and e"
-
-
-# --- Mode empty ---
-
-
-def test_empty_index_out_of_range(node):
-    text, _, _ = run(node, "{% a | b %}", index=5, on_error="empty")
-    assert text == ""
+        run(node, "{% a | b %} and {% c | d | e %}")
 
 
 # --- Custom tags / separator ---
@@ -103,12 +78,9 @@ def test_empty_index_out_of_range(node):
 
 def test_custom_tags(node):
     result, _, _ = node.process(
+        syntax="<< / >>",
         text="I am << happy / sad >> today",
         preset_index=1,
-        open_tag="<<",
-        close_tag=">>",
-        separator="/",
-        on_error="strict",
         cleanup=False,
     )
     assert result == "I am sad today"
@@ -126,24 +98,10 @@ def test_cleanup_double_comma(node):
 
 
 def test_validate_empty_separator():
-    result = PromptPresetSelector.VALIDATE_INPUTS(
-        open_tag="{%",
-        close_tag="%}",
-        separator="",
-        on_error="strict",
-        cleanup=True,
-        text="",
-    )
+    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="{% %}")
     assert result != True
 
 
 def test_validate_same_tags():
-    result = PromptPresetSelector.VALIDATE_INPUTS(
-        open_tag="%%",
-        close_tag="%%",
-        separator="|",
-        on_error="strict",
-        cleanup=True,
-        text="",
-    )
+    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="% | %")
     assert result != True
