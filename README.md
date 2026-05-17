@@ -72,7 +72,9 @@ When `cleanup` is enabled, the following are removed from the output:
 - Double or empty commas
 - Empty lines
 
-### Web — PromptPresetSelector editor
+### Web
+
+#### PromptPresetSelector editor
 
 The `text` widget is replaced by a `contentEditable` div that provides syntax highlighting:
 
@@ -82,8 +84,13 @@ The `text` widget is replaced by a `contentEditable` div that provides syntax hi
 - Colors are displayed when the field loses focus, and revert to plain text while editing
 - Highlighting updates live when `syntax` or `preset_index` are changed
 
+#### Field tweaks
+
+- `preset_index` loops over the available indexes if possible to avoid some out-of-bounds errors
+
 ## TODO
 
 - Add JS to transform `preset_index` into a dynamic dropdown based on named presets
 - Add a field to name the different presets
 - Add a field to easily concatenate text at the end of the output
+- Add color even when in edit mode
