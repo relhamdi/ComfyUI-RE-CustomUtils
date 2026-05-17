@@ -171,7 +171,29 @@ function attachEditor(node) {
     hookWidget(syntaxWidget, () => {
         if (document.activeElement !== editor) renderColored();
     });
-    hookWidget(presetWidget, () => {
+    hookWidget(presetWidget, (value) => {
+        const { openTag, separator, closeTag } = parseSyntax(getSyntax());
+        const pattern = new RegExp(
+            escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
+            "gs",
+        );
+        const matches = [...textarea.value.matchAll(pattern)];
+        if (matches.length === 0) return;
+
+        const presetCount = Math.max(
+            ...matches.map((m) => m[1].split(separator).length),
+        );
+        if (presetCount === 0) return;
+
+        // Loop both ways on preset_index
+        let newValue = value % presetCount;
+        if (newValue < 0) newValue += presetCount;
+
+        if (newValue !== value) {
+            presetWidget.value = newValue;
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        }
+
         if (document.activeElement !== editor) renderColored();
     });
 
