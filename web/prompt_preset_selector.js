@@ -67,6 +67,49 @@ const hideWidget = (widgetName) => {
     widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
 };
 
+// Save current caret position in div
+const saveCaretPosition = (el) => {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return 0;
+
+    const range = sel.getRangeAt(0);
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(el);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    return preCaretRange.toString().length;
+};
+
+// Restore caret position in div
+const restoreCaretPosition = (el, offset) => {
+    const range = document.createRange();
+    const sel = window.getSelection();
+    let charCount = 0;
+    let found = false;
+
+    const walk = (node) => {
+        if (found) return;
+        if (node.nodeType === Node.TEXT_NODE) {
+            const next = charCount + node.length;
+            if (next >= offset) {
+                range.setStart(node, offset - charCount);
+                range.collapse(true);
+                found = true;
+            }
+            charCount = next;
+        } else {
+            for (const child of node.childNodes) walk(child);
+        }
+    };
+
+    walk(el);
+    if (!found) {
+        range.selectNodeContents(el);
+        range.collapse(false);
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+};
+
 // --- Colors ---
 
 const COLORS = {
@@ -178,10 +221,6 @@ function attachEditor(node) {
         );
     };
 
-    const renderRaw = () => {
-        editor.innerText = textarea.value;
-    };
-
     // --- Preset names / combo ---
 
     const destroyCombo = () => {
@@ -240,25 +279,13 @@ function attachEditor(node) {
 
     // --- Event listener - Input: Sync editor -> textarea ---
     editor.addEventListener("input", () => {
+        const pos = saveCaretPosition(editor);
         textarea.value = editor.innerText;
         textarea.dispatchEvent(new Event("input", { bubbles: true }));
         refreshCombo();
+        renderColored();
+        restoreCaretPosition(editor, pos);
     });
-
-    // --- Event listener - Focus: Switch to raw text for editing ---
-    editor.addEventListener("focus", () => {
-        renderRaw();
-        // Place caret at end
-        const range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    });
-
-    // --- Event listener - Blur: Switch to colored view ---
-    editor.addEventListener("blur", () => renderColored());
 
     // --- React to widget changes ---
 
