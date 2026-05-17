@@ -213,8 +213,8 @@ function attachEditor(node) {
     };
 
     const parseNames = () => {
-        const raw = namesWidget?.value?.trim() ?? "";
-        if (!raw) return null;
+        const raw = namesWidget?.value;
+        if (!raw || typeof raw !== "string") return null;
         const names = raw
             .split(",")
             .map((n) => n.trim())
