@@ -39,6 +39,17 @@ class PromptPresetSelector:
                         "tooltip": "0-based index of the preset to select.",
                     },
                 ),
+                "preset_names": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "tooltip": (
+                            "Optional. Name each preset separated by commas. "
+                            "Ex: 'neutral, happy, sad'. "
+                            "If filled, must match the number of options in all blocks."
+                        ),
+                    },
+                ),
                 "text": (
                     "STRING",
                     {
@@ -61,7 +72,7 @@ class PromptPresetSelector:
     FUNCTION = "process"
 
     @classmethod
-    def VALIDATE_INPUTS(cls, syntax, **kwargs):
+    def VALIDATE_INPUTS(cls, syntax, preset_names, **kwargs):
         parts = syntax.split()
         if len(parts) != 3:
             return (
@@ -70,6 +81,12 @@ class PromptPresetSelector:
         open_tag, _, close_tag = parts
         if open_tag == close_tag:
             return "open_tag and close_tag must be different"
+
+        if preset_names.strip():
+            names = [n.strip() for n in preset_names.split(",")]
+            if len(names) < 1:
+                return "preset_names must contain at least 1 entry separated by commas"
+
         return True
 
     def _parse_syntax(self, syntax: str) -> tuple[str, str, str]:
@@ -96,7 +113,12 @@ class PromptPresetSelector:
             [p.strip() for p in block.strip().split(separator)] for block in raw_blocks
         ]
 
-    def _validate(self, blocks: list[list[str]], preset_index: int) -> str | None:
+    def _validate(
+        self,
+        blocks: list[list[str]],
+        preset_index: int,
+        preset_names: str,
+    ) -> str | None:
         """
         Validate blocks consistency.
         Raises an error message string if an error is found, else None.
@@ -119,6 +141,14 @@ class PromptPresetSelector:
                 f"PromptPresetSelector: preset_index {preset_index} is out of range "
                 f"(max index is {max_count - 1})."
             )
+
+        if preset_names.strip():
+            names = [n.strip() for n in preset_names.split(",")]
+            if len(names) != max_count:
+                raise ValueError(
+                    f"PromptPresetSelector: preset_names has {len(names)} entries "
+                    f"but blocks have {max_count} options."
+                )
 
         return None
 
@@ -147,6 +177,7 @@ class PromptPresetSelector:
         self,
         syntax: str,
         preset_index: int,
+        preset_names: str,
         text: str,
         cleanup: bool,
     ) -> tuple[str, int, int]:
@@ -155,7 +186,7 @@ class PromptPresetSelector:
         pattern = self._build_pattern(open_tag, close_tag)
         blocks = self._parse_blocks(text, pattern, separator)
 
-        self._validate(blocks, preset_index)
+        self._validate(blocks, preset_index, preset_names)
 
         preset_count = max((len(b) for b in blocks), default=0)
         result = self._replace_blocks(text, pattern, separator, preset_index)

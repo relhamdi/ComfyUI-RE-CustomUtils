@@ -7,10 +7,11 @@ def node():
     return PromptPresetSelector()
 
 
-def run(node, text, index=0, cleanup=False):
+def run(node, text, index=0, preset_names="", cleanup=False):
     return node.process(
         syntax="{% | %}",
         preset_index=index,
+        preset_names=preset_names,
         text=text,
         cleanup=cleanup,
     )
@@ -80,10 +81,29 @@ def test_custom_tags(node):
     result, _, _ = node.process(
         syntax="<< / >>",
         preset_index=1,
+        preset_names="",
         text="I am << happy / sad >> today",
         cleanup=False,
     )
     assert result == "I am sad today"
+
+
+# --- Preset names ---
+
+
+def test_preset_names_valid_count(node):
+    text, _, count = run(node, "{% a | b | c %}", preset_names="neutral, happy, sad")
+    assert count == 3
+
+
+def test_preset_names_mismatch(node):
+    with pytest.raises(ValueError, match="preset_names"):
+        run(node, "{% a | b %}", preset_names="neutral, happy, sad")
+
+
+def test_preset_names_empty_ignored(node):
+    text, _, _ = run(node, "{% a | b %}", preset_names="")
+    assert text == "a"
 
 
 # --- Cleanup ---
@@ -98,10 +118,21 @@ def test_cleanup_double_comma(node):
 
 
 def test_validate_empty_separator():
-    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="{% %}")
+    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="{% %}", preset_names="")
     assert result != True
 
 
 def test_validate_same_tags():
-    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="% | %")
+    result = PromptPresetSelector.VALIDATE_INPUTS(syntax="% | %", preset_names="")
     assert result != True
+
+
+def test_validate_preset_names_wrong_separator():
+    result = PromptPresetSelector.VALIDATE_INPUTS(
+        syntax="{% | %}",
+        preset_index=0,
+        preset_names="neutral",  # Only one element
+        text="",
+        cleanup=False,
+    )
+    assert result == True
