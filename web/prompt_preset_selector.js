@@ -79,6 +79,7 @@ const COLORS = {
 // --- Editor ---
 
 function buildHighlightedHtml(raw, syntax, presetIndex) {
+    const { openTag, separator, closeTag } = parseSyntax(syntax);
     const pattern = buildPattern(syntax);
     let result = "";
     let lastIndex = 0;
