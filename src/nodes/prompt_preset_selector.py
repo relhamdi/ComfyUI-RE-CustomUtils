@@ -171,9 +171,9 @@ class PromptPresetSelector:
         self,
         syntax: str,
         preset_index: int,
-        preset_names: str,
         text: str,
         cleanup: bool,
+        **kwargs,
     ) -> tuple[str, int, int]:
         open_tag, separator, close_tag = self._parse_syntax(syntax)
 
