@@ -16,12 +16,14 @@ A collection of custom nodes for ComfyUI.
 
 ### PromptPresetSelector node
 
-![PromptPresetSelector v2](docs/images/PromptPresetSelector_v2.png)
+![PromptPresetSelector v2.1](docs/images/PromptPresetSelector_v2.1.png)
 
 #### Inputs
 
 - `syntax` (str), default to `{% | %}` — defines the opening tag, separator, and closing tag as a single field, space-separated
-- `preset_index` (int), 0-based, default to `0`
+- `preset_index` (int), 0-based, default to `0` — loops both ways within range
+- `preset_name` (combo) — dynamic dropdown, active when `preset_names` is filled
+- `preset_names` (str), optional — comma-separated list of preset names. Ex: `neutral, happy, sad`. If fewer names than presets, remaining are auto-named (`preset_2`, `preset_3`...). If more, extra names are ignored.
 - `text` (str), multiline textarea supporting preset blocks
 - `cleanup` (bool), default to `True`
 
@@ -72,25 +74,25 @@ When `cleanup` is enabled, the following are removed from the output:
 - Double or empty commas
 - Empty lines
 
-### Web
+### Web — PromptPresetSelector editor
 
-#### PromptPresetSelector editor
-
-The `text` widget is replaced by a `contentEditable` div that provides syntax highlighting:
+The `text` widget is replaced by a `contentEditable` div that provides
+syntax highlighting:
 
 - Tags and separators are highlighted in orange
 - The active preset is shown in full brightness
 - Inactive presets are grayed out
-- Colors are displayed when the field loses focus, and revert to plain text while editing
-- Highlighting updates live when `syntax` or `preset_index` are changed
+- Colors are displayed when the field loses focus, and revert to plain
+  text while editing
+- Highlighting updates live when `syntax`, `preset_index` or `preset_name`
+  are changed
 
-#### Field tweaks
-
-- `preset_index` loops over the available indexes if possible to avoid some out-of-bounds errors
+When `preset_names` is filled, `preset_index` is replaced by a dynamic
+dropdown (`preset_name`) built from the comma-separated names. The dropdown
+resets to the first preset when activated.
 
 ## TODO
 
-- Add JS to transform `preset_index` into a dynamic dropdown based on named presets
-- Add a field to name the different presets
 - Add a field to easily concatenate text at the end of the output
 - Add color even when in edit mode
+- Wildcard mode for presets (randomly selected, index to -1 or -2?)
