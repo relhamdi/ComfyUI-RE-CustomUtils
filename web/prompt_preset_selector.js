@@ -35,6 +35,21 @@ const parseSyntax = (syntax) => {
     return { openTag: parts[0], separator: parts[1], closeTag: parts[2] };
 };
 
+// Build preset names, using placeholders if less names than presets are found
+const buildNames = (names, presetCount) => {
+    const result = [...names];
+    while (result.length < presetCount) {
+        result.push(`preset_${result.length}`);
+    }
+    return result.slice(0, presetCount);
+};
+
+// Hide ComfyUI widget component
+const hideWidget = (widgetName) => {
+    widgetName.type = "hidden";
+    widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
+};
+
 // --- Colors ---
 
 const COLORS = {
@@ -91,8 +106,16 @@ function attachEditor(node) {
     const textWidget = node.widgets?.find((w) => w.name === "text");
     const syntaxWidget = node.widgets?.find((w) => w.name === "syntax");
     const presetWidget = node.widgets?.find((w) => w.name === "preset_index");
+    const comboWidget = node.widgets?.find((w) => w.name === "preset_name");
+    const namesWidget = node.widgets?.find((w) => w.name === "preset_names");
+
+    // Saving widget type
+    const originalPresetType = presetWidget.type;
 
     if (!textWidget) return;
+
+    // Hide preset_name
+    hideWidget(comboWidget);
 
     const textarea = textWidget.inputEl || textWidget.element;
     if (!textarea?.parentNode) return;
@@ -146,10 +169,77 @@ function attachEditor(node) {
         editor.innerText = textarea.value;
     };
 
+    // --- Preset names / combo ---
+
+    const destroyCombo = () => {
+        // Hide preset_name
+        hideWidget(comboWidget);
+
+        presetWidget.type = originalPresetType;
+        presetWidget.computeSize = null;
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const buildCombo = (names) => {
+        // Hide preset_index
+        hideWidget(presetWidget);
+
+        comboWidget.options.values = names;
+        comboWidget.value = names[0];
+        comboWidget.type = "combo";
+        comboWidget.computeSize = null;
+
+        comboWidget.callback = (value) => {
+            presetWidget.value = names.indexOf(value);
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+            if (document.activeElement !== editor) renderColored();
+        };
+
+        presetWidget.value = 0;
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const parseNames = () => {
+        const raw = namesWidget?.value?.trim() ?? "";
+        if (!raw) return null;
+        const names = raw
+            .split(",")
+            .map((n) => n.trim())
+            .filter(Boolean);
+        return names.length >= 1 ? names : null;
+    };
+
+    const refreshCombo = () => {
+        const names = parseNames();
+        if (!names) {
+            destroyCombo();
+            return;
+        }
+
+        const { separator, openTag, closeTag } = parseSyntax(getSyntax());
+        const pattern = new RegExp(
+            escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
+            "gs",
+        );
+        const matches = [...textarea.value.matchAll(pattern)];
+        const presetCount = matches.length
+            ? Math.max(...matches.map((m) => m[1].split(separator).length))
+            : 0;
+
+        if (presetCount === 0) {
+            destroyCombo();
+            return;
+        }
+
+        const finalNames = buildNames(names, presetCount);
+        buildCombo(finalNames);
+    };
+
     // --- Event listener - Input: Sync editor -> textarea ---
     editor.addEventListener("input", () => {
         textarea.value = editor.innerText;
         textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        refreshCombo();
     });
 
     // --- Event listener - Focus: Switch to raw text for editing ---
@@ -167,10 +257,8 @@ function attachEditor(node) {
     // --- Event listener - Blur: Switch to colored view ---
     editor.addEventListener("blur", () => renderColored());
 
-    //  React to widget changes
-    hookWidget(syntaxWidget, () => {
-        if (document.activeElement !== editor) renderColored();
-    });
+    // --- React to widget changes ---
+
     hookWidget(presetWidget, (value) => {
         const { openTag, separator, closeTag } = parseSyntax(getSyntax());
         const pattern = new RegExp(
@@ -197,7 +285,18 @@ function attachEditor(node) {
         if (document.activeElement !== editor) renderColored();
     });
 
+    hookWidget(syntaxWidget, () => {
+        refreshCombo();
+        if (document.activeElement !== editor) renderColored();
+    });
+
+    hookWidget(namesWidget, () => {
+        refreshCombo();
+        if (document.activeElement !== editor) renderColored();
+    });
+
     // Initial render
+    refreshCombo();
     renderColored();
 }
 
