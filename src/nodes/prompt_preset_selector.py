@@ -29,13 +29,6 @@ class PromptPresetSelector:
                         "tooltip": "Format: open_tag separator close_tag. Ex: {% | %}",
                     },
                 ),
-                "text": (
-                    "STRING",
-                    {
-                        "multiline": True,
-                        "tooltip": "Text with preset blocks.",
-                    },
-                ),
                 "preset_index": (
                     "INT",
                     {
@@ -44,6 +37,13 @@ class PromptPresetSelector:
                         "max": 99,
                         "step": 1,
                         "tooltip": "0-based index of the preset to select.",
+                    },
+                ),
+                "text": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "tooltip": "Text with preset blocks.",
                     },
                 ),
                 "cleanup": (
@@ -146,8 +146,8 @@ class PromptPresetSelector:
     def process(
         self,
         syntax: str,
-        text: str,
         preset_index: int,
+        text: str,
         cleanup: bool,
     ) -> tuple[str, int, int]:
         open_tag, separator, close_tag = self._parse_syntax(syntax)

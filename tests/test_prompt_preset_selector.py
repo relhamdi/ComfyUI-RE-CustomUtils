@@ -10,8 +10,8 @@ def node():
 def run(node, text, index=0, cleanup=False):
     return node.process(
         syntax="{% | %}",
-        text=text,
         preset_index=index,
+        text=text,
         cleanup=cleanup,
     )
 
@@ -79,8 +79,8 @@ def test_inconsistent_counts(node):
 def test_custom_tags(node):
     result, _, _ = node.process(
         syntax="<< / >>",
-        text="I am << happy / sad >> today",
         preset_index=1,
+        text="I am << happy / sad >> today",
         cleanup=False,
     )
     assert result == "I am sad today"
