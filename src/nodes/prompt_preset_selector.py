@@ -33,7 +33,7 @@ class PromptPresetSelector:
                     "INT",
                     {
                         "default": 0,
-                        "min": 0,
+                        "min": -1,
                         "max": 99,
                         "step": 1,
                         "tooltip": "0-based index of the preset to select.",
