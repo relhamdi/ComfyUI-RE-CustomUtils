@@ -44,6 +44,23 @@ const buildNames = (names, presetCount) => {
     return result.slice(0, presetCount);
 };
 
+// Build pattern from syntax
+const buildPattern = (syntax) => {
+    const { openTag, closeTag } = parseSyntax(syntax);
+    return new RegExp(
+        escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
+        "gs",
+    );
+};
+
+// Get number of presets found
+const getPresetCount = (text, syntax) => {
+    const { separator } = parseSyntax(syntax);
+    const matches = [...text.matchAll(buildPattern(syntax))];
+    if (!matches.length) return 0;
+    return Math.max(...matches.map((m) => m[1].split(separator).length));
+};
+
 // Hide ComfyUI widget component
 const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
@@ -62,12 +79,7 @@ const COLORS = {
 // --- Editor ---
 
 function buildHighlightedHtml(raw, syntax, presetIndex) {
-    const { openTag, separator, closeTag } = parseSyntax(syntax);
-    const pattern = new RegExp(
-        escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
-        "gs",
-    );
-
+    const pattern = buildPattern(syntax);
     let result = "";
     let lastIndex = 0;
 
@@ -216,23 +228,13 @@ function attachEditor(node) {
             return;
         }
 
-        const { separator, openTag, closeTag } = parseSyntax(getSyntax());
-        const pattern = new RegExp(
-            escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
-            "gs",
-        );
-        const matches = [...textarea.value.matchAll(pattern)];
-        const presetCount = matches.length
-            ? Math.max(...matches.map((m) => m[1].split(separator).length))
-            : 0;
-
+        const presetCount = getPresetCount(textarea.value, getSyntax());
         if (presetCount === 0) {
             destroyCombo();
             return;
         }
 
-        const finalNames = buildNames(names, presetCount);
-        buildCombo(finalNames);
+        buildCombo(buildNames(names, presetCount));
     };
 
     // --- Event listener - Input: Sync editor -> textarea ---
@@ -260,17 +262,7 @@ function attachEditor(node) {
     // --- React to widget changes ---
 
     hookWidget(presetWidget, (value) => {
-        const { openTag, separator, closeTag } = parseSyntax(getSyntax());
-        const pattern = new RegExp(
-            escapeRegex(openTag) + "\\s*(.*?)\\s*" + escapeRegex(closeTag),
-            "gs",
-        );
-        const matches = [...textarea.value.matchAll(pattern)];
-        if (matches.length === 0) return;
-
-        const presetCount = Math.max(
-            ...matches.map((m) => m[1].split(separator).length),
-        );
+        const presetCount = getPresetCount(textarea.value, getSyntax());
         if (presetCount === 0) return;
 
         // Loop both ways on preset_index
