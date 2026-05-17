@@ -39,6 +39,13 @@ class PromptPresetSelector:
                         "tooltip": "0-based index of the preset to select.",
                     },
                 ),
+                "preset_name": (
+                    [""],
+                    {
+                        "default": "",
+                        "tooltip": "Active when preset_names is filled.",
+                    },
+                ),
                 "preset_names": (
                     "STRING",
                     {
