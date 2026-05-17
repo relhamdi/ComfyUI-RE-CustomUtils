@@ -5,7 +5,6 @@ A collection of custom nodes for ComfyUI.
 > [!NOTE]
 > This project was inspired by the [cookiecutter](https://github.com/Comfy-Org/cookiecutter-comfy-extension) template, though the full architecture is a bit different.
 
-
 ## Quickstart
 
 1. Install [ComfyUI](https://docs.comfy.org/get_started).
@@ -13,60 +12,78 @@ A collection of custom nodes for ComfyUI.
 3. Look up this extension in ComfyUI-Manager. If you are installing manually, clone this repository under `ComfyUI/custom_nodes`.
 4. Restart ComfyUI.
 
-
 ## Features
 
 ### PromptPresetSelector node
 
-![PromptPresetSelector v1](docs/images/PromptPresetSelector_v1.png)
+![PromptPresetSelector v2](docs/images/PromptPresetSelector_v2.png)
 
-Input:
-- `separator` (str), default to |
-- `preset_index` (int) in range 1 to 50, default to 1
-- `text` (str), a multiline textarea
-- `cleanup` (bool), default to **True**
+#### Inputs
 
-Output:
-- `prompt` (str), the formatted prompt
-- `preset_index` (int), the selected index
+- `syntax` (str), default to `{% | %}` — defines the opening tag, separator, and closing tag as a single field, space-separated
+- `preset_index` (int), 0-based, default to `0`
+- `text` (str), multiline textarea supporting preset blocks
+- `cleanup` (bool), default to `True`
 
-This node helps introducing variations to a text, usually a prompt, by supporting templates. Basically, you can include a template like this `{% %}` in your `text`, that will hold various options, separated by the `separator`.
+#### Outputs
 
-Depending on the chosen `preset_index`, the correct preset option will be parsed and add to the text.
+- `text` (str) — the formatted text, with preset blocks resolved
+- `preset_index` (int) — the selected index
+- `preset_count` (int) — the number of presets found across blocks
 
-> Example:
-> 
+#### Usage
+
+Include preset blocks in your `text` using the syntax defined in the `syntax` field. Each block holds options separated by the separator. Depending on `preset_index`, the matching option is injected and the block markers are removed.
+
 ```
-This is {% an example | a text | a text %} for {% the PromptPresetSelector | the README | %}
+This is {% an example | a text | another text %} for {% the PromptPresetSelector | the README | %}
 ```
 
-- With `preset_index` == 1: This is an example for the PromptPresetSelector
-- With `preset_index` == 2: This is an text for the README
-- With `preset_index` == 3: This is an text for
+- `preset_index` = `0` -> `This is an example for the PromptPresetSelector`
+- `preset_index` = `1` -> `This is a text for the README`
+- `preset_index` = `2` -> `This is another text for`
 
-The node validates that the `separator` is filled, that you registered the same amount of options in all of the templates, and that you selected a `preset_index` within the length of the configured presets.
+Empty presets are allowed — the block is simply replaced by an empty string.
 
-> Example:
+#### Custom syntax
 
-If we fix `preset_index` to 3:
+The `syntax` field allows changing the opening tag, separator and closing tag. Format is always `open_tag separator close_tag`, space-separated.
 
-- *This is **{% a text | a message %}** for **{% the PromptPresetSelector %}*** => Error, first template with 2 presets while the second only got 1
-- *This is **{% a text | a message %}** for **{% the PromptPresetSelector | the README %}*** => Error, only 2 presets were configured
+```
+<< / >>
+```
 
-A `cleanup` option is also provided, to clean spaces before comas, double or empty comas and empty lines, that may result from the preset application.
+Would match blocks like `<< option_a / option_b >>`.
 
+#### Validation
 
-### Web folder
+The node runs the following checks and stops the workflow on error:
 
-#### PromptColorEditor
+- `syntax` must contain exactly 3 space-separated parts
+- `open_tag` and `close_tag` must be different
+- All preset blocks in `text` must have the same number of options
+- `preset_index` must be within range
 
-This extension adds a `contentEditable` div on top of the `text` textarea of the **PromptPresetSelector** to display the tags with some color. The colors will be displayed when the textarea loses focus, and will disappear when focused.
+#### Cleanup
 
-Currently, tags and separators will have the same color, and the unselected presets will be grayed out. The colors are also updated live when the `selector` or `preset_index` values are changed
+When `cleanup` is enabled, the following are removed from the output:
 
+- Spaces before commas
+- Double or empty commas
+- Empty lines
+
+### Web — PromptPresetSelector editor
+
+The `text` widget is replaced by a `contentEditable` div that provides syntax highlighting:
+
+- Tags and separators are highlighted in orange
+- The active preset is shown in full brightness
+- Inactive presets are grayed out
+- Colors are displayed when the field loses focus, and revert to plain text while editing
+- Highlighting updates live when `syntax` or `preset_index` are changed
 
 ## TODO
 
-- Add JS to transform the preset_index in a dynamic dropdown, based on the configured presets
-- Add field to name the different presets
-- Add field to easily concatenate text at the end of the prompt
+- Add JS to transform `preset_index` into a dynamic dropdown based on named presets
+- Add a field to name the different presets
+- Add a field to easily concatenate text at the end of the output
