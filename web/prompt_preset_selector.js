@@ -236,8 +236,11 @@ function attachEditor(node) {
         // Hide preset_index
         hideWidget(presetWidget);
 
+        const savedIndex = presetWidget.value ?? 0;
+        const safeIndex = savedIndex < names.length ? savedIndex : 0;
+
         comboWidget.options.values = names;
-        comboWidget.value = names[0];
+        comboWidget.value = names[safeIndex];
         comboWidget.type = "combo";
         comboWidget.computeSize = null;
 
@@ -247,7 +250,7 @@ function attachEditor(node) {
             if (document.activeElement !== editor) renderColored();
         };
 
-        presetWidget.value = 0;
+        presetWidget.value = safeIndex;
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
