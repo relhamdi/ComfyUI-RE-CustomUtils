@@ -96,13 +96,18 @@ def test_preset_names_valid_count(node):
     assert count == 3
 
 
-def test_preset_names_mismatch(node):
-    with pytest.raises(ValueError, match="preset_names"):
-        run(node, "{% a | b %}", preset_names="neutral, happy, sad")
-
-
 def test_preset_names_empty_ignored(node):
     text, _, _ = run(node, "{% a | b %}", preset_names="")
+    assert text == "a"
+
+
+def test_preset_names_mismatch_ignored(node):
+    text, _, _ = run(node, "{% a | b %}", preset_names="neutral, happy, sad")
+    assert text == "a"
+
+
+def test_preset_names_single(node):
+    text, _, _ = run(node, "{% a | b %}", preset_names="neutral")
     assert text == "a"
 
 
@@ -127,7 +132,7 @@ def test_validate_same_tags():
     assert result != True
 
 
-def test_validate_preset_names_wrong_separator():
+def test_validate_preset_names_single_entry_valid():
     result = PromptPresetSelector.VALIDATE_INPUTS(
         syntax="{% | %}",
         preset_index=0,
