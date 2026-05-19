@@ -298,6 +298,13 @@ function attachEditor(node) {
         restoreCaretPosition(editor, pos);
     });
 
+    // --- Event listener - Paste: Sanitize text pasting to prevent errors with HTML coloration ---
+    editor.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const text = e.clipboardData.getData("text/plain");
+        document.execCommand("insertText", false, text);
+    });
+
     // --- React to widget changes ---
 
     hookWidget(presetWidget, (value) => {
