@@ -63,6 +63,25 @@ When `preset_names` is filled, `preset_index` is replaced by a dynamic dropdown 
 
 If fewer names than presets are defined, remaining entries are auto-named (`preset_2`, `preset_3`...). If more names than presets, extra names are ignored.
 
+#### Preset references
+
+Inside a preset, you can reference a previously declared preset using `$N` (0-based index).
+
+```
+{% base style | $0, hat | $1, jewelry %}
+```
+
+- `preset_index` = `0` → `base style`
+- `preset_index` = `1` → `base style, hat`
+- `preset_index` = `2` → `base style, hat, jewelry`
+
+References are resolved recursively — `$1` in preset 2 resolves preset 1, which may itself reference preset 0.
+
+Rules:
+- `$N` can only reference a preset with a lower index (forward references are not allowed)
+- `$N` must be within range
+- Circular references raise an error
+
 #### Validation
 
 The node runs the following checks and stops the workflow on error:
