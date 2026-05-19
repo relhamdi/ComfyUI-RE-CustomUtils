@@ -111,6 +111,46 @@ def test_preset_names_single(node):
     assert text == "a"
 
 
+# --- References ---
+
+
+def test_reference_basic(node):
+    # Index 1, resolve reference
+    text, _, _ = run(node, "{% hello | $0 world %}", index=1)
+    assert text == "hello world"
+
+
+def test_reference_index_0(node):
+    # Index 0, nothing to resolve
+    text, _, _ = run(node, "{% hello | $0 world %}", index=0)
+    assert text == "hello"
+
+
+def test_reference_out_of_range(node):
+    with pytest.raises(ValueError, match="out of range"):
+        run(node, "{% a | b | $5 %}", index=2)
+
+
+def test_reference_not_yet_declared(node):
+    with pytest.raises(ValueError, match="not yet declared"):
+        run(node, "{% $1 | b %}", index=0)
+
+
+def test_reference_circular(node):
+    with pytest.raises(ValueError, match="circular"):
+        run(node, "{% $0 | $0 %}", index=1)
+
+
+def test_reference_chained(node):
+    text, _, _ = run(node, "{% base | $0 mid | $1 top %}", index=2)
+    assert text == "base mid top"
+
+
+def test_reference_empty_preset(node):
+    text, _, _ = run(node, "{% | $0 suffix %}", index=1)
+    assert text == " suffix"
+
+
 # --- Cleanup ---
 
 
