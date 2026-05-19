@@ -117,6 +117,7 @@ const COLORS = {
     sep: "#ff9800",
     active: "#e0e0e0",
     inactive: "#555",
+    ref: "#64b5f6",
 };
 
 // --- Editor ---
@@ -135,7 +136,14 @@ function buildHighlightedHtml(raw, syntax, presetIndex) {
 
         const coloredParts = parts.map((part, i) => {
             const color = i === presetIndex ? COLORS.active : COLORS.inactive;
-            return `<span style="color:${color}">${escapeHtml(part)}</span>`;
+            const content =
+                i === presetIndex
+                    ? escapeHtml(part).replace(
+                          /\$(\d+)/g,
+                          `<span style="color:${COLORS.ref}">$$$1</span>`,
+                      )
+                    : escapeHtml(part);
+            return `<span style="color:${color}">${content}</span>`;
         });
 
         const sepHtml = `<span style="color:${COLORS.sep}">${escapeHtml(separator)}</span>`;
