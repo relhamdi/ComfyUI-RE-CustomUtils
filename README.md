@@ -57,6 +57,12 @@ The `syntax` field allows changing the opening tag, separator and closing tag. F
 
 Would match blocks like `<< option_a / option_b >>`.
 
+#### Preset names
+
+When `preset_names` is filled, `preset_index` is replaced by a dynamic dropdown (`preset_name`) built from the comma-separated names. The dropdown resets to the first preset when activated.
+
+If fewer names than presets are defined, remaining entries are auto-named (`preset_2`, `preset_3`...). If more names than presets, extra names are ignored.
+
 #### Validation
 
 The node runs the following checks and stops the workflow on error:
@@ -87,12 +93,10 @@ syntax highlighting:
 - Highlighting updates live when `syntax`, `preset_index` or `preset_name`
   are changed
 
-When `preset_names` is filled, `preset_index` is replaced by a dynamic
-dropdown (`preset_name`) built from the comma-separated names. The dropdown
+When `preset_names` is filled, and `preset_name` replaces `preset_index`, the dropdown
 resets to the first preset when activated.
 
 ## TODO
 
 - Add a field to easily concatenate text at the end of the output
-- Add color even when in edit mode
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
