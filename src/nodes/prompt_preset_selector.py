@@ -146,6 +146,45 @@ class PromptPresetSelector:
 
         return None
 
+    def _resolve_references(self, parts: list[str], current_index: int) -> str:
+        """
+        Resolve $N references in the selected preset.
+        Only presets with index < current_index can be referenced.
+        """
+        selected = parts[current_index]
+        resolving = set()
+
+        def resolve(text: str, depth: int = 0) -> str:
+            if depth > len(parts):
+                raise ValueError("PromptPresetSelector: circular reference detected.")
+
+            def replace_ref(match: re.Match) -> str:
+                ref_index = int(match.group(1))
+
+                if ref_index >= len(parts):
+                    raise ValueError(
+                        f"PromptPresetSelector: reference ${{ref_index}} is out of range "
+                        f"(max index is {len(parts) - 1})."
+                    )
+                if ref_index >= current_index:
+                    raise ValueError(
+                        f"PromptPresetSelector: reference ${{ref_index}} is not yet declared "
+                        f"(current preset is {current_index})."
+                    )
+                if ref_index in resolving:
+                    raise ValueError(
+                        f"PromptPresetSelector: circular reference detected on ${ref_index}."
+                    )
+
+                resolving.add(ref_index)
+                result = resolve(parts[ref_index], depth + 1)
+                resolving.discard(ref_index)
+                return result
+
+            return re.sub(r"\$(\d+)", replace_ref, text)
+
+        return resolve(selected)
+
     def _replace_blocks(
         self,
         text: str,
@@ -157,7 +196,7 @@ class PromptPresetSelector:
 
         def replace_block(match: re.Match) -> str:
             parts = [opt.strip() for opt in match.group(1).split(separator)]
-            return parts[preset_index]
+            return self._resolve_references(parts, preset_index)
 
         return re.sub(pattern, replace_block, text, flags=re.DOTALL)
 
