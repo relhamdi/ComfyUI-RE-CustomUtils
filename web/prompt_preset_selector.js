@@ -79,6 +79,44 @@ const saveCaretPosition = (el) => {
     return preCaretRange.toString().length;
 };
 
+// Loop over text nodes in the DOM
+const walkTextNodes = (root, callback) => {
+    const walk = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            if (callback(node) === false) return false;
+        } else {
+            for (const child of node.childNodes) {
+                if (walk(child) === false) return false;
+            }
+        }
+    };
+    walk(root);
+};
+
+// Build range from offset on text node
+const buildRangeFromOffsets = (root, start, end) => {
+    const range = document.createRange();
+    let charCount = 0;
+    let startFound = false;
+    let complete = false;
+
+    walkTextNodes(root, (node) => {
+        const next = charCount + node.length;
+        if (!startFound && next > start) {
+            range.setStart(node, start - charCount);
+            startFound = true;
+        }
+        if (startFound && next >= end) {
+            range.setEnd(node, end - charCount);
+            complete = true;
+            return false;
+        }
+        charCount = next;
+    });
+
+    return complete ? range : null;
+};
+
 // Restore caret position in div
 const restoreCaretPosition = (el, offset) => {
     const range = document.createRange();
@@ -86,22 +124,17 @@ const restoreCaretPosition = (el, offset) => {
     let charCount = 0;
     let found = false;
 
-    const walk = (node) => {
-        if (found) return;
-        if (node.nodeType === Node.TEXT_NODE) {
-            const next = charCount + node.length;
-            if (next >= offset) {
-                range.setStart(node, offset - charCount);
-                range.collapse(true);
-                found = true;
-            }
-            charCount = next;
-        } else {
-            for (const child of node.childNodes) walk(child);
+    walkTextNodes(el, (node) => {
+        const next = charCount + node.length;
+        if (next >= offset) {
+            range.setStart(node, offset - charCount);
+            range.collapse(true);
+            found = true;
+            return false;
         }
-    };
+        charCount = next;
+    });
 
-    walk(el);
     if (!found) {
         range.selectNodeContents(el);
         range.collapse(false);
@@ -148,30 +181,8 @@ const getSelectedOrWordAtCaret = (editor) => {
     if (!word) return null;
 
     // Rebuild the range on the word
-    const wordRange = document.createRange();
-    let charCount = 0;
-    let found = { start: false, end: false };
-
-    const walk = (node) => {
-        if (found.start && found.end) return;
-        if (node.nodeType === Node.TEXT_NODE) {
-            const next = charCount + node.length;
-            if (!found.start && next > start) {
-                wordRange.setStart(node, start - charCount);
-                found.start = true;
-            }
-            if (found.start && next >= end) {
-                wordRange.setEnd(node, end - charCount);
-                found.end = true;
-            }
-            charCount = next;
-        } else {
-            for (const child of node.childNodes) walk(child);
-        }
-    };
-
-    walk(editor);
-    if (!found.start || !found.end) return null;
+    const wordRange = buildRangeFromOffsets(editor, start, end);
+    if (!wordRange) return null;
 
     return { text: word, range: wordRange };
 };
@@ -413,38 +424,12 @@ function attachEditor(node) {
 
         // Reselect inserted text
         const pos = saveCaretPosition(editor);
-        const newRange = document.createRange();
-        const start = pos - adjustedLength;
-
-        let charCount = 0;
-        let startNode = null;
-        let startOffset = 0;
-        let endNode = null;
-        let endOffset = 0;
-
-        const walk = (node) => {
-            if (startNode && endNode) return;
-            if (node.nodeType === Node.TEXT_NODE) {
-                const next = charCount + node.length;
-                if (!startNode && next > start) {
-                    startNode = node;
-                    startOffset = start - charCount;
-                }
-                if (startNode && next >= pos) {
-                    endNode = node;
-                    endOffset = pos - charCount;
-                }
-                charCount = next;
-            } else {
-                for (const child of node.childNodes) walk(child);
-            }
-        };
-
-        walk(editor);
-
-        if (startNode && endNode) {
-            newRange.setStart(startNode, startOffset);
-            newRange.setEnd(endNode, endOffset);
+        const newRange = buildRangeFromOffsets(
+            editor,
+            pos - adjustedLength,
+            pos,
+        );
+        if (newRange) {
             sel.removeAllRanges();
             sel.addRange(newRange);
         }
