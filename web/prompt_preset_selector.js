@@ -1,6 +1,16 @@
 import { hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
+// --- Colors ---
+
+const COLORS = {
+    tag: "#ff9800",
+    sep: "#ff9800",
+    active: "#e0e0e0",
+    inactive: "#555",
+    ref: "#64b5f6",
+};
+
 // --- Helpers ---
 
 // Escape HTML to prevent injections
@@ -194,16 +204,6 @@ const adjustWeight = (text, delta) => {
     const weight = Math.round((1.0 + delta) * 10) / 10;
     if (weight === 1.0) return text;
     return text.replace(trimmed, `(${trimmed}:${weight.toFixed(1)})`);
-};
-
-// --- Colors ---
-
-const COLORS = {
-    tag: "#ff9800",
-    sep: "#ff9800",
-    active: "#e0e0e0",
-    inactive: "#555",
-    ref: "#64b5f6",
 };
 
 // --- Editor ---
