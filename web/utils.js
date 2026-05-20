@@ -1,5 +1,5 @@
 // Hook into ComfyUI widget callback (reliable change detection)
-const hookWidget = (widget, onChange) => {
+export const hookWidget = (widget, onChange) => {
     if (!widget) return;
     const original = widget.callback;
     widget.callback = function (value) {
@@ -9,7 +9,7 @@ const hookWidget = (widget, onChange) => {
 };
 
 // Escape HTML to prevent injections
-const escapeHtml = (str) =>
+export const escapeHtml = (str) =>
     str.replace(
         /[&<>"]/g,
         (c) =>
@@ -22,7 +22,7 @@ const escapeHtml = (str) =>
     );
 
 // Loop over text nodes in the DOM
-const walkTextNodes = (root, callback) => {
+export const walkTextNodes = (root, callback) => {
     const walk = (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
             if (callback(node) === false) return false;
@@ -36,7 +36,7 @@ const walkTextNodes = (root, callback) => {
 };
 
 // Save current caret position in div
-const saveCaretPosition = (el) => {
+export const saveCaretPosition = (el) => {
     const sel = window.getSelection();
     if (!sel.rangeCount) return 0;
 
@@ -48,7 +48,7 @@ const saveCaretPosition = (el) => {
 };
 
 // Restore caret position in div
-const restoreCaretPosition = (el, offset) => {
+export const restoreCaretPosition = (el, offset) => {
     const range = document.createRange();
     const sel = window.getSelection();
     let charCount = 0;
