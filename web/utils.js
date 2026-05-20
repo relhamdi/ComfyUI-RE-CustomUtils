@@ -73,7 +73,7 @@ export const restoreCaretPosition = (el, offset) => {
     sel.addRange(range);
 };
 
-export const createEditor = (textarea, activeColor = "#e0e0e0") => {
+export const createEditor = (textarea, activeColor = "#e0e0e0", onInput) => {
     // Hide native textarea
     textarea.style.display = "none";
 
@@ -99,5 +99,22 @@ export const createEditor = (textarea, activeColor = "#e0e0e0") => {
     `;
 
     textarea.parentNode.appendChild(editor);
+
+    // --- Event listener - Input: Sync editor -> textarea ---
+    editor.addEventListener("input", () => {
+        const pos = saveCaretPosition(editor);
+        textarea.value = editor.innerText;
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        if (onInput) onInput();
+        restoreCaretPosition(editor, pos);
+    });
+
+    // --- Event listener - Paste: Sanitize text pasting to prevent errors with HTML coloration ---
+    editor.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const text = e.clipboardData.getData("text/plain");
+        document.execCommand("insertText", false, text);
+    });
+
     return editor;
 };

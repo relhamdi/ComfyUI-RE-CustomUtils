@@ -2,7 +2,6 @@ import {
     createEditor,
     escapeHtml,
     hookWidget,
-    restoreCaretPosition,
     saveCaretPosition,
     walkTextNodes,
 } from "./utils.js";
@@ -217,7 +216,13 @@ function attachEditor(node) {
     textarea._editorAttached = true;
 
     // Create contentEditable div
-    const editor = createEditor(textarea, COLORS.active);
+    const editor = createEditor(textarea, {
+        activeColor: COLORS.active,
+        onInput: () => {
+            refreshCombo();
+            renderColored();
+        },
+    });
 
     // State helpers
     const getPresetIndex = () => presetWidget?.value ?? 0;
@@ -291,23 +296,6 @@ function attachEditor(node) {
 
         buildCombo(buildNames(names, presetCount));
     };
-
-    // --- Event listener - Input: Sync editor -> textarea ---
-    editor.addEventListener("input", () => {
-        const pos = saveCaretPosition(editor);
-        textarea.value = editor.innerText;
-        textarea.dispatchEvent(new Event("input", { bubbles: true }));
-        refreshCombo();
-        renderColored();
-        restoreCaretPosition(editor, pos);
-    });
-
-    // --- Event listener - Paste: Sanitize text pasting to prevent errors with HTML coloration ---
-    editor.addEventListener("paste", (e) => {
-        e.preventDefault();
-        const text = e.clipboardData.getData("text/plain");
-        document.execCommand("insertText", false, text);
-    });
 
     // --- Event listener - Keydown: Look for keyboard shortcuts ---
     editor.addEventListener("keydown", (e) => {
