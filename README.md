@@ -107,8 +107,9 @@ syntax highlighting:
 - Tags and separators are highlighted in orange
 - The active preset is shown in full brightness
 - Inactive presets are grayed out
-- Colors are displayed when the field loses focus, and revert to plain
-  text while editing
+- `$N` references are highlighted in blue on the active preset
+- Colors update in real time while editing
+- Pasting always inserts plain text, stripping any HTML formatting
 - Highlighting updates live when `syntax`, `preset_index` or `preset_name`
   are changed
 
