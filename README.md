@@ -99,7 +99,9 @@ When `cleanup` is enabled, the following are removed from the output:
 - Double or empty commas
 - Empty lines
 
-### Web — PromptPresetSelector editor
+### Web
+
+#### PromptPresetSelector editor
 
 The `text` widget is replaced by a `contentEditable` div that provides
 syntax highlighting:
@@ -115,6 +117,15 @@ syntax highlighting:
 
 When `preset_names` is filled, and `preset_name` replaces `preset_index`, the dropdown
 resets to the first preset when activated.
+
+#### Keyboard shortcuts
+
+| Shortcut    | Action                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| `Ctrl+Up`   | Increase weight of selected text or word under caret by `0.1`. Ex: `tag` → `(tag:1.1)`                     |
+| `Ctrl+Down` | Decrease weight of selected text or word under caret by `0.1`. Ex: `(tag:1.1)` → `tag` when reaching `1.0` |
+
+The selection is preserved after each keypress, consistent with ComfyUI native behavior.
 
 ## TODO
 
