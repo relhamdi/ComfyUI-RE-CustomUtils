@@ -1,4 +1,5 @@
 import {
+    createEditor,
     escapeHtml,
     hookWidget,
     restoreCaretPosition,
@@ -215,32 +216,8 @@ function attachEditor(node) {
     if (textarea._editorAttached) return;
     textarea._editorAttached = true;
 
-    // Hide native textarea
-    textarea.style.display = "none";
-
     // Create contentEditable div
-    const editor = document.createElement("div");
-    editor.contentEditable = "true";
-    editor.spellcheck = false;
-    editor.style.cssText = `
-        width: 100%;
-        height: 100%;
-        padding: 6px;
-        border: 1px solid #444;
-        border-radius: 4px;
-        background: #111;
-        color: ${COLORS.active};
-        font-family: monospace;
-        font-size: 10px;
-        white-space: pre-wrap;
-        overflow-y: auto;
-        outline: none;
-        box-sizing: border-box;
-        cursor: text;
-        line-height: 1.5;
-    `;
-
-    textarea.parentNode.appendChild(editor);
+    const editor = createEditor(textarea, COLORS.active);
 
     // State helpers
     const getPresetIndex = () => presetWidget?.value ?? 0;
