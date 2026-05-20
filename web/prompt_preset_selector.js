@@ -1,3 +1,4 @@
+import { hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Helpers ---
@@ -16,16 +17,6 @@ const escapeHtml = (str) =>
     );
 
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-// Hook into ComfyUI widget callback (reliable change detection)
-const hookWidget = (widget, onChange) => {
-    if (!widget) return;
-    const original = widget.callback;
-    widget.callback = function (value) {
-        if (original) original.call(this, value);
-        onChange(value);
-    };
-};
 
 // Parse the syntax param to { openTag, separator, closeTag }
 const parseSyntax = (syntax) => {
