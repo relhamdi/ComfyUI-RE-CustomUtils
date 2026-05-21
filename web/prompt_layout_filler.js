@@ -15,7 +15,7 @@ const COLORS = {
 
 // --- Helpers ---
 
-const getPattern = () => /\{(\d+)(?::[^}]*)?\}/g;
+const getPattern = () => /\{(\d+)(?::[^}\n]*)?\}/g;
 
 // --- Highlight ---
 
