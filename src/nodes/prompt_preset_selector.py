@@ -70,7 +70,7 @@ class PromptPresetSelector:
                     "BOOLEAN",
                     {
                         "default": True,
-                        "tooltip": "Clean up double commas and blank lines left by empty presets.",
+                        "tooltip": "Clean up residual artifacts from empty presets.",
                     },
                 ),
             },
