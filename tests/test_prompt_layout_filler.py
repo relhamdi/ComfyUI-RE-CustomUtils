@@ -7,8 +7,8 @@ def node():
     return PromptLayoutFiller()
 
 
-def run(node, template, **slots):
-    return node.process(template=template, **slots)
+def run(node, template, cleanup=False, **slots):
+    return node.process(template=template, cleanup=cleanup, **slots)
 
 
 # --- Base cases ---
@@ -90,3 +90,33 @@ def test_validate_valid(node):
     # No error if template without placeholders
     (text,) = run(node, "character, sitting down")
     assert text == "character, sitting down"
+
+
+# --- Cleanup (see test file for function behavior) ---
+
+
+def test_cleanup_applied(node):
+    (text,) = node.process(
+        template="({0})",
+        cleanup=True,
+        slot_0="",
+    )
+    assert text == ""
+
+
+def test_cleanup_not_applied(node):
+    (text,) = node.process(
+        template="({0})",
+        cleanup=False,
+        slot_0="",
+    )
+    assert text == "()"
+
+
+def test_cleanup_comma_residual(node):
+    (text,) = node.process(
+        template="tag, {0}, other",
+        cleanup=True,
+        slot_0="",
+    )
+    assert text == "tag, other"
