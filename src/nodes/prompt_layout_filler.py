@@ -1,5 +1,7 @@
 import re
 
+from src.utils import clean_prompt
+
 from .. import config
 
 
@@ -27,6 +29,13 @@ class PromptLayoutFiller:
                         "tooltip": "Template with placeholders. Ex: character, {0:position}, {1:background}",
                     },
                 ),
+                "cleanup": (
+                    "BOOLEAN",
+                    {
+                        "default": True,
+                        "tooltip": "Clean up residual artifacts from empty slots.",
+                    },
+                ),
             },
             "optional": {
                 f"slot_{i}": (
@@ -50,7 +59,7 @@ class PromptLayoutFiller:
     #     # Tests done in the process() function to avoid errors
     #     ...
 
-    def process(self, template, **kwargs):
+    def process(self, template, cleanup, **kwargs):
         # Validate template
         if not template or not template.strip():
             raise ValueError("PromptLayoutFiller: template cannot be empty.")
@@ -83,6 +92,10 @@ class PromptLayoutFiller:
             return str(slots[int(match.group(1))])
 
         result = self.PLACEHOLDER_PATTERN.sub(replace_placeholder, template)
+
+        if cleanup:
+            result = clean_prompt(result)
+
         return (result,)
 
 
