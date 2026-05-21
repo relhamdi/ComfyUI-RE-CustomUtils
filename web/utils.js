@@ -172,7 +172,10 @@ export const adjustWeight = (text, delta) => {
     return text.replace(trimmed, `(${trimmed}:${weight.toFixed(1)})`);
 };
 
-export const createEditor = (textarea, activeColor = "#e0e0e0", onInput) => {
+export const createEditor = (
+    textarea,
+    { activeColor = "#e0e0e0", onInput } = {},
+) => {
     // Hide native textarea
     textarea.style.display = "none";
 
