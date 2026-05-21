@@ -1,10 +1,4 @@
-import {
-    createEditor,
-    escapeHtml,
-    hookWidget,
-    saveCaretPosition,
-    walkTextNodes,
-} from "./utils.js";
+import { createEditor, escapeHtml, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Colors ---
@@ -59,92 +53,6 @@ const getPresetCount = (text, syntax) => {
 const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
     widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
-};
-
-// Build range from offset on text node
-const buildRangeFromOffsets = (root, start, end) => {
-    const range = document.createRange();
-    let charCount = 0;
-    let startFound = false;
-    let complete = false;
-
-    walkTextNodes(root, (node) => {
-        const next = charCount + node.length;
-        if (!startFound && next > start) {
-            range.setStart(node, start - charCount);
-            startFound = true;
-        }
-        if (startFound && next >= end) {
-            range.setEnd(node, end - charCount);
-            complete = true;
-            return false;
-        }
-        charCount = next;
-    });
-
-    return complete ? range : null;
-};
-
-// Get selected word or at caret position
-const getSelectedOrWordAtCaret = (editor) => {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return null;
-
-    const range = sel.getRangeAt(0);
-
-    // First cae: Selected text
-    if (!range.collapsed) {
-        return {
-            text: range.toString().trim(),
-            range: range.cloneRange(),
-        };
-    }
-
-    // Second case: No selection
-    const fullText = editor.innerText;
-    const caretPos = saveCaretPosition(editor);
-
-    // Look for delimiters (commas, to avoid multi word prompts)
-    const delimiters = /[,\n]/;
-    let start = caretPos;
-    let end = caretPos;
-
-    while (start > 0 && !delimiters.test(fullText[start - 1])) start--;
-    while (end < fullText.length && !delimiters.test(fullText[end])) end++;
-
-    // Trimming spaces
-    let word = fullText.slice(start, end);
-    const leftTrim = word.length - word.trimStart().length;
-    const rightTrim = word.length - word.trimEnd().length;
-    start += leftTrim;
-    end -= rightTrim;
-    word = word.trim();
-
-    if (!word) return null;
-
-    // Rebuild the range on the word
-    const wordRange = buildRangeFromOffsets(editor, start, end);
-    if (!wordRange) return null;
-
-    return { text: word, range: wordRange };
-};
-
-// Adjust weight on selected word
-const adjustWeight = (text, delta) => {
-    const trimmed = text.trim();
-    if (!trimmed) return text;
-
-    const weighted = trimmed.match(/^\((.+):(-?\d+(?:\.\d+)?)\)$/s);
-    if (weighted) {
-        const tag = weighted[1];
-        const weight = Math.round((parseFloat(weighted[2]) + delta) * 10) / 10;
-        if (weight === 1.0) return text.replace(trimmed, tag);
-        return text.replace(trimmed, `(${tag}:${weight.toFixed(1)})`);
-    }
-
-    const weight = Math.round((1.0 + delta) * 10) / 10;
-    if (weight === 1.0) return text;
-    return text.replace(trimmed, `(${trimmed}:${weight.toFixed(1)})`);
 };
 
 // --- Highlight ---
@@ -296,41 +204,6 @@ function attachEditor(node) {
 
         buildCombo(buildNames(names, presetCount));
     };
-
-    // --- Event listener - Keydown: Look for keyboard shortcuts ---
-    editor.addEventListener("keydown", (e) => {
-        // Ctrl+Up/Down - Adjust weight on selected text
-        if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown"))
-            return;
-        e.preventDefault();
-
-        const delta = e.key === "ArrowUp" ? 0.1 : -0.1;
-        const selection = getSelectedOrWordAtCaret(editor);
-        if (!selection) return;
-
-        const adjusted = adjustWeight(selection.text, delta);
-        if (adjusted === selection.text) return;
-
-        // Save selected text length
-        const adjustedLength = adjusted.length;
-
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(selection.range);
-        document.execCommand("insertText", false, adjusted);
-
-        // Reselect inserted text
-        const pos = saveCaretPosition(editor);
-        const newRange = buildRangeFromOffsets(
-            editor,
-            pos - adjustedLength,
-            pos,
-        );
-        if (newRange) {
-            sel.removeAllRanges();
-            sel.addRange(newRange);
-        }
-    });
 
     // --- React to widget changes ---
 
