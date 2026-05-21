@@ -57,7 +57,7 @@ const hideWidget = (widgetName) => {
 
 // --- Highlight ---
 
-function buildHighlightedHtml(raw, syntax, presetIndex) {
+const buildHighlightedHtml = (raw, syntax, presetIndex) => {
     const { openTag, separator, closeTag } = parseSyntax(syntax);
     const pattern = buildPattern(syntax);
     let result = "";
@@ -95,11 +95,11 @@ function buildHighlightedHtml(raw, syntax, presetIndex) {
     result += escapeHtml(raw.slice(lastIndex));
 
     return result;
-}
+};
 
 // --- Editor ---
 
-function attachEditor(node) {
+const attachEditor = (node) => {
     if (node.type !== "PromptPresetSelector") return;
 
     const textWidget = node.widgets?.find((w) => w.name === "text");
@@ -236,7 +236,7 @@ function attachEditor(node) {
     // Initial render
     refreshCombo();
     renderColored();
-}
+};
 
 // --- Registration ---
 

@@ -3,7 +3,7 @@ import { app } from "/scripts/app.js";
 
 // --- Node ---
 
-function attachOptionPicker(node) {
+const attachOptionPicker = (node) => {
     if (node.type !== "PromptOptionPicker") return;
 
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
@@ -45,7 +45,7 @@ function attachOptionPicker(node) {
 
     // Initial refresh
     refreshDropdown();
-}
+};
 
 // --- Registration ---
 
