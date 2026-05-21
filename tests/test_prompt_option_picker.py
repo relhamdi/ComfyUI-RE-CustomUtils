@@ -36,7 +36,7 @@ def test_single_option(node):
 
 
 def test_whitespace_only_lines(node):
-    # line with only whitespaces counts as empty
+    # Line with only whitespaces counts as empty
     (value,) = run(node, "a\n   \nb", "--")
     assert value == ""
 
