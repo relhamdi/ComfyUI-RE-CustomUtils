@@ -220,6 +220,13 @@ export const createEditor = (
 
     // --- Event listener - Keydown: Look for keyboard shortcuts ---
     editor.addEventListener("keydown", (e) => {
+        // Enter - Add proper line break to track caret
+        if (e.key === "Enter") {
+            e.preventDefault();
+            document.execCommand("insertLineBreak");
+            return;
+        }
+
         // Ctrl+Up/Down - Adjust weight on selected text
         if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown"))
             return;
