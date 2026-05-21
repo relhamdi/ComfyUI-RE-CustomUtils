@@ -116,8 +116,8 @@ export const getSelectedOrWordAtCaret = (editor) => {
     const fullText = editor.innerText;
     const caretPos = saveCaretPosition(editor);
 
-    // Look for delimiters (commas, to avoid multi word prompts)
-    const delimiters = /[,\n]/;
+    // Look for delimiters
+    const delimiters = /[,\n{}%()|]/;
     let start = caretPos;
     let end = caretPos;
 
@@ -131,6 +131,19 @@ export const getSelectedOrWordAtCaret = (editor) => {
     start += leftTrim;
     end -= rightTrim;
     word = word.trim();
+
+    // After trimming, check if surrounded by parentheses in the original text
+    const rawWord = fullText.slice(start, end);
+    if (
+        start > 0 &&
+        end < fullText.length &&
+        fullText[start - 1] === "(" &&
+        fullText[end] === ")"
+    ) {
+        start -= 1;
+        end += 1;
+        word = fullText.slice(start, end);
+    }
 
     if (!word) return null;
 
