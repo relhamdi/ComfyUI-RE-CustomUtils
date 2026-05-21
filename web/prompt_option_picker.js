@@ -18,14 +18,21 @@ function attachOptionPicker(node) {
         if (!raw.trim()) return null;
 
         const lines = raw.split("\n").map((l) => l.trim());
-        if (!lines.length) return null;
+        const hasContent = lines.some((l) => l !== "");
+        if (!hasContent) return null;
 
         return lines.map((l) => (l === "" ? "--" : l));
     };
 
     const refreshDropdown = () => {
         const options = parseOptions();
-        if (!options) return;
+        if (!options) {
+            // Reset dropdown to default empty state
+            selectedWidget.options.values = ["--"];
+            selectedWidget.value = "--";
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+            return;
+        }
 
         const current = selectedWidget.value;
         selectedWidget.options.values = options;
