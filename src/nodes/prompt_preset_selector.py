@@ -1,5 +1,7 @@
 import re
 
+from src.utils import clean_prompt
+
 from .. import config
 
 
@@ -200,12 +202,6 @@ class PromptPresetSelector:
 
         return re.sub(pattern, replace_block, text, flags=re.DOTALL)
 
-    def _clean_prompt(self, text: str) -> str:
-        text = re.sub(r" +,", ",", text)  # spaces before commas
-        text = re.sub(r",\s*,", ",", text)  # double or empty commas
-        text = re.sub(r"\n\s*\n", "\n", text)  # empty lines
-        return text.strip()
-
     def process(
         self,
         syntax: str,
@@ -225,7 +221,7 @@ class PromptPresetSelector:
         result = self._replace_blocks(text, pattern, separator, preset_index)
 
         if cleanup:
-            result = self._clean_prompt(result)
+            result = clean_prompt(result)
 
         return (result, preset_index, preset_count)
 
