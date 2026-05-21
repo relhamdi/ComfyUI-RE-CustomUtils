@@ -218,5 +218,6 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 
 ## TODO
 
+`PromptPResetSelector`
 - Add a field to easily concatenate text at the end of the output
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
