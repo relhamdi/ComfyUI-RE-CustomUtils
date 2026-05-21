@@ -1,8 +1,7 @@
 import re
 
-from src.utils import clean_prompt
-
 from .. import config
+from ..utils import clean_prompt
 
 
 class PromptLayoutFiller:
