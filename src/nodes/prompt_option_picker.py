@@ -28,6 +28,15 @@ class PromptOptionPicker:
                     },
                 ),
             },
+            "optional": {
+                "extra_options": (
+                    "STRING",
+                    {
+                        "forceInput": True,
+                        "tooltip": "External options prepended to the options field.",
+                    },
+                ),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -40,7 +49,7 @@ class PromptOptionPicker:
             return "options cannot be empty"
         return True
 
-    def process(self, options, selected):
+    def process(self, options, selected, extra_options=None):
         # -- displays an empty string
         return ("" if selected == "--" else selected,)
 
