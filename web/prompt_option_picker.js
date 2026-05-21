@@ -8,6 +8,7 @@ const attachOptionPicker = (node) => {
 
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
+    const extraWidget = node.widgets?.find((w) => w.name === "extra_options");
 
     if (!optionsWidget || !selectedWidget) return;
     if (optionsWidget._optionPickerAttached) return;
@@ -15,7 +16,12 @@ const attachOptionPicker = (node) => {
 
     const parseOptions = () => {
         const raw = optionsWidget.value ?? "";
-        if (!raw.trim()) return null;
+        const extra = extraWidget?.value ?? "";
+
+        // Prepend external options
+        const combined = extra.trim() ? extra.trim() + "\n" + raw : raw;
+
+        if (!combined.trim()) return null;
 
         const lines = raw.split("\n").map((l) => l.trim());
         const hasContent = lines.some((l) => l !== "");
@@ -42,6 +48,9 @@ const attachOptionPicker = (node) => {
     };
 
     hookWidget(optionsWidget, () => refreshDropdown());
+    if (extraWidget) {
+        hookWidget(extraWidget, () => refreshDropdown());
+    }
 
     // Initial refresh
     refreshDropdown();
