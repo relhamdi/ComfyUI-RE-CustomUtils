@@ -151,12 +151,19 @@ def test_reference_empty_preset(node):
     assert text == " suffix"
 
 
-# --- Cleanup ---
+# --- Cleanup (see test file for function behavior) ---
 
 
-def test_cleanup_double_comma(node):
+def test_cleanup_applied(node):
+    # Verify cleanup is triggered, not the rules themselves
     text, _, _ = run(node, "tag1, {% a | %}, tag2", index=1, cleanup=True)
     assert text == "tag1, tag2"
+
+
+def test_cleanup_not_applied(node):
+    # Verify cleanup can be disabled
+    text, _, _ = run(node, "tag1, {% a | %}, tag2", index=1, cleanup=False)
+    assert text == "tag1, , tag2"
 
 
 # --- VALIDATE_INPUTS ---
