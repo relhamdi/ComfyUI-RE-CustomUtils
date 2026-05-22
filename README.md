@@ -14,9 +14,9 @@ A collection of custom nodes for ComfyUI.
 
 ---
 
-## Features
+## Nodes
 
-### PromptPresetSelector node
+### PromptPresetSelector
 
 ![PromptPresetSelector v2.1](docs/images/PromptPresetSelector_v2.1.png)
 
@@ -103,7 +103,7 @@ The node runs the following checks and stops the workflow on error:
 
 ---
 
-### PromptOptionPicker node
+### PromptOptionPicker
 
 ![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
 
@@ -135,7 +135,7 @@ an empty string. If the field is empty, the dropdown resets to `--`.
 
 ---
 
-### PromptLayoutFiller node
+### PromptLayoutFiller
 
 ![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
 
@@ -218,6 +218,6 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 
 ## TODO
 
-`PromptPResetSelector`
+`PromptPresetSelector`
 - Add a field to easily concatenate text at the end of the output
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
