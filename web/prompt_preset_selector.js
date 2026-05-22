@@ -1,12 +1,12 @@
+import { DEFAULT_TEXT_COLOR } from "./constants.js";
 import { createEditor, escapeHtml, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
-// --- Colors ---
+// --- Constants ---
 
 const COLORS = {
     tag: "#ff9800",
     sep: "#ff9800",
-    active: "#e0e0e0",
     inactive: "#555",
     ref: "#64b5f6",
 };
@@ -70,7 +70,8 @@ const buildHighlightedHtml = (raw, syntax, presetIndex) => {
         const parts = match[1].split(separator);
 
         const coloredParts = parts.map((part, i) => {
-            const color = i === presetIndex ? COLORS.active : COLORS.inactive;
+            const color =
+                i === presetIndex ? DEFAULT_TEXT_COLOR : COLORS.inactive;
             const content =
                 i === presetIndex
                     ? escapeHtml(part).replace(
@@ -125,7 +126,6 @@ const attachEditor = (node) => {
 
     // Create contentEditable div
     const editor = createEditor(textarea, {
-        activeColor: COLORS.active,
         onInput: () => {
             refreshCombo();
             renderColored();

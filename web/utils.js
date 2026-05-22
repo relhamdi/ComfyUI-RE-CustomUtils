@@ -1,3 +1,5 @@
+import { DEFAULT_TEXT_COLOR } from "./constants.js";
+
 // Hook into ComfyUI widget callback (reliable change detection)
 export const hookWidget = (widget, onChange) => {
     if (!widget) return;
@@ -174,7 +176,7 @@ export const adjustWeight = (text, delta) => {
 
 export const createEditor = (
     textarea,
-    { activeColor = "#e0e0e0", onInput } = {},
+    { activeColor = DEFAULT_TEXT_COLOR, onInput } = {},
 ) => {
     // Hide native textarea
     textarea.style.display = "none";

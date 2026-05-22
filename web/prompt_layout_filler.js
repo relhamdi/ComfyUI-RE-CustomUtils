@@ -5,10 +5,7 @@ import { app } from "/scripts/app.js";
 
 const NUM_SLOTS = 10;
 
-// --- Colors ---
-
 const COLORS = {
-    active: "#e0e0e0",
     connected: "#a5d6a7",
     missing: "#ef9a9a",
 };
@@ -98,7 +95,6 @@ const attachEditor = (node) => {
 
     // Create contentEditable div
     const editor = createEditor(textarea, {
-        activeColor: COLORS.active,
         onInput: () => renderColored(),
     });
 

@@ -1,3 +1,4 @@
+import { DEFAULT_TEXT_COLOR } from "./constants.js";
 import { createEditor, escapeHtml, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
@@ -5,7 +6,6 @@ import { app } from "/scripts/app.js";
 
 const COLORS = {
     tag: "#ff9800",
-    default: "#e0e0e0",
 };
 
 // --- Highlight ---
@@ -20,7 +20,7 @@ const buildHighlightedHtml = (raw) => {
         const stripped = line.trim();
         const isLast = i === lines.length - 1;
 
-        let color = COLORS.default;
+        let color = DEFAULT_TEXT_COLOR;
 
         if (stripped === "@combine") {
             inCombine = true;
