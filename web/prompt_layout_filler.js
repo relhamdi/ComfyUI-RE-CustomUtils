@@ -3,6 +3,8 @@ import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
+const NODE_NAME = "PromptLayoutFiller";
+
 const NUM_SLOTS = 10;
 
 const COLORS = {
@@ -81,7 +83,7 @@ const getConnectedSlots = (node) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== "PromptLayoutFiller") return;
+    if (node.type !== NODE_NAME) return;
 
     const templateWidget = node.widgets?.find((w) => w.name === "template");
     if (!templateWidget) return;
@@ -123,9 +125,9 @@ const attachEditor = (node) => {
 // --- Registration ---
 
 app.registerExtension({
-    name: "PromptLayoutFiller",
+    name: NODE_NAME,
     beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== "PromptLayoutFiller") return;
+        if (nodeData.name !== NODE_NAME) return;
 
         const original = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {

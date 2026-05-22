@@ -4,6 +4,8 @@ import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
+const NODE_NAME = "PromptOptionPicker";
+
 const COLORS = {
     tag: "#ff9800",
 };
@@ -104,7 +106,7 @@ const parseOptions = (raw) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== "PromptOptionPicker") return;
+    if (node.type !== NODE_NAME) return;
 
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
@@ -160,9 +162,9 @@ const attachEditor = (node) => {
 // --- Registration ---
 
 app.registerExtension({
-    name: "PromptOptionPicker",
+    name: NODE_NAME,
     beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== "PromptOptionPicker") return;
+        if (nodeData.name !== NODE_NAME) return;
 
         const original = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {

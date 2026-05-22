@@ -4,6 +4,8 @@ import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
+const NODE_NAME = "PromptPresetSelector";
+
 const COLORS = {
     tag: "#ff9800",
     sep: "#ff9800",
@@ -101,7 +103,7 @@ const buildHighlightedHtml = (raw, syntax, presetIndex) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== "PromptPresetSelector") return;
+    if (node.type !== NODE_NAME) return;
 
     const textWidget = node.widgets?.find((w) => w.name === "text");
     const syntaxWidget = node.widgets?.find((w) => w.name === "syntax");
@@ -241,9 +243,9 @@ const attachEditor = (node) => {
 // --- Registration ---
 
 app.registerExtension({
-    name: "PromptPresetSelector",
+    name: NODE_NAME,
     beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== "PromptPresetSelector") return;
+        if (nodeData.name !== NODE_NAME) return;
 
         const original = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
