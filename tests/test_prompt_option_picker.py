@@ -41,28 +41,6 @@ def test_whitespace_only_lines(node):
     assert value == ""
 
 
-# --- Extra options ---
-
-
-def test_extra_options_prepended(node):
-    # extra_options are handled by JS, process just returns selected
-    (value,) = node.process(
-        options="sitting down\nstanding up",
-        selected="from extra",
-        extra_options="from extra\nother extra",
-    )
-    assert value == "from extra"
-
-
-def test_extra_options_none(node):
-    (value,) = node.process(
-        options="sitting down",
-        selected="sitting down",
-        extra_options=None,
-    )
-    assert value == "sitting down"
-
-
 # --- VALIDATE_INPUTS ---
 
 

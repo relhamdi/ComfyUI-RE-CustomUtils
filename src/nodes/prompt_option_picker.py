@@ -34,15 +34,6 @@ class PromptOptionPicker:
                     },
                 ),
             },
-            "optional": {
-                "extra_options": (
-                    "STRING",
-                    {
-                        "forceInput": True,
-                        "tooltip": "External options prepended to the options field.",
-                    },
-                ),
-            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -55,18 +46,9 @@ class PromptOptionPicker:
             return "options cannot be empty"
         return True
 
-    def process(self, options, selected, extra_options=None):
-        combined = ""
-        if extra_options and extra_options.strip():
-            combined = extra_options.strip() + "\n" + options
-        else:
-            combined = options
-
-        if not combined.strip():
-            raise ValueError("PromptOptionPicker: options cannot be empty.")
-
+    def process(self, options, selected):
         # Validate only, JS handles the dropdown
-        parse_options(combined)
+        parse_options(options)
 
         # -- displays an empty string
         return ("" if selected == "--" else selected,)
