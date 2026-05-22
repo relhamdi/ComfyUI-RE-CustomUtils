@@ -4,8 +4,8 @@ import { app } from "/scripts/app.js";
 // --- Constants ---
 
 const COLORS = {
-    tag: "#ff9800", // @combine, @end, --- inside a block
-    default: "#e0e0e0", // everything else
+    tag: "#ff9800",
+    default: "#e0e0e0",
 };
 
 // --- Highlight ---
@@ -95,20 +95,19 @@ const parseOptions = (raw) => {
         }
     }
 
-    // Unclosed block — let Python handle error
+    // Unclosed block, let Python handle error
     if (inCombine) return null;
 
     return result.length > 0 ? result : null;
 };
 
-// --- Node ---
+// --- Editor ---
 
-const attachOptionPicker = (node) => {
+const attachEditor = (node) => {
     if (node.type !== "PromptOptionPicker") return;
 
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
-    const extraWidget = node.widgets?.find((w) => w.name === "extra_options");
 
     if (!optionsWidget || !selectedWidget) return;
     if (optionsWidget._editorAttached) return;
@@ -117,7 +116,7 @@ const attachOptionPicker = (node) => {
     const textarea = optionsWidget.inputEl || optionsWidget.element;
     if (!textarea?.parentNode) return;
 
-    // --- contentEditable ---
+    // Create contentEditable div
     const editor = createEditor(textarea, {
         onInput: () => {
             refreshDropdown();
@@ -125,26 +124,10 @@ const attachOptionPicker = (node) => {
         },
     });
 
-    // --- Render ---
+    // Render modes
     const renderColored = () => {
         editor.innerHTML = buildHighlightedHtml(textarea.value);
     };
-
-    // const parseOptions = () => {
-    //     const raw = optionsWidget.value ?? "";
-    //     const extra = extraWidget?.value ?? "";
-
-    //     // Prepend external options
-    //     const combined = extra.trim() ? extra.trim() + "\n" + raw : raw;
-
-    //     if (!combined.trim()) return null;
-
-    //     const lines = raw.split("\n").map((l) => l.trim());
-    //     const hasContent = lines.some((l) => l !== "");
-    //     if (!hasContent) return null;
-
-    //     return lines.map((l) => (l === "" ? "--" : l));
-    // };
 
     const refreshDropdown = () => {
         const options = parseOptions(textarea.value);
@@ -168,12 +151,6 @@ const attachOptionPicker = (node) => {
         refreshDropdown();
         renderColored();
     });
-    if (extraWidget) {
-        hookWidget(extraWidget, () => {
-            refreshDropdown();
-            renderColored();
-        });
-    }
 
     // Initial refresh
     refreshDropdown();
@@ -197,7 +174,7 @@ app.registerExtension({
                     (w) => w.name === "options",
                 );
                 if (optionsWidget?.inputEl?.parentNode) {
-                    attachOptionPicker(node);
+                    attachEditor(node);
                 } else {
                     requestAnimationFrame(tryAttach);
                 }
