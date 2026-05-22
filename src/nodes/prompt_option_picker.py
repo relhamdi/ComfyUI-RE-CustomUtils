@@ -1,4 +1,5 @@
 from .. import config
+from ..utils import parse_options
 
 
 class PromptOptionPicker:
@@ -6,6 +7,8 @@ class PromptOptionPicker:
     Presents a multiline list of options as a dropdown.
     One line = one option. Empty lines are allowed (displayed as '--', value is '').
     If the field is empty, no output is produced.
+    Supports @combine / @end blocks for cartesian product generation.
+    --- outside a block is treated as a literal option.
     """
 
     CATEGORY = config.NODE_CATEGORY
@@ -50,6 +53,18 @@ class PromptOptionPicker:
         return True
 
     def process(self, options, selected, extra_options=None):
+        combined = ""
+        if extra_options and extra_options.strip():
+            combined = extra_options.strip() + "\n" + options
+        else:
+            combined = options
+
+        if not combined.strip():
+            raise ValueError("PromptOptionPicker: options cannot be empty.")
+
+        # Validate only, JS handles the dropdown
+        parse_options(combined)
+
         # -- displays an empty string
         return ("" if selected == "--" else selected,)
 
