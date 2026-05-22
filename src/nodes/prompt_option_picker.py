@@ -21,7 +21,10 @@ class PromptOptionPicker:
                     "STRING",
                     {
                         "multiline": True,
-                        "tooltip": "One option per line. Empty line = empty value (displayed as --).",
+                        "tooltip": (
+                            "One option per line. Empty line = empty value (--).\n"
+                            "Use @combine / --- / @end blocks for cartesian products."
+                        ),
                     },
                 ),
                 "selected": (
