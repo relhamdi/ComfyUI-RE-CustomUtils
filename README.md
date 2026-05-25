@@ -169,7 +169,6 @@ Multiple `@combine` blocks are allowed and processed independently. A `---` outs
 #### Validation
 
 The node stops the workflow on error if:
-- `options` is empty
 - A `@combine` block is opened inside another
 - A `@end` is found without a matching `@combine`
 - A `@combine` block is never closed
