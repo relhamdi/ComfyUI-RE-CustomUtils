@@ -41,17 +41,22 @@ def test_whitespace_only_lines(node):
     assert value == ""
 
 
+def test_empty_options_returns_empty(node):
+    (value,) = node.process(options="", selected="--")
+    assert value == ""
+
+
 # --- VALIDATE_INPUTS ---
 
 
 def test_validate_empty_options():
     result = PromptOptionPicker.VALIDATE_INPUTS(options="")
-    assert result != True
+    assert result == True
 
 
 def test_validate_whitespace_only():
     result = PromptOptionPicker.VALIDATE_INPUTS(options="   ")
-    assert result != True
+    assert result == True
 
 
 def test_validate_valid():

@@ -42,14 +42,13 @@ class PromptOptionPicker:
 
     @classmethod
     def VALIDATE_INPUTS(cls, options, **kwargs):
-        if not options or not options.strip():
-            return "options cannot be empty"
+        try:
+            parse_options(options)
+        except ValueError as e:
+            return str(e)
         return True
 
     def process(self, options, selected):
-        # Validate only, JS handles the dropdown
-        parse_options(options)
-
         # -- displays an empty string
         return ("" if selected == "--" else selected,)
 
