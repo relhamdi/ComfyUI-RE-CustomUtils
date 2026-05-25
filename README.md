@@ -169,7 +169,6 @@ Multiple `@combine` blocks are allowed and processed independently. A `---` outs
 #### Validation
 
 The node stops the workflow on error if:
-- `options` is empty
 - A `@combine` block is opened inside another
 - A `@end` is found without a matching `@combine`
 - A `@combine` block is never closed
@@ -229,6 +228,36 @@ Slot lengths do not need to match.
 
 ---
 
+### PromptSwitch
+
+![PromptSwitch_v1](docs/images/PromptSwitch_v1.png)
+
+#### Inputs
+
+- `on_true` (str) — value returned when condition is `True`. Accepts direct input or connected node.
+- `on_false` (str) — value returned when condition is `False`. Accepts direct input or connected node.
+- `condition` (bool), default `True` — controls which input is routed to the output.
+
+#### Outputs
+
+- `text` (str) — the selected value based on condition.
+
+#### Usage
+
+Connect or type a value in `on_true` and `on_false`. Toggle `condition` to switch between them.
+
+If the node is bypassed, an empty string is returned.
+
+#### Editor
+
+Input ports and widget borders are colored based on the active condition:
+- **Orange**: active input when condition is `True`
+- **Blue**: active input when condition is `False`
+- **Gray**: inactive input
+Colors are only shown when an input is connected or has a value.
+
+---
+
 ### Web
 
 #### contentEditable editor
@@ -267,6 +296,8 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 ---
 
 ## TODO
+
+- Centralize colors used
 
 `PromptPresetSelector`
 - Add a field to easily concatenate text at the end of the output

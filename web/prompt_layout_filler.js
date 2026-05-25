@@ -118,7 +118,7 @@ const attachEditor = (node) => {
         renderColored();
     };
 
-    // --- Initial render ---
+    // Initial render
     updateSlotVisibility(node);
     renderColored();
 };
