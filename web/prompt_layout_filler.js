@@ -44,23 +44,24 @@ const buildHighlightedHtml = (raw, connectedSlots) => {
 // --- Slot visibility ---
 
 const updateSlotVisibility = (node) => {
+    // Find the highest connected slot index
+    let highestConnected = -1;
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const input = node.inputs?.find((inp) => inp.name === `slot_${i}`);
+        if (input?.link != null) highestConnected = i;
+    }
+
     for (let i = 0; i < NUM_SLOTS; i++) {
         const slotName = `slot_${i}`;
         const existingInput = node.inputs?.find((inp) => inp.name === slotName);
-
-        const prevName = `slot_${i - 1}`;
-        const prevInput = node.inputs?.find((inp) => inp.name === prevName);
-        const prevConnected = i === 0 || prevInput?.link != null;
-        const thisConnected = existingInput?.link != null;
-
-        // slot_i visible if slot_(i-1) is connected, or if i === 0
-        const shouldBeVisible = prevConnected || thisConnected;
+        const shouldBeVisible = i <= highestConnected + 1;
+        const isConnected = existingInput?.link != null;
 
         if (shouldBeVisible && !existingInput) {
-            // Add input if not existing
+            // Add input if it should be visible but doesn't exist
             node.addInput(slotName, "STRING");
-        } else if (!shouldBeVisible && existingInput && !thisConnected) {
-            // Remove input if not connected or should not be visible
+        } else if (!shouldBeVisible && existingInput && !isConnected) {
+            // Remove input if it should be hidden and is not connected
             const idx = node.inputs.indexOf(existingInput);
             node.removeInput(idx);
         }
