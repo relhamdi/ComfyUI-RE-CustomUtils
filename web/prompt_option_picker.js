@@ -50,6 +50,11 @@ const parseOptions = (raw) => {
     let currentBlock = [];
     let currentList = [];
 
+    // Remove trailing empty line from paste artifacts
+    if (lines.length > 1 && lines[lines.length - 1].trim() === "") {
+        lines.pop();
+    }
+
     for (const line of lines) {
         const stripped = line.trim();
 

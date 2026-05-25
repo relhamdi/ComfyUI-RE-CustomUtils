@@ -32,6 +32,10 @@ def parse_options(raw: str) -> list[str]:
     current_block: list[list[str]] = []
     current_list: list[str] = []
 
+    # Remove trailing empty line from paste artifacts
+    if lines and lines[-1].strip() == "" and len(lines) > 1:
+        lines = lines[:-1]
+
     for i, line in enumerate(lines, 1):
         stripped = line.strip()
 
