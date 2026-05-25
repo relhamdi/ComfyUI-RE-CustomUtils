@@ -60,7 +60,8 @@ def parse_options(raw: str) -> list[str]:
 
             # Generate cartesian product
             for combo in product(*current_block):
-                result.append(", ".join(combo))
+                parts = [p for p in combo if p.strip()]
+                result.append(", ".join(parts) if parts else "")
 
         elif stripped == "---":
             if in_combine:

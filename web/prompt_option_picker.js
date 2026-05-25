@@ -75,7 +75,8 @@ const parseOptions = (raw) => {
                     const next = [];
                     for (const a of acc) {
                         for (const b of list) {
-                            next.push(a ? `${a}, ${b}` : b);
+                            const parts = [a, b].filter((p) => p.trim() !== "");
+                            next.push(parts.join(", "));
                         }
                     }
                     return next;

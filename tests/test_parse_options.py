@@ -43,8 +43,10 @@ def test_combine_three_lists():
 def test_combine_empty_line_in_list():
     raw = "@combine\na\n\n---\nb\n@end"
     result = parse_options(raw)
-    assert ", b" in result  # empty + b
+    assert "b" in result
     assert "a, b" in result
+    # Empty element combined with b gives just "b"
+    assert ", b" not in result
 
 
 def test_multiple_combine_blocks():
