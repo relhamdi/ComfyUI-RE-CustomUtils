@@ -12,9 +12,11 @@ A collection of custom nodes for ComfyUI.
 3. Look up this extension in ComfyUI-Manager. If you are installing manually, clone this repository under `ComfyUI/custom_nodes`.
 4. Restart ComfyUI.
 
-## Features
+---
 
-### PromptPresetSelector node
+## Nodes
+
+### PromptPresetSelector
 
 ![PromptPresetSelector v2.1](docs/images/PromptPresetSelector_v2.1.png)
 
@@ -41,9 +43,9 @@ Include preset blocks in your `text` using the syntax defined in the `syntax` fi
 This is {% an example | a text | another text %} for {% the PromptPresetSelector | the README | %}
 ```
 
-- `preset_index` = `0` -> `This is an example for the PromptPresetSelector`
-- `preset_index` = `1` -> `This is a text for the README`
-- `preset_index` = `2` -> `This is another text for`
+- `preset_index` = `0` → `This is an example for the PromptPresetSelector`
+- `preset_index` = `1` → `This is a text for the README`
+- `preset_index` = `2` → `This is another text for`
 
 Empty presets are allowed — the block is simply replaced by an empty string.
 
@@ -82,6 +84,18 @@ Rules:
 - `$N` must be within range
 - Circular references raise an error
 
+#### Cleanup
+
+When `cleanup` is enabled, the following are removed from the output:
+
+- Spaces before commas
+- Multiple consecutive spaces
+- Empty or comma-only parentheses and brackets
+- Residual commas after opening or before closing parentheses
+- Double or empty commas
+- Leading commas
+- Empty lines
+
 #### Validation
 
 The node runs the following checks and stops the workflow on error:
@@ -91,32 +105,155 @@ The node runs the following checks and stops the workflow on error:
 - All preset blocks in `text` must have the same number of options
 - `preset_index` must be within range
 
+---
+
+### PromptOptionPicker
+
+![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
+
+#### Inputs
+
+- `options` (str) — one option per line. Empty lines are allowed and displayed
+  as `--` in the dropdown, with an empty string as value.
+- `selected` (combo) — dynamic dropdown built from the `options` field.
+
+#### Outputs
+
+- `value` (str) — the selected option, or `""` if `--` is selected.
+
+#### Usage
+
+Fill the `options` field with one option per line. The dropdown updates
+automatically as you type.
+
+```
+sitting down
+standing up
+lying down
+
+kneeling
+```
+
+The empty line above produces a `--` entry in the dropdown, which outputs
+an empty string. If the field is empty, the dropdown resets to `--`.
+
+#### Cartesian product blocks
+
+Use `@combine / --- / @end` blocks to generate all combinations of multiple lists:
+
+```
+@combine
+from front
+straight-on
+from side
+---
+from above
+from below
+---
+close-up
+full body
+@end
+```
+
+Each `---` separates a new list. The block expands into all combinations joined by `, `:
+
+```
+from front, from above, close-up
+from front, from above, full body
+from front, from below, close-up
+...
+```
+
+Multiple `@combine` blocks are allowed and processed independently. A `---` outside a block is treated as a literal option.
+
+#### Validation
+
+The node stops the workflow on error if:
+- `options` is empty
+- A `@combine` block is opened inside another
+- A `@end` is found without a matching `@combine`
+- A `@combine` block is never closed
+
+---
+
+### PromptLayoutFiller
+
+![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
+
+#### Inputs
+
+- `template` (str) — multiline text with placeholders. Supports `{N}` or
+  `{N:label}` syntax where `N` is the slot index (0-based) and `label` is
+  a purely visual annotation.
+- `cleanup` (bool), default `True`
+- `slot_0` to `slot_9` (str, connectable) — values injected into the
+  corresponding placeholders. Slots are revealed one by one as the previous
+  one is connected. Up to 10 slots supported.
+
+#### Outputs
+
+- `text` (str) — the template with all placeholders resolved.
+
+#### Usage
+
+Write a template in the `text` field using placeholders:
+
+```
+character, {0:position}, {1:background}, {2:lighting}
+```
+
+Connect a node (e.g. a `PromptOptionPicker`) to each slot. The placeholder
+is replaced by the connected value at execution.
+
 #### Cleanup
 
-When `cleanup` is enabled, the following are removed from the output:
+Same rules as `PromptPresetSelector`. Useful when a connected slot outputs an empty string, leaving residual commas or parentheses.
 
-- Spaces before commas
-- Double or empty commas
-- Empty lines
+#### Validation
+
+The node stops the workflow on error if:
+- The template is empty
+- A placeholder index exceeds the maximum slot index (9)
+- A placeholder is used but the corresponding slot is not connected
+
+#### Typical workflow
+
+```
+[PromptOptionPicker] → slot_0 ┐
+[PromptOptionPicker] → slot_1 ├→ [PromptLayoutFiller] → text
+[PromptOptionPicker] → slot_2 ┘
+```
+
+Each `PromptOptionPicker` manages its own list of options independently.
+Slot lengths do not need to match.
+
+---
 
 ### Web
 
-#### PromptPresetSelector editor
+#### contentEditable editor
 
-The `text` widget is replaced by a `contentEditable` div that provides
-syntax highlighting:
+Some text widgets are replaced by a `contentEditable` div that provides syntax highlighting.
+Supported widgets and nodes:
+- `text` widget in `PromptPresetSelector`
+- `options` widget in `PromptOptionPicker`
+- `template` widget in `PromptLayoutFiller`
 
-- Tags and separators are highlighted in orange
-- The active preset is shown in full brightness
-- Inactive presets are grayed out
-- `$N` references are highlighted in blue on the active preset
-- Colors update in real time while editing
-- Pasting always inserts plain text, stripping any HTML formatting
-- Highlighting updates live when `syntax`, `preset_index` or `preset_name`
-  are changed
+Colors update in real time while editing or changing other widget's values and pasting always inserts plain text, stripping any HTML formatting.
 
-When `preset_names` is filled, and `preset_name` replaces `preset_index`, the dropdown
-resets to the first preset when activated.
+`PromptPresetSelector`:
+- **Orange**: tags and separators
+- **Gray**: inactive presets
+- **Blue**: `$N` references on the active preset
+
+`PromptLayoutFiller`:
+- **Orange**: `@combine / --- / @end` tags
+
+`PromptLayoutFiller`:
+
+Placeholders are highlighted in the editor:
+- **Green**: slot is connected
+- **Red**: slot is referenced but not connected
 
 #### Keyboard shortcuts
 
@@ -127,7 +264,10 @@ resets to the first preset when activated.
 
 The selection is preserved after each keypress, consistent with ComfyUI native behavior.
 
+---
+
 ## TODO
 
+`PromptPresetSelector`
 - Add a field to easily concatenate text at the end of the output
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
