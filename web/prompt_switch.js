@@ -16,22 +16,27 @@ const COLORS = {
 const updateInputColors = (node, condition) => {
     const trueInput = node.inputs?.find((inp) => inp.name === "on_true");
     const falseInput = node.inputs?.find((inp) => inp.name === "on_false");
+    const trueWidget = node.widgets?.find((w) => w.name === "on_true");
+    const falseWidget = node.widgets?.find((w) => w.name === "on_false");
     if (!trueInput || !falseInput) return;
 
-    trueInput.color_on =
-        trueInput.link != null
-            ? condition
-                ? COLORS.true
-                : COLORS.inactive
-            : undefined;
+    const trueActive =
+        trueInput.link != null || (trueWidget?.value ?? "").trim() !== "";
+    const falseActive =
+        falseInput.link != null || (falseWidget?.value ?? "").trim() !== "";
+
+    trueInput.color_on = trueActive
+        ? condition
+            ? COLORS.true
+            : COLORS.inactive
+        : undefined;
     trueInput.color_off = trueInput.color_on;
 
-    falseInput.color_on =
-        falseInput.link != null
-            ? condition
-                ? COLORS.inactive
-                : COLORS.false
-            : undefined;
+    falseInput.color_on = falseActive
+        ? condition
+            ? COLORS.inactive
+            : COLORS.false
+        : undefined;
     falseInput.color_off = falseInput.color_on;
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
@@ -44,11 +49,21 @@ const attachSwitch = (node) => {
     if (node._switchAttached) return;
     node._switchAttached = true;
 
+    const trueWidget = node.widgets?.find((w) => w.name === "on_true");
+    const falseWidget = node.widgets?.find((w) => w.name === "on_false");
     const conditionWidget = node.widgets?.find((w) => w.name === "condition");
     if (!conditionWidget) return;
 
+    const refresh = () => {
+        const condition = conditionWidget.value ?? true;
+        updateInputColors(node, condition);
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
     // Input port colors
-    hookWidget(conditionWidget, (value) => updateInputColors(node, value));
+    hookWidget(conditionWidget, refresh);
+    hookWidget(trueWidget, refresh);
+    hookWidget(falseWidget, refresh);
 
     // Widget border via canvas
     const original = node.onDrawForeground;
@@ -65,8 +80,10 @@ const attachSwitch = (node) => {
             node.widgets?.find((w) => w.name === "condition")?.value ?? true;
 
         const drawBorder = (widget, color, input) => {
-            // Skip if not connected
-            if (!input || input.link == null) return;
+            // Skip if not connected AND widget value is empty
+            const isConnected = input?.link != null;
+            const hasValue = widget.value != null && widget.value.trim() !== "";
+            if (!isConnected && !hasValue) return;
 
             const x = 0;
             const y = widget.last_y - 2;
@@ -89,7 +106,7 @@ const attachSwitch = (node) => {
     };
 
     // Initial render
-    updateInputColors(node, conditionWidget.value ?? true);
+    refresh();
 };
 
 // --- Registration ---
