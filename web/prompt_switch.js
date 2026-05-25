@@ -18,11 +18,21 @@ const updateInputColors = (node, condition) => {
     const falseInput = node.inputs?.find((inp) => inp.name === "on_false");
     if (!trueInput || !falseInput) return;
 
-    trueInput.color_on = condition ? COLORS.true : COLORS.inactive;
-    trueInput.color_off = condition ? COLORS.true : COLORS.inactive;
+    trueInput.color_on =
+        trueInput.link != null
+            ? condition
+                ? COLORS.true
+                : COLORS.inactive
+            : undefined;
+    trueInput.color_off = trueInput.color_on;
 
-    falseInput.color_on = condition ? COLORS.inactive : COLORS.false;
-    falseInput.color_off = condition ? COLORS.inactive : COLORS.false;
+    falseInput.color_on =
+        falseInput.link != null
+            ? condition
+                ? COLORS.inactive
+                : COLORS.false
+            : undefined;
+    falseInput.color_off = falseInput.color_on;
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
@@ -47,12 +57,17 @@ const attachSwitch = (node) => {
 
         const trueWidget = node.widgets?.find((w) => w.name === "on_true");
         const falseWidget = node.widgets?.find((w) => w.name === "on_false");
+        const trueInput = node.inputs?.find((inp) => inp.name === "on_true");
+        const falseInput = node.inputs?.find((inp) => inp.name === "on_false");
         if (!trueWidget || !falseWidget) return;
 
         const condition =
             node.widgets?.find((w) => w.name === "condition")?.value ?? true;
 
-        const drawBorder = (widget, color) => {
+        const drawBorder = (widget, color, input) => {
+            // Skip if not connected
+            if (!input || input.link == null) return;
+
             const x = 0;
             const y = widget.last_y - 2;
             const w = node.size[0];
@@ -65,11 +80,11 @@ const attachSwitch = (node) => {
 
         // Draw inactive first, active on top
         if (condition) {
-            drawBorder(falseWidget, COLORS.inactive);
-            drawBorder(trueWidget, COLORS.true);
+            drawBorder(falseWidget, COLORS.inactive, falseInput);
+            drawBorder(trueWidget, COLORS.true, trueInput);
         } else {
-            drawBorder(trueWidget, COLORS.inactive);
-            drawBorder(falseWidget, COLORS.false);
+            drawBorder(trueWidget, COLORS.inactive, trueInput);
+            drawBorder(falseWidget, COLORS.false, falseInput);
         }
     };
 
