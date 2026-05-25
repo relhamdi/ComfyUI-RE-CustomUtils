@@ -230,6 +230,8 @@ Slot lengths do not need to match.
 
 ### PromptSwitch
 
+![PromptSwitch_v1](docs/images/PromptSwitch_v1.png)
+
 #### Inputs
 
 - `on_true` (str) — value returned when condition is `True`. Accepts direct input or connected node.
