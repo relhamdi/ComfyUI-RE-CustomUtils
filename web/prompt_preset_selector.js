@@ -1,5 +1,5 @@
 import { DEFAULT_TEXT_COLOR } from "./constants.js";
-import { createEditor, escapeHtml, hookWidget } from "./utils.js";
+import { createEditor, escapeHtml, hideWidget, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -49,12 +49,6 @@ const getPresetCount = (text, syntax) => {
     const matches = [...text.matchAll(buildPattern(syntax))];
     if (!matches.length) return 0;
     return Math.max(...matches.map((m) => m[1].split(separator).length));
-};
-
-// Hide ComfyUI widget component
-const hideWidget = (widgetName) => {
-    widgetName.type = "hidden";
-    widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
 };
 
 // --- Highlight ---

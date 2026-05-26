@@ -1,5 +1,11 @@
 import { DEFAULT_TEXT_COLOR } from "./constants.js";
 
+// Hide ComfyUI widget component
+export const hideWidget = (widgetName) => {
+    widgetName.type = "hidden";
+    widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
+};
+
 // Hook into ComfyUI widget callback (reliable change detection)
 export const hookWidget = (widget, onChange) => {
     if (!widget) return;
