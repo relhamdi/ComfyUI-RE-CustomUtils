@@ -1,4 +1,4 @@
-import { createEditor, escapeHtml } from "./utils.js";
+import { createEditor, escapeHtml, updateSlotVisibility } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -39,35 +39,6 @@ const buildHighlightedHtml = (raw, connectedSlots) => {
     result += escapeHtml(raw.slice(lastIndex));
 
     return result;
-};
-
-// --- Slot visibility ---
-
-const updateSlotVisibility = (node) => {
-    // Find the highest connected slot index
-    let highestConnected = -1;
-    for (let i = 0; i < NUM_SLOTS; i++) {
-        const input = node.inputs?.find((inp) => inp.name === `slot_${i}`);
-        if (input?.link != null) highestConnected = i;
-    }
-
-    for (let i = 0; i < NUM_SLOTS; i++) {
-        const slotName = `slot_${i}`;
-        const existingInput = node.inputs?.find((inp) => inp.name === slotName);
-        const shouldBeVisible = i <= highestConnected + 1;
-        const isConnected = existingInput?.link != null;
-
-        if (shouldBeVisible && !existingInput) {
-            // Add input if it should be visible but doesn't exist
-            node.addInput(slotName, "STRING");
-        } else if (!shouldBeVisible && existingInput && !isConnected) {
-            // Remove input if it should be hidden and is not connected
-            const idx = node.inputs.indexOf(existingInput);
-            node.removeInput(idx);
-        }
-    }
-
-    if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
 const getConnectedSlots = (node) => {
@@ -114,12 +85,12 @@ const attachEditor = (node) => {
     node.onConnectionsChange = function (...args) {
         if (originalConnectionChange)
             originalConnectionChange.call(this, ...args);
-        updateSlotVisibility(node);
+        updateSlotVisibility(node, NUM_SLOTS, "slot");
         renderColored();
     };
 
     // Initial render
-    updateSlotVisibility(node);
+    updateSlotVisibility(node, NUM_SLOTS, "slot");
     renderColored();
 };
 

@@ -270,3 +270,30 @@ export const createEditor = (
 
     return editor;
 };
+
+export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
+    // Find the highest connected slot index
+    let highestConnected = -1;
+    for (let i = 0; i < numSlots; i++) {
+        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
+        if (input?.link != null) highestConnected = i;
+    }
+
+    for (let i = 0; i < numSlots; i++) {
+        const slotName = `${prefix}_${i}`;
+        const existingInput = node.inputs?.find((inp) => inp.name === slotName);
+        const shouldBeVisible = i <= highestConnected + 1;
+        const isConnected = existingInput?.link != null;
+
+        if (shouldBeVisible && !existingInput) {
+            // Add input if it should be visible but doesn't exist
+            node.addInput(slotName, "STRING");
+        } else if (!shouldBeVisible && existingInput && !isConnected) {
+            // Remove input if it should be hidden and is not connected
+            const idx = node.inputs.indexOf(existingInput);
+            node.removeInput(idx);
+        }
+    }
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
