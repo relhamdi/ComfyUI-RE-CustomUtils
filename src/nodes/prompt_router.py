@@ -22,6 +22,13 @@ class PromptRouter:
                         "tooltip": "Select the active input.",
                     },
                 ),
+                "_sub_selected": (
+                    "STRING",
+                    {
+                        "default": "--",
+                        "tooltip": "Internal use only.",
+                    },
+                ),
             },
             "optional": {
                 f"input_{i}": ("STRING", {"forceInput": True})
@@ -80,9 +87,8 @@ class PromptRouter:
 
         return mapping
 
-    def process(self, selected, prompt=None, unique_id=None, **kwargs):
+    def process(self, selected, _sub_selected, prompt=None, unique_id=None, **kwargs):
         # Remove internal widgets from kwargs
-        kwargs.pop("_sub_selected", None)
         kwargs.pop("_sub_source", None)
 
         if not selected or selected == "--":
