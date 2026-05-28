@@ -258,6 +258,60 @@ Colors are only shown when an input is connected or has a value.
 
 ---
 
+### PromptRouter
+
+![PromptRouter_v1](docs/images/PromptRouter_v1.png)
+
+#### Inputs
+
+- `selected` (str, internal) — stores the active selection for workflow persistence.
+- `_sub_selected` (str, internal) — stores the active sub-router selection.
+- `input_0` to `input_9` (str, connectable) — values to route. Slots are revealed one by one as the previous one is connected. Up to 10 slots supported.
+
+#### Outputs
+
+- `text` (str) — value of the selected input.
+- `index` (int) — index of the selected input.
+
+#### Usage
+
+Connect nodes to the input slots. The dropdown automatically populates with the title of each connected source node, prefixed by its index:
+
+```
+0: position
+1: background
+2: lighting
+```
+
+Select the active input from the dropdown. The node outputs the value of the selected input.
+
+If a connected node is bypassed, the output is an empty string.
+
+#### Sub-router
+
+If a connected source node is itself a `PromptRouter`, it is marked with a `▶` indicator in the dropdown:
+
+```
+0: position
+1: Router B ▶
+2: background
+```
+
+Selecting it reveals a second dropdown populated with the options of the child router. The parent node outputs the value selected in the child dropdown.
+
+Sub-routing is limited to one level deep, and does not change the actual value in the sub-router node.
+
+#### Editor
+
+- The dropdown updates automatically when source nodes are connected, disconnected, or renamed.
+- The active selection is preserved across workflow saves, reloads, and undo/redo.
+
+#### Known limitations
+
+- If a child router's connections change while it is selected in the parent, the parent dropdown may not update immediately. Reconnecting or modifying the parent will trigger a refresh.
+
+---
+
 ### Web
 
 #### contentEditable editor
@@ -302,3 +356,6 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 `PromptPresetSelector`
 - Add a field to easily concatenate text at the end of the output
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
+
+`PromptRouter`
+- Add support for more sub-routing levels?

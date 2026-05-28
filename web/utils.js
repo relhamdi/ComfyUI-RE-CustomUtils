@@ -1,5 +1,11 @@
 import { DEFAULT_TEXT_COLOR } from "./constants.js";
 
+// Hide ComfyUI widget component
+export const hideWidget = (widgetName) => {
+    widgetName.type = "hidden";
+    widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
+};
+
 // Hook into ComfyUI widget callback (reliable change detection)
 export const hookWidget = (widget, onChange) => {
     if (!widget) return;
@@ -263,4 +269,48 @@ export const createEditor = (
     });
 
     return editor;
+};
+
+export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
+    const minVisible = 1; // Always keep at least one slot
+
+    // Remove unused inputs from the end, stop at first connected
+    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
+        const input = node.inputs[i];
+        if (!input) continue;
+        if (!input.link) {
+            // Only remove if it matches our prefix pattern
+            if (input.name.startsWith(prefix)) {
+                node.removeInput(i);
+            }
+        } else {
+            break; // Stop at first connected input from the end
+        }
+    }
+
+    // Find highest connected index by name
+    let highestConnected = -1;
+    for (let i = 0; i < numSlots; i++) {
+        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
+        if (input?.link != null) highestConnected = i;
+    }
+
+    // Add one free slot after the last connected
+    const targetVisible = highestConnected + 2;
+    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
+        const slotName = `${prefix}_${i}`;
+        if (!node.inputs?.find((inp) => inp.name === slotName)) {
+            node.addInput(slotName, "STRING");
+        }
+    }
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+export const debounce = (fn, ms = 64) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
 };

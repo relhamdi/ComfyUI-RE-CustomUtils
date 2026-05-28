@@ -18,6 +18,12 @@ from .src.nodes.prompt_preset_selector import (
 from .src.nodes.prompt_preset_selector import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptPresetSelectorDisplayMappings,
 )
+from .src.nodes.prompt_router import (
+    NODE_CLASS_MAPPINGS as PromptRouterMappings,
+)
+from .src.nodes.prompt_router import (
+    NODE_DISPLAY_NAME_MAPPINGS as PromptRouterDisplayMappings,
+)
 from .src.nodes.prompt_switch import (
     NODE_CLASS_MAPPINGS as PromptSwitchMappings,
 )
@@ -30,12 +36,14 @@ NODE_CLASS_MAPPINGS.update(PromptPresetSelectorMappings)
 NODE_CLASS_MAPPINGS.update(PromptOptionPickerMappings)
 NODE_CLASS_MAPPINGS.update(PromptLayoutFillerMappings)
 NODE_CLASS_MAPPINGS.update(PromptSwitchMappings)
+NODE_CLASS_MAPPINGS.update(PromptRouterMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptOptionPickerDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptLayoutFillerDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptSwitchDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(PromptRouterDisplayMappings)
 
 # Node registration
 __all__ = [
