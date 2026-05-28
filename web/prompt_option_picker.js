@@ -6,8 +6,12 @@ import { app } from "/scripts/app.js";
 
 const NODE_NAME = "PromptOptionPicker";
 
+const EMPTY_SENTINEL = "\u200B";
+
 const COLORS = {
     tag: "#ff9800",
+    label: "#4dd0e1",
+    sep: "#888888",
 };
 
 // --- Highlight ---
@@ -22,19 +26,39 @@ const buildHighlightedHtml = (raw) => {
         const stripped = line.trim();
         const isLast = i === lines.length - 1;
 
-        let color = DEFAULT_TEXT_COLOR;
+        let lineHtml;
+        const sep = "$:";
 
         if (stripped === "@combine") {
             inCombine = true;
-            color = COLORS.tag;
+            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
         } else if (stripped === "@end") {
             inCombine = false;
-            color = COLORS.tag;
+            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
         } else if (stripped === "---" && inCombine) {
-            color = COLORS.tag;
+            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
+        } else if (!inCombine && stripped.includes(" $: ")) {
+            // "label $: value"
+            const sep = " $: ";
+            const sepIdx = line.indexOf(sep);
+            const label = line.slice(0, sepIdx);
+            const value = line.slice(sepIdx + 4);
+            lineHtml =
+                `<span style="color:${COLORS.label}">${escapeHtml(label)}</span>` +
+                `<span style="color:${COLORS.sep}">${escapeHtml(sep)}</span>` +
+                `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(value)}</span>`;
+        } else if (!inCombine && stripped.startsWith("$: ")) {
+            // "$: value", no label
+            const sep = "$: ";
+            const value = line.slice(line.indexOf(sep) + 3);
+            lineHtml =
+                `<span style="color:${COLORS.sep}">${escapeHtml(sep)}</span>` +
+                `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(value)}</span>`;
+        } else {
+            lineHtml = `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(line)}</span>`;
         }
 
-        result += `<span style="color:${color}">${escapeHtml(line)}</span>`;
+        result += lineHtml;
         if (!isLast) result += "\n";
     }
 
@@ -45,15 +69,17 @@ const buildHighlightedHtml = (raw) => {
 
 const parseOptions = (raw) => {
     const lines = raw.split("\n");
-    const result = [];
-    let inCombine = false;
-    let currentBlock = [];
-    let currentList = [];
 
     // Remove trailing empty line from paste artifacts
     if (lines.length > 1 && lines[lines.length - 1].trim() === "") {
         lines.pop();
     }
+
+    const result = []; // { label, value }
+    let inCombine = false;
+    let currentBlock = [];
+    let currentList = [];
+    let optionCounter = 0;
 
     for (const line of lines) {
         const stripped = line.trim();
@@ -85,20 +111,38 @@ const parseOptions = (raw) => {
             );
 
             for (const combo of combos) {
-                result.push(combo || "--");
+                const value = combo || "";
+                result.push({ label: value || "--", value });
+                optionCounter++;
             }
         } else if (stripped === "---") {
             if (inCombine) {
                 currentBlock.push(currentList);
                 currentList = [];
             } else {
-                result.push("---");
+                result.push({ label: "---", value: "---" });
+                optionCounter++;
             }
         } else {
             if (inCombine) {
                 currentList.push(line);
+            } else if (stripped === "") {
+                result.push({ label: "--", value: EMPTY_SENTINEL });
+                optionCounter++;
+            } else if (stripped.includes(" $: ")) {
+                const idx = stripped.indexOf(" $: ");
+                let label = stripped.slice(0, idx).trim();
+                const value = stripped.slice(idx + 4).trim();
+                if (!label) label = `option_${optionCounter}`;
+                result.push({ label, value });
+                optionCounter++;
+            } else if (stripped.startsWith("$: ")) {
+                const value = stripped.slice(3).trim();
+                result.push({ label: `option_${optionCounter}`, value });
+                optionCounter++;
             } else {
-                result.push(line === "" ? "--" : line);
+                result.push({ label: stripped, value: stripped });
+                optionCounter++;
             }
         }
     }
@@ -148,12 +192,45 @@ const attachEditor = (node) => {
             return;
         }
 
-        const current = selectedWidget.value;
-        selectedWidget.options.values = options;
-        selectedWidget.value = options.includes(current) ? current : options[0];
+        // Build label map, handle duplicate labels
+        const labelMap = new Map();
+        for (const { label, value } of options) {
+            let uniqueLabel = label;
+            let suffix = 1;
+            while (labelMap.has(uniqueLabel)) {
+                uniqueLabel = `${label} (${suffix++})`;
+            }
+            labelMap.set(uniqueLabel, value);
+        }
+
+        node._labelMap = labelMap;
+        const labels = [...labelMap.keys()];
+
+        // Preserve selection by raw value
+        const currentRaw = selectedWidget.value;
+        const currentLabel = currentRaw
+            ? [...labelMap.entries()].find(([, v]) => v === currentRaw)?.[0]
+            : null;
+
+        selectedWidget.options.values = labels;
+        const targetLabel =
+            currentLabel && labels.includes(currentLabel)
+                ? currentLabel
+                : labels[0];
+
+        // Store raw value in selectedWidget
+        selectedWidget.value = labelMap.get(targetLabel) ?? targetLabel;
 
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
+
+    hookWidget(selectedWidget, (label) => {
+        if (node._labelMap) {
+            selectedWidget.value = node._labelMap.get(label) ?? label;
+        }
+        refreshDropdown();
+        renderColored();
+    });
 
     hookWidget(optionsWidget, () => {
         refreshDropdown();
