@@ -272,28 +272,45 @@ export const createEditor = (
 };
 
 export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
-    // Find the highest connected slot index
+    const minVisible = 1; // Always keep at least one slot
+
+    // Remove unused inputs from the end, stop at first connected
+    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
+        const input = node.inputs[i];
+        if (!input) continue;
+        if (!input.link) {
+            // Only remove if it matches our prefix pattern
+            if (input.name.startsWith(prefix)) {
+                node.removeInput(i);
+            }
+        } else {
+            break; // Stop at first connected input from the end
+        }
+    }
+
+    // Find highest connected index by name
     let highestConnected = -1;
     for (let i = 0; i < numSlots; i++) {
         const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
         if (input?.link != null) highestConnected = i;
     }
 
-    for (let i = 0; i < numSlots; i++) {
+    // Add one free slot after the last connected
+    const targetVisible = highestConnected + 2;
+    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
         const slotName = `${prefix}_${i}`;
-        const existingInput = node.inputs?.find((inp) => inp.name === slotName);
-        const shouldBeVisible = i <= highestConnected + 1;
-        const isConnected = existingInput?.link != null;
-
-        if (shouldBeVisible && !existingInput) {
-            // Add input if it should be visible but doesn't exist
+        if (!node.inputs?.find((inp) => inp.name === slotName)) {
             node.addInput(slotName, "STRING");
-        } else if (!shouldBeVisible && existingInput && !isConnected) {
-            // Remove input if it should be hidden and is not connected
-            const idx = node.inputs.indexOf(existingInput);
-            node.removeInput(idx);
         }
     }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+export const debounce = (fn, ms = 64) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
 };
