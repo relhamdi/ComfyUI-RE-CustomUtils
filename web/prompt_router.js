@@ -35,41 +35,131 @@ const getCurrentTitles = (node) => {
     return titles;
 };
 
+const isRouter = (sourceNode) => sourceNode?.type === NODE_NAME;
+
+const getRouterOptions = (routerNode) => {
+    const options = [];
+    for (let i = 0; i < NUM_INPUTS; i++) {
+        const source = getSourceNode(routerNode, i);
+        if (!source) continue;
+        const title = getSourceTitle(source);
+        const indicator = isRouter(source) ? " ▶" : "";
+        options.push({
+            label: `${i}: ${title}${indicator}`,
+            index: i,
+            source,
+        });
+    }
+    return options;
+};
+
+// --- Sub-dropdown ---
+
+const destroySubDropdown = (node) => {
+    if (!node._subComboWidget) return;
+
+    // Restore child router's original onConnectionsChange
+    if (node._hookedChildRouter?._parentRouterHook) {
+        delete node._hookedChildRouter._parentRouterHook;
+        node._hookedChildRouter.onConnectionsChange =
+            node._hookedChildRouter._originalConnectionChange;
+    }
+    node._hookedChildRouter = null;
+
+    const idx = node.widgets.indexOf(node._subComboWidget);
+    if (idx !== -1) node.widgets.splice(idx, 1);
+    node._subComboWidget = null;
+    node._subSelectedWidget = null;
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const buildSubDropdown = (node, routerNode, selectedWidget) => {
+    destroySubDropdown(node);
+
+    // --- Connection change hook - Refresh items when child nodes are updated ---
+    const originalChildConnectionChange = routerNode.onConnectionsChange;
+    routerNode._parentRouterHook = function (...args) {
+        if (originalChildConnectionChange)
+            originalChildConnectionChange.call(this, ...args);
+        // Refresh parent dropdown after debounce
+        setTimeout(() => node.refreshDropdown(), 100);
+    };
+    routerNode.onConnectionsChange = routerNode._parentRouterHook;
+    node._hookedChildRouter = routerNode;
+
+    const subOptions = getRouterOptions(routerNode);
+    const labels =
+        subOptions.length > 0 ? subOptions.map((o) => o.label) : [EMPTY_VALUE];
+
+    const subCombo = node.addWidget(
+        "combo",
+        "_sub_source",
+        labels[0],
+        (value) => {
+            // Store sub-selection in hidden widget
+            if (node._subSelectedWidget) {
+                node._subSelectedWidget.value = value;
+            }
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        },
+        { values: labels },
+    );
+
+    subCombo._isSubCombo = true;
+
+    // Hidden STRING widget to store sub-selection for Python
+    const subSelected = node.addWidget(
+        "combo",
+        "_sub_selected",
+        labels[0],
+        () => {},
+        { values: labels },
+    );
+    hideWidget(subSelected)
+    // subSelected.hidden = true;
+    // subSelected.computeSize = () => [0, -4];
+
+    node._subComboWidget = subCombo;
+    node._subSelectedWidget = subSelected;
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
 // --- Dropdown refresh ---
 
 const refreshDropdown = (node, selectedWidget, comboWidget) => {
-    const options = [];
-
-    for (let i = 0; i < NUM_INPUTS; i++) {
-        const input = node.inputs?.find((inp) => inp.name === `input_${i}`);
-        if (!input?.link) continue;
-
-        const link = app.graph.links[input.link];
-        if (!link) continue;
-
-        const sourceNode = app.graph.getNodeById(link.origin_id);
-        if (!sourceNode) continue;
-
-        const title =
-            sourceNode.title?.trim() ||
-            sourceNode.type ||
-            `node_${link.origin_id}`;
-        options.push(`${i}: ${title}`);
-    }
+    const options = getRouterOptions(node);
 
     if (options.length === 0) {
-        options.push(EMPTY_VALUE);
+        comboWidget.options.values = [EMPTY_VALUE];
+        comboWidget.value = EMPTY_VALUE;
+        selectedWidget.value = EMPTY_VALUE;
+        destroySubDropdown(node);
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+        return;
     }
 
-    comboWidget.options.values = options;
+    const labels = options.map((o) => o.label);
+    const current = comboWidget.value;
 
-    // Preserve selection if still valid
-    if (!options.includes(comboWidget.value)) {
-        comboWidget.value = options[0];
+    comboWidget.options.values = labels;
+
+    if (labels.includes(current)) {
+        comboWidget.value = current;
+    } else {
+        comboWidget.value = labels[0];
     }
 
     // Sync to backend STRING
     selectedWidget.value = comboWidget.value;
+
+    // Check if selected source is a sub-router
+    const selectedOption = options.find((o) => o.label === comboWidget.value);
+    if (selectedOption && isRouter(selectedOption.source)) {
+        buildSubDropdown(node, selectedOption.source, selectedWidget);
+    } else {
+        destroySubDropdown(node);
+    }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
@@ -95,7 +185,19 @@ const attachRouter = (node) => {
         (value) => {
             // Sync combo -> backend STRING
             selectedWidget.value = value;
+
+            // Update sub-dropdown if selected source is a router
+            const options = getRouterOptions(node);
+            const selectedOption = options.find((o) => o.label === value);
+            if (selectedOption && isRouter(selectedOption.source)) {
+                buildSubDropdown(node, selectedOption.source, selectedWidget);
+            } else {
+                destroySubDropdown(node);
+            }
+
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
         },
+
         { values: [EMPTY_VALUE] },
     );
 
