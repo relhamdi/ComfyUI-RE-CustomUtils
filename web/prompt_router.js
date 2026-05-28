@@ -91,15 +91,23 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     const labels =
         subOptions.length > 0 ? subOptions.map((o) => o.label) : [EMPTY_VALUE];
 
+    // Find Python-backed widget for persistence
+    const subSelectedWidget = node.widgets?.find(
+        (w) => w.name === "_sub_selected",
+    );
+
+    // Restore saved value if still valid
+    const savedValue = subSelectedWidget?.value;
+    const initialValue =
+        savedValue && labels.includes(savedValue) ? savedValue : labels[0];
+
     const subCombo = node.addWidget(
         "combo",
         "_sub_source",
-        labels[0],
+        initialValue,
         (value) => {
             // Store sub-selection in hidden widget
-            if (node._subSelectedWidget) {
-                node._subSelectedWidget.value = value;
-            }
+            if (subSelectedWidget) subSelectedWidget.value = value;
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         },
         { values: labels },
@@ -107,20 +115,11 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
 
     subCombo._isSubCombo = true;
 
-    // Hidden STRING widget to store sub-selection for Python
-    const subSelected = node.addWidget(
-        "combo",
-        "_sub_selected",
-        labels[0],
-        () => {},
-        { values: labels },
-    );
-    hideWidget(subSelected)
-    // subSelected.hidden = true;
-    // subSelected.computeSize = () => [0, -4];
+    // Sync initial value to Python widget
+    if (subSelectedWidget) subSelectedWidget.value = initialValue;
 
     node._subComboWidget = subCombo;
-    node._subSelectedWidget = subSelected;
+    node._subSelectedWidget = subSelectedWidget;
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
@@ -144,10 +143,14 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
 
     comboWidget.options.values = labels;
 
-    if (labels.includes(current)) {
-        comboWidget.value = current;
+    // Restore from saved Python value first, then current combo, then first
+    const savedValue = selectedWidget.value;
+    if (savedValue && labels.includes(savedValue)) {
+        comboWidget.value = savedValue; // Restored from undo/reload
+    } else if (labels.includes(comboWidget.value)) {
+        comboWidget.value = comboWidget.value; // Keep current
     } else {
-        comboWidget.value = labels[0];
+        comboWidget.value = labels[0]; // Fallback
     }
 
     // Sync to backend STRING
@@ -172,10 +175,14 @@ const attachRouter = (node) => {
     node._routerAttached = true;
 
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
+    const subSelectedWidget = node.widgets?.find(
+        (w) => w.name === "_sub_selected",
+    );
     if (!selectedWidget) return;
 
-    // Hide native STRING widget
+    // Hide native Python widgets
     hideWidget(selectedWidget);
+    if (subSelectedWidget) hideWidget(subSelectedWidget);
 
     // Create frontend combo widget
     const comboWidget = node.addWidget(
