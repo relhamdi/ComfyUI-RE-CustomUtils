@@ -68,8 +68,12 @@ class PromptRouter:
                 if not title:
                     title = source_node.get("class_type", source_id)
 
+                # Build both variants, with and without indicator
                 label = f"{i}: {title}"
-                mapping[label] = (input_name, i)
+                label_router = f"{i}: {title} ▶"
+                entry = (input_name, i)
+                mapping[label] = entry
+                mapping[label_router] = entry  # Match both
 
         except Exception as e:
             raise ValueError(f"[PromptRouter] mapping error: {e}")
@@ -77,6 +81,10 @@ class PromptRouter:
         return mapping
 
     def process(self, selected, prompt=None, unique_id=None, **kwargs):
+        # Remove internal widgets from kwargs
+        kwargs.pop("_sub_selected", None)
+        kwargs.pop("_sub_source", None)
+
         if not selected or selected == "--":
             return ("", 0)
 
