@@ -50,7 +50,8 @@ class PromptOptionPicker:
 
     def process(self, options, selected):
         # -- displays an empty string
-        return ("" if selected == "--" else selected,)
+        value = "" if selected in ("--", "\u200b") else selected
+        return (value,)
 
 
 NODE_CLASS_MAPPINGS = {
