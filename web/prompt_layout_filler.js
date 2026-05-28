@@ -1,4 +1,9 @@
-import { createEditor, escapeHtml, updateSlotVisibility } from "./utils.js";
+import {
+    createEditor,
+    debounce,
+    escapeHtml,
+    updateSlotVisibility,
+} from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -80,13 +85,17 @@ const attachEditor = (node) => {
         editor.innerHTML = buildHighlightedHtml(textarea.value, connected);
     };
 
+    const debouncedUpdate = debounce(() => {
+        updateSlotVisibility(node, NUM_SLOTS, "slot");
+        refreshDropdown(node, selectedWidget, comboWidget);
+    }, 64);
+
     // --- Connection change hook - Re-render when slots are connected or disconnected ---
     const originalConnectionChange = node.onConnectionsChange;
     node.onConnectionsChange = function (...args) {
         if (originalConnectionChange)
             originalConnectionChange.call(this, ...args);
-        updateSlotVisibility(node, NUM_SLOTS, "slot");
-        renderColored();
+        debouncedUpdate();
     };
 
     // Initial render

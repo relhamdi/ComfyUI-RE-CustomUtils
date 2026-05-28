@@ -1,4 +1,4 @@
-import { hideWidget, updateSlotVisibility } from "./utils.js";
+import { debounce, hideWidget, updateSlotVisibility } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -71,13 +71,17 @@ const attachRouter = (node) => {
     node.refreshDropdown = () =>
         refreshDropdown(node, selectedWidget, comboWidget);
 
+    const debouncedUpdate = debounce(() => {
+        updateSlotVisibility(node, NUM_INPUTS, "input");
+        refreshDropdown(node, selectedWidget, comboWidget);
+    }, 64);
+
     // --- Connection change hook - Re-render when nodes are connected or disconnected ---
     const originalConnectionChange = node.onConnectionsChange;
     node.onConnectionsChange = function (...args) {
         if (originalConnectionChange)
             originalConnectionChange.call(this, ...args);
-        updateSlotVisibility(node, NUM_INPUTS, "input");
-        node.refreshDropdown();
+        debouncedUpdate();
     };
 
     // Initial render
