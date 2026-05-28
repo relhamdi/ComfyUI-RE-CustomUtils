@@ -8,6 +8,33 @@ const NODE_NAME = "PromptRouter";
 const NUM_INPUTS = 10;
 const EMPTY_VALUE = "--";
 
+// --- Helpers ---
+
+const getSourceNode = (node, inputIndex) => {
+    const input = node.inputs?.find(
+        (inp) => inp.name === `input_${inputIndex}`,
+    );
+    if (!input?.link) return null;
+
+    const link = app.graph.links[input.link];
+    if (!link) return null;
+
+    return app.graph.getNodeById(link.origin_id) ?? null;
+};
+
+const getSourceTitle = (sourceNode) => {
+    return sourceNode?.title?.trim() || sourceNode?.type || "unknown";
+};
+
+const getCurrentTitles = (node) => {
+    const titles = [];
+    for (let i = 0; i < NUM_INPUTS; i++) {
+        const source = getSourceNode(node, i);
+        if (source) titles.push(`${i}:${getSourceTitle(source)}`);
+    }
+    return titles;
+};
+
 // --- Dropdown refresh ---
 
 const refreshDropdown = (node, selectedWidget, comboWidget) => {
@@ -74,6 +101,19 @@ const attachRouter = (node) => {
 
     node.refreshDropdown = () =>
         refreshDropdown(node, selectedWidget, comboWidget);
+
+    // --- Draw Foreground hook - Title change detection ---
+    let lastTitles = [];
+    const originalDrawForeground = node.onDrawForeground;
+    node.onDrawForeground = function (ctx) {
+        if (originalDrawForeground) originalDrawForeground.call(this, ctx);
+
+        const currentTitles = getCurrentTitles(node);
+        if (JSON.stringify(currentTitles) !== JSON.stringify(lastTitles)) {
+            lastTitles = currentTitles;
+            node.refreshDropdown();
+        }
+    };
 
     const debouncedUpdate = debounce(() => {
         updateSlotVisibility(node, NUM_INPUTS, "input");
