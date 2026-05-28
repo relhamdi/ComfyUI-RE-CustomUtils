@@ -11,7 +11,7 @@ const EMPTY_VALUE = "--";
 // --- Dropdown refresh ---
 
 const refreshDropdown = (node, selectedWidget, comboWidget) => {
-    const options = [EMPTY_VALUE];
+    const options = [];
 
     for (let i = 0; i < NUM_INPUTS; i++) {
         const input = node.inputs?.find((inp) => inp.name === `input_${i}`);
@@ -28,6 +28,10 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
             sourceNode.type ||
             `node_${link.origin_id}`;
         options.push(`${i}: ${title}`);
+    }
+
+    if (options.length === 0) {
+        options.push(EMPTY_VALUE);
     }
 
     comboWidget.options.values = options;
