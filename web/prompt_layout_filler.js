@@ -87,7 +87,6 @@ const attachEditor = (node) => {
 
     const debouncedUpdate = debounce(() => {
         updateSlotVisibility(node, NUM_SLOTS, "slot");
-        refreshDropdown(node, selectedWidget, comboWidget);
     }, 64);
 
     // --- Connection change hook - Re-render when slots are connected or disconnected ---
