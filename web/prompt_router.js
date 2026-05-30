@@ -205,8 +205,6 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
     }
 
     const labels = options.map((o) => o.label);
-    const current = comboWidget.value;
-
     comboWidget.options.values = labels;
 
     // Restore from saved Python value first, then current combo, then first
