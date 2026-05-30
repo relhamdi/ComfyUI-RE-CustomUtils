@@ -1,4 +1,5 @@
 import { COLORS } from "./constants";
+import { app } from "/scripts/app.js";
 
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
@@ -313,4 +314,50 @@ export const debounce = (fn, ms = 64) => {
         clearTimeout(timer);
         timer = setTimeout(() => fn(...args), ms);
     };
+};
+
+// --- Registration ---
+
+export const registerNode = (name, attachFn) => {
+    app.registerExtension({
+        name,
+        beforeRegisterNodeDef(nodeType, nodeData) {
+            if (nodeData.name !== name) return;
+            const original = nodeType.prototype.onNodeCreated;
+            nodeType.prototype.onNodeCreated = function () {
+                if (original) original.call(this);
+                attachFn(this);
+            };
+        },
+    });
+};
+
+export const waitForWidget = (node, widgetName, callback) => {
+    const guardKey = `_attached_${widgetName}`;
+    if (node[guardKey]) return;
+    node[guardKey] = true;
+
+    const tryAttach = () => {
+        const widget = node.widgets?.find((w) => w.name === widgetName);
+        if (widget?.inputEl?.parentNode) {
+            callback(node);
+        } else {
+            requestAnimationFrame(tryAttach);
+        }
+    };
+    requestAnimationFrame(tryAttach);
+};
+
+export const waitForWidgets = (node, callback) => {
+    if (node._attached) return;
+    node._attached = true;
+
+    const tryAttach = () => {
+        if (node.widgets?.length) {
+            callback(node);
+        } else {
+            requestAnimationFrame(tryAttach);
+        }
+    };
+    requestAnimationFrame(tryAttach);
 };
