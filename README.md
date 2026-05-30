@@ -313,6 +313,41 @@ Sub-routing is limited to one level deep, and **does** change the actual value i
 
 ---
 
+### QuickCombo
+
+#### Inputs
+
+- `options` (str) — comma-separated list of options typed inline. Ex: `neutral, happy, sad`
+- `selected` (combo) — dynamic dropdown built from the `options` field
+- `one_based` (bool), default `False` — if `True`, the index output starts at `1` instead of `0`
+
+#### Outputs
+
+- `value` (str) — selected option
+- `index` (int) — index of the selected option (0-based by default)
+
+#### Usage
+
+Type a comma-separated list in the `options` field. The dropdown updates automatically as you type.
+
+```
+neutral, happy, sad, angry
+```
+
+Toggle `one_based` to match the indexing convention of other nodes in your workflow.
+
+#### Differences from PromptOptionPicker
+
+|                   | QuickCombo             | PromptOptionPicker      |
+| ----------------- | ---------------------- | ----------------------- |
+| Input format      | Inline comma-separated | Multiline, one per line |
+| `@combine` blocks | No                     | Yes                     |
+| Labels (`$:`)     | No                     | Yes                     |
+| Empty options     | No                     | Yes (`--`)              |
+| Use case          | Quick setup            | Advanced lists          |
+
+---
+
 ### Web
 
 #### contentEditable editor
