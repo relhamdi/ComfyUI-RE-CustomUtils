@@ -137,6 +137,23 @@ kneeling
 The empty line above produces a `--` entry in the dropdown, which outputs
 an empty string. If the field is empty, the dropdown resets to `--`.
 
+#### Labels
+
+Options can be labeled using the `label $: value` syntax. The label is shown in the dropdown, but the real value is transmitted on output:
+
+```
+neutral $: character, simple background
+happy $: character, smile, laughing
+sad $: character, crying
+```
+
+For unlabeled options, use `$: value` — the option is auto-named `option_N`:
+
+```
+$: character, simple background
+$: character, smile
+```
+
 #### Cartesian product blocks
 
 Use `@combine / --- / @end` blocks to generate all combinations of multiple lists:
@@ -297,9 +314,11 @@ If a connected source node is itself a `PromptRouter`, it is marked with a `▶`
 2: background
 ```
 
-Selecting it reveals a second dropdown populated with the options of the child router. The parent node outputs the value selected in the child dropdown.
+Selecting it reveals a second dropdown populated with the options of the child router. The parent outputs the value selected in the child dropdown.
 
-Sub-routing is limited to one level deep, and **does** change the actual value in the sub-router node. As well, changing the selected value in the sub-router **does** update the main one.
+Changing the selection in either the parent sub-dropdown or the child router updates both in sync. Multiple parents connected to the same child router all stay synchronized.
+
+Sub-routing is limited to one level deep.
 
 #### Editor
 
@@ -365,8 +384,10 @@ Colors update in real time while editing or changing other widget's values and p
 - **Gray**: inactive presets
 - **Blue**: `$N` references on the active preset
 
-`PromptLayoutFiller`:
+`PromptOptionPicker`:
 - **Orange**: `@combine / --- / @end` tags
+- **Cyan**: labels
+- **Gray**: `$:` separators
 
 `PromptLayoutFiller`:
 
