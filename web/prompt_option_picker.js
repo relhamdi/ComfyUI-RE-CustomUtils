@@ -1,6 +1,5 @@
 import { COLORS, EMPTY_VALUE } from "./constants.js";
-import { createEditor, escapeHtml, hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import { createEditor, escapeHtml, hookWidget, registerNode, waitForWidget } from "./utils.js";
 
 // --- Constants ---
 
@@ -150,14 +149,10 @@ const parseOptions = (raw) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== NODE_NAME) return;
-
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
 
     if (!optionsWidget || !selectedWidget) return;
-    if (optionsWidget._editorAttached) return;
-    optionsWidget._editorAttached = true;
 
     const textarea = optionsWidget.inputEl || optionsWidget.element;
     if (!textarea?.parentNode) return;
@@ -238,27 +233,4 @@ const attachEditor = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            const tryAttach = () => {
-                const optionsWidget = node.widgets?.find(
-                    (w) => w.name === "options",
-                );
-                if (optionsWidget?.inputEl?.parentNode) {
-                    attachEditor(node);
-                } else {
-                    requestAnimationFrame(tryAttach);
-                }
-            };
-            requestAnimationFrame(tryAttach);
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidget(node, "options", attachEditor));

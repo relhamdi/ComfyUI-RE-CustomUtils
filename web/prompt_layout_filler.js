@@ -3,9 +3,10 @@ import {
     createEditor,
     debounce,
     escapeHtml,
+    registerNode,
     updateSlotVisibility,
+    waitForWidget,
 } from "./utils.js";
-import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
@@ -54,17 +55,11 @@ const getConnectedSlots = (node) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== NODE_NAME) return;
-
     const templateWidget = node.widgets?.find((w) => w.name === "template");
     if (!templateWidget) return;
 
     const textarea = templateWidget.inputEl || templateWidget.element;
     if (!textarea?.parentNode) return;
-
-    // Prevent double initialization
-    if (textarea._editorAttached) return;
-    textarea._editorAttached = true;
 
     // Create contentEditable div
     const editor = createEditor(textarea, {
@@ -98,28 +93,6 @@ const attachEditor = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            // Retry until widgets DOM is ready
-            const tryAttach = () => {
-                const templateWidget = node.widgets?.find(
-                    (w) => w.name === "template",
-                );
-                if (templateWidget?.inputEl?.parentNode) {
-                    attachEditor(node);
-                } else {
-                    requestAnimationFrame(tryAttach);
-                }
-            };
-            requestAnimationFrame(tryAttach);
-        };
-    },
-});
+registerNode(NODE_NAME, (node) =>
+    waitForWidget(node, "template", attachEditor),
+);

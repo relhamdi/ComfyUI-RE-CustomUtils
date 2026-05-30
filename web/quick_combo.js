@@ -1,6 +1,10 @@
 import { EMPTY_VALUE } from "./constants.js";
-import { hideWidget, hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import {
+    hideWidget,
+    hookWidget,
+    registerNode,
+    waitForWidgets,
+} from "./utils.js";
 
 // --- Constants ---
 
@@ -20,10 +24,6 @@ const parseOptions = (raw) => {
 // --- Attach ---
 
 const attachQuickCombo = (node) => {
-    if (node.type !== NODE_NAME) return;
-    if (node._quickComboAttached) return;
-    node._quickComboAttached = true;
-
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
     if (!optionsWidget || !selectedWidget) return;
@@ -72,17 +72,4 @@ const attachQuickCombo = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            requestAnimationFrame(() => attachQuickCombo(node));
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachQuickCombo));

@@ -1,5 +1,11 @@
 import { EMPTY_VALUE } from "./constants.js";
-import { debounce, hideWidget, updateSlotVisibility } from "./utils.js";
+import {
+    debounce,
+    hideWidget,
+    registerNode,
+    updateSlotVisibility,
+    waitForWidgets,
+} from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -230,10 +236,6 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
 // --- Attach ---
 
 const attachRouter = (node) => {
-    if (node.type !== NODE_NAME) return;
-    if (node._routerAttached) return;
-    node._routerAttached = true;
-
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
     const subSelectedWidget = node.widgets?.find(
         (w) => w.name === "_sub_selected",
@@ -304,17 +306,4 @@ const attachRouter = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            requestAnimationFrame(() => attachRouter(node));
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachRouter));

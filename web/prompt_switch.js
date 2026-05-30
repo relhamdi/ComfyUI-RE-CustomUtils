@@ -1,6 +1,5 @@
 import { COLORS } from "./constants.js";
-import { hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import { hookWidget, registerNode, waitForWidgets } from "./utils.js";
 
 // --- Constants ---
 
@@ -40,10 +39,6 @@ const updateInputColors = (node, condition) => {
 // --- Attach ---
 
 const attachSwitch = (node) => {
-    if (node.type !== NODE_NAME) return;
-    if (node._switchAttached) return;
-    node._switchAttached = true;
-
     const trueWidget = node.widgets?.find((w) => w.name === "on_true");
     const falseWidget = node.widgets?.find((w) => w.name === "on_false");
     const conditionWidget = node.widgets?.find((w) => w.name === "condition");
@@ -106,17 +101,4 @@ const attachSwitch = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            requestAnimationFrame(() => attachSwitch(node));
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachSwitch));
