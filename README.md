@@ -299,7 +299,7 @@ If a connected source node is itself a `PromptRouter`, it is marked with a `▶`
 
 Selecting it reveals a second dropdown populated with the options of the child router. The parent node outputs the value selected in the child dropdown.
 
-Sub-routing is limited to one level deep, and does not change the actual value in the sub-router node.
+Sub-routing is limited to one level deep, and **does** change the actual value in the sub-router node. As well, changing the selected value in the sub-router **does** update the main one.
 
 #### Editor
 
@@ -309,6 +309,42 @@ Sub-routing is limited to one level deep, and does not change the actual value i
 #### Known limitations
 
 - If a child router's connections change while it is selected in the parent, the parent dropdown may not update immediately. Reconnecting or modifying the parent will trigger a refresh.
+- If a getter node is connected to the router, the getter's name will be in the router's dropdown but, the getter being "invisible" (directly getting the setter's value), the value would be provided by the node before the setter. Thus, the router would receive an empty string, because of not getting the right node. Linking the getter with a string node before connecting to the router solves the issue.
+
+---
+
+### QuickCombo
+
+#### Inputs
+
+- `options` (str) — comma-separated list of options typed inline. Ex: `neutral, happy, sad`
+- `selected` (combo) — dynamic dropdown built from the `options` field
+- `one_based` (bool), default `False` — if `True`, the index output starts at `1` instead of `0`
+
+#### Outputs
+
+- `value` (str) — selected option
+- `index` (int) — index of the selected option (0-based by default)
+
+#### Usage
+
+Type a comma-separated list in the `options` field. The dropdown updates automatically as you type.
+
+```
+neutral, happy, sad, angry
+```
+
+Toggle `one_based` to match the indexing convention of other nodes in your workflow.
+
+#### Differences from PromptOptionPicker
+
+|                   | QuickCombo             | PromptOptionPicker      |
+| ----------------- | ---------------------- | ----------------------- |
+| Input format      | Inline comma-separated | Multiline, one per line |
+| `@combine` blocks | No                     | Yes                     |
+| Labels (`$:`)     | No                     | Yes                     |
+| Empty options     | No                     | Yes (`--`)              |
+| Use case          | Quick setup            | Advanced lists          |
 
 ---
 
