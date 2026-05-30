@@ -34,7 +34,7 @@ const attachQuickCombo = (node) => {
     // Create frontend combo
     const comboWidget = node.addWidget(
         "combo",
-        "_combo",
+        "combo",
         EMPTY_VALUE,
         (value) => {
             selectedWidget.value = value;
