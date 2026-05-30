@@ -30,8 +30,6 @@ const attachQuickCombo = (node) => {
 
     // Hide native STRING widget
     hideWidget(selectedWidget);
-    // selectedWidget.hidden = true;
-    // selectedWidget.computeSize = () => [0, -4];
 
     // Create frontend combo
     const comboWidget = node.addWidget(
