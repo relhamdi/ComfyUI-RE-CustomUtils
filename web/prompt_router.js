@@ -66,6 +66,12 @@ const destroySubDropdown = (node) => {
     }
     node._hookedChildRouter = null;
 
+    if (node._hookedChildCombo) {
+        node._hookedChildCombo.widget.callback =
+            node._hookedChildCombo.original;
+        node._hookedChildCombo = null;
+    }
+
     const idx = node.widgets.indexOf(node._subComboWidget);
     if (idx !== -1) node.widgets.splice(idx, 1);
     node._subComboWidget = null;
@@ -95,19 +101,63 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     const subSelectedWidget = node.widgets?.find(
         (w) => w.name === "_sub_selected",
     );
+    // Read child router's current selection for initial value
+    const childSelectedWidget = routerNode.widgets?.find(
+        (w) => w.name === "selected",
+    );
+    const childComboWidget = routerNode.widgets?.find(
+        (w) => w.name === "source",
+    );
 
-    // Restore saved value if still valid
+    if (childComboWidget) {
+        const originalChildCallback = childComboWidget.callback;
+        childComboWidget.callback = function (value) {
+            if (originalChildCallback) originalChildCallback.call(this, value);
+            // Sync parent sub-combo
+            if (node._subComboWidget) {
+                const label = `${routerNode.inputs?.findIndex(
+                    (inp) =>
+                        inp.link != null &&
+                        app.graph.links[inp.link] &&
+                        routerNode.widgets?.find((w) => w.name === "selected")
+                            ?.value === value,
+                )}: ${value}`;
+                if (node._subComboWidget.options.values.includes(value)) {
+                    node._subComboWidget.value = value;
+                }
+            }
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        };
+        node._hookedChildCombo = {
+            widget: childComboWidget,
+            original: originalChildCallback,
+        };
+    }
+
+    // Restore saved value if still valid, fallback to child's own selection
     const savedValue = subSelectedWidget?.value;
+    const childSavedValue = childSelectedWidget?.value;
     const initialValue =
-        savedValue && labels.includes(savedValue) ? savedValue : labels[0];
+        savedValue && labels.includes(savedValue)
+            ? savedValue
+            : childSavedValue && labels.includes(childSavedValue)
+              ? childSavedValue
+              : labels[0];
+
+    // Sync initial value to child router
+    if (childSelectedWidget) childSelectedWidget.value = initialValue;
 
     const subCombo = node.addWidget(
         "combo",
         "_sub_source",
         initialValue,
         (value) => {
-            // Store sub-selection in hidden widget
+            if (childSelectedWidget) childSelectedWidget.value = value;
             if (subSelectedWidget) subSelectedWidget.value = value;
+
+            // Refresh child router's own dropdown to reflect the change visually
+            if (routerNode.refreshDropdown) routerNode.refreshDropdown();
+
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         },
         { values: labels },
