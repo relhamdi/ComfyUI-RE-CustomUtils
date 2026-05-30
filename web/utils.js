@@ -1,4 +1,4 @@
-import { COLORS } from "./constants";
+import { COLORS } from "./constants.js";
 import { app } from "/scripts/app.js";
 
 // --- Text ---
@@ -329,6 +329,7 @@ export const registerNode = (name, attachFn) => {
         name,
         beforeRegisterNodeDef(nodeType, nodeData) {
             if (nodeData.name !== name) return;
+
             const original = nodeType.prototype.onNodeCreated;
             nodeType.prototype.onNodeCreated = function () {
                 if (original) original.call(this);
@@ -343,6 +344,7 @@ export const waitForWidget = (node, widgetName, callback) => {
     if (node[guardKey]) return;
     node[guardKey] = true;
 
+    // Retry until widgets DOM is ready
     const tryAttach = () => {
         const widget = node.widgets?.find((w) => w.name === widgetName);
         if (widget?.inputEl?.parentNode) {
@@ -358,6 +360,7 @@ export const waitForWidgets = (node, callback) => {
     if (node._attached) return;
     node._attached = true;
 
+    // Retry until widgets DOM is ready
     const tryAttach = () => {
         if (node.widgets?.length) {
             callback(node);
