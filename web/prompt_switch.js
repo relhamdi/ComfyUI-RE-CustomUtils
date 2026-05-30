@@ -1,15 +1,9 @@
-import { hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import { COLORS } from "./constants.js";
+import { hookWidget, registerNode, waitForWidgets } from "./utils.js";
 
 // --- Constants ---
 
 const NODE_NAME = "PromptSwitch";
-
-const COLORS = {
-    true: "#ff9800",
-    false: "#64b5f6",
-    inactive: "#888888",
-};
 
 // --- Highlight ---
 
@@ -27,7 +21,7 @@ const updateInputColors = (node, condition) => {
 
     trueInput.color_on = trueActive
         ? condition
-            ? COLORS.true
+            ? COLORS.orange
             : COLORS.inactive
         : undefined;
     trueInput.color_off = trueInput.color_on;
@@ -35,7 +29,7 @@ const updateInputColors = (node, condition) => {
     falseInput.color_on = falseActive
         ? condition
             ? COLORS.inactive
-            : COLORS.false
+            : COLORS.blue
         : undefined;
     falseInput.color_off = falseInput.color_on;
 
@@ -45,10 +39,6 @@ const updateInputColors = (node, condition) => {
 // --- Attach ---
 
 const attachSwitch = (node) => {
-    if (node.type !== NODE_NAME) return;
-    if (node._switchAttached) return;
-    node._switchAttached = true;
-
     const trueWidget = node.widgets?.find((w) => w.name === "on_true");
     const falseWidget = node.widgets?.find((w) => w.name === "on_false");
     const conditionWidget = node.widgets?.find((w) => w.name === "condition");
@@ -98,10 +88,10 @@ const attachSwitch = (node) => {
         // Draw inactive first, active on top
         if (condition) {
             drawBorder(falseWidget, COLORS.inactive, falseInput);
-            drawBorder(trueWidget, COLORS.true, trueInput);
+            drawBorder(trueWidget, COLORS.orange, trueInput);
         } else {
             drawBorder(trueWidget, COLORS.inactive, trueInput);
-            drawBorder(falseWidget, COLORS.false, falseInput);
+            drawBorder(falseWidget, COLORS.blue, falseInput);
         }
     };
 
@@ -111,17 +101,4 @@ const attachSwitch = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            requestAnimationFrame(() => attachSwitch(node));
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachSwitch));

@@ -1,17 +1,16 @@
-import { DEFAULT_TEXT_COLOR } from "./constants.js";
-import { createEditor, escapeHtml, hideWidget, hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import { COLORS } from "./constants.js";
+import {
+    createEditor,
+    escapeHtml,
+    hideWidget,
+    hookWidget,
+    registerNode,
+    waitForWidget,
+} from "./utils.js";
 
 // --- Constants ---
 
 const NODE_NAME = "PromptPresetSelector";
-
-const COLORS = {
-    tag: "#ff9800",
-    sep: "#ff9800",
-    inactive: "#555",
-    ref: "#64b5f6",
-};
 
 // --- Helpers ---
 
@@ -66,24 +65,23 @@ const buildHighlightedHtml = (raw, syntax, presetIndex) => {
         const parts = match[1].split(separator);
 
         const coloredParts = parts.map((part, i) => {
-            const color =
-                i === presetIndex ? DEFAULT_TEXT_COLOR : COLORS.inactive;
+            const color = i === presetIndex ? COLORS.text : COLORS.inactive;
             const content =
                 i === presetIndex
                     ? escapeHtml(part).replace(
                           /\$(\d+)/g,
-                          `<span style="color:${COLORS.ref}">$$$1</span>`,
+                          `<span style="color:${COLORS.blue}">$$$1</span>`,
                       )
                     : escapeHtml(part);
             return `<span style="color:${color}">${content}</span>`;
         });
 
-        const sepHtml = `<span style="color:${COLORS.sep}">${escapeHtml(separator)}</span>`;
+        const sepHtml = `<span style="color:${COLORS.orange}">${escapeHtml(separator)}</span>`;
 
         result +=
-            `<span style="color:${COLORS.tag}">${escapeHtml(openTag)}</span> ` +
+            `<span style="color:${COLORS.orange}">${escapeHtml(openTag)}</span> ` +
             coloredParts.join(sepHtml) +
-            ` <span style="color:${COLORS.tag}">${escapeHtml(closeTag)}</span>`;
+            ` <span style="color:${COLORS.orange}">${escapeHtml(closeTag)}</span>`;
 
         lastIndex = match.index + match[0].length;
     }
@@ -97,8 +95,6 @@ const buildHighlightedHtml = (raw, syntax, presetIndex) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== NODE_NAME) return;
-
     const textWidget = node.widgets?.find((w) => w.name === "text");
     const syntaxWidget = node.widgets?.find((w) => w.name === "syntax");
     const presetWidget = node.widgets?.find((w) => w.name === "preset_index");
@@ -115,10 +111,6 @@ const attachEditor = (node) => {
 
     const textarea = textWidget.inputEl || textWidget.element;
     if (!textarea?.parentNode) return;
-
-    // Prevent double initialization
-    if (textarea._editorAttached) return;
-    textarea._editorAttached = true;
 
     // Create contentEditable div
     const editor = createEditor(textarea, {
@@ -236,26 +228,4 @@ const attachEditor = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            // Retry until widgets DOM is ready
-            const tryAttach = () => {
-                const textWidget = node.widgets?.find((w) => w.name === "text");
-                if (textWidget?.inputEl?.parentNode) {
-                    attachEditor(node);
-                } else {
-                    requestAnimationFrame(tryAttach);
-                }
-            };
-            requestAnimationFrame(tryAttach);
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidget(node, "text", attachEditor));

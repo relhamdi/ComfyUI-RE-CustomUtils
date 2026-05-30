@@ -1,4 +1,22 @@
-import { DEFAULT_TEXT_COLOR } from "./constants.js";
+import { COLORS } from "./constants.js";
+import { app } from "/scripts/app.js";
+
+// --- Text ---
+
+// Escape HTML to prevent injections
+export const escapeHtml = (str) =>
+    str.replace(
+        /[&<>"]/g,
+        (c) =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+            })[c],
+    );
+
+// --- Widget helpers ---
 
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
@@ -16,18 +34,51 @@ export const hookWidget = (widget, onChange) => {
     };
 };
 
-// Escape HTML to prevent injections
-export const escapeHtml = (str) =>
-    str.replace(
-        /[&<>"]/g,
-        (c) =>
-            ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-            })[c],
-    );
+export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
+    const minVisible = 1; // Always keep at least one slot
+
+    // Remove unused inputs from the end, stop at first connected
+    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
+        const input = node.inputs[i];
+        if (!input) continue;
+        if (!input.link) {
+            // Only remove if it matches our prefix pattern
+            if (input.name.startsWith(prefix)) {
+                node.removeInput(i);
+            }
+        } else {
+            break; // Stop at first connected input from the end
+        }
+    }
+
+    // Find highest connected index by name
+    let highestConnected = -1;
+    for (let i = 0; i < numSlots; i++) {
+        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
+        if (input?.link != null) highestConnected = i;
+    }
+
+    // Add one free slot after the last connected
+    const targetVisible = highestConnected + 2;
+    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
+        const slotName = `${prefix}_${i}`;
+        if (!node.inputs?.find((inp) => inp.name === slotName)) {
+            node.addInput(slotName, "STRING");
+        }
+    }
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+export const debounce = (fn, ms = 64) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+};
+
+// --- Editor ---
 
 // Loop over text nodes in the DOM
 export const walkTextNodes = (root, callback) => {
@@ -182,7 +233,7 @@ export const adjustWeight = (text, delta) => {
 
 export const createEditor = (
     textarea,
-    { activeColor = DEFAULT_TEXT_COLOR, onInput } = {},
+    { activeColor = COLORS.text, onInput } = {},
 ) => {
     // Hide native textarea
     textarea.style.display = "none";
@@ -271,46 +322,51 @@ export const createEditor = (
     return editor;
 };
 
-export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
-    const minVisible = 1; // Always keep at least one slot
+// --- Registration ---
 
-    // Remove unused inputs from the end, stop at first connected
-    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
-        const input = node.inputs[i];
-        if (!input) continue;
-        if (!input.link) {
-            // Only remove if it matches our prefix pattern
-            if (input.name.startsWith(prefix)) {
-                node.removeInput(i);
-            }
-        } else {
-            break; // Stop at first connected input from the end
-        }
-    }
+export const registerNode = (name, attachFn) => {
+    app.registerExtension({
+        name,
+        beforeRegisterNodeDef(nodeType, nodeData) {
+            if (nodeData.name !== name) return;
 
-    // Find highest connected index by name
-    let highestConnected = -1;
-    for (let i = 0; i < numSlots; i++) {
-        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
-        if (input?.link != null) highestConnected = i;
-    }
-
-    // Add one free slot after the last connected
-    const targetVisible = highestConnected + 2;
-    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
-        const slotName = `${prefix}_${i}`;
-        if (!node.inputs?.find((inp) => inp.name === slotName)) {
-            node.addInput(slotName, "STRING");
-        }
-    }
-
-    if (node.graph) node.graph.setDirtyCanvas(true, true);
+            const original = nodeType.prototype.onNodeCreated;
+            nodeType.prototype.onNodeCreated = function () {
+                if (original) original.call(this);
+                attachFn(this);
+            };
+        },
+    });
 };
 
-export const debounce = (fn, ms = 64) => {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
+export const waitForWidget = (node, widgetName, callback) => {
+    const guardKey = `_attached_${widgetName}`;
+    if (node[guardKey]) return;
+    node[guardKey] = true;
+
+    // Retry until widgets DOM is ready
+    const tryAttach = () => {
+        const widget = node.widgets?.find((w) => w.name === widgetName);
+        if (widget?.inputEl?.parentNode) {
+            callback(node);
+        } else {
+            requestAnimationFrame(tryAttach);
+        }
     };
+    requestAnimationFrame(tryAttach);
+};
+
+export const waitForWidgets = (node, callback) => {
+    if (node._attached) return;
+    node._attached = true;
+
+    // Retry until widgets DOM is ready
+    const tryAttach = () => {
+        if (node.widgets?.length) {
+            callback(node);
+        } else {
+            requestAnimationFrame(tryAttach);
+        }
+    };
+    requestAnimationFrame(tryAttach);
 };

@@ -1,11 +1,14 @@
-import { hideWidget, hookWidget } from "./utils.js";
-import { app } from "/scripts/app.js";
+import { EMPTY_VALUE } from "./constants.js";
+import {
+    hideWidget,
+    hookWidget,
+    registerNode,
+    waitForWidgets,
+} from "./utils.js";
 
 // --- Constants ---
 
 const NODE_NAME = "QuickCombo";
-
-const EMPTY_VALUE = "--";
 
 // --- Helpers ---
 
@@ -21,23 +24,17 @@ const parseOptions = (raw) => {
 // --- Attach ---
 
 const attachQuickCombo = (node) => {
-    if (node.type !== NODE_NAME) return;
-    if (node._quickComboAttached) return;
-    node._quickComboAttached = true;
-
     const optionsWidget = node.widgets?.find((w) => w.name === "options");
     const selectedWidget = node.widgets?.find((w) => w.name === "selected");
     if (!optionsWidget || !selectedWidget) return;
 
     // Hide native STRING widget
     hideWidget(selectedWidget);
-    // selectedWidget.hidden = true;
-    // selectedWidget.computeSize = () => [0, -4];
 
     // Create frontend combo
     const comboWidget = node.addWidget(
         "combo",
-        "_combo",
+        "combo",
         EMPTY_VALUE,
         (value) => {
             selectedWidget.value = value;
@@ -61,7 +58,7 @@ const attachQuickCombo = (node) => {
         comboWidget.value = options.includes(current) ? current : options[0];
 
         selectedWidget.value = comboWidget.value;
-        
+
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
@@ -73,17 +70,4 @@ const attachQuickCombo = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            requestAnimationFrame(() => attachQuickCombo(node));
-        };
-    },
-});
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachQuickCombo));

@@ -1,1 +1,11 @@
-export const DEFAULT_TEXT_COLOR = "#e0e0e0";
+export const EMPTY_VALUE = "--";
+
+export const COLORS = {
+    text: "#e0e0e0",
+    inactive: "#888888",
+    orange: "#ff9800",
+    blue: "#64b5f6",
+    cyan: "#4dd0e1",
+    green: "#a5d6a7",
+    red: "#ef9a9a",
+};

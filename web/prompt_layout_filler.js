@@ -1,21 +1,18 @@
+import { COLORS } from "./constants.js";
 import {
     createEditor,
     debounce,
     escapeHtml,
+    registerNode,
     updateSlotVisibility,
+    waitForWidget,
 } from "./utils.js";
-import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
 const NODE_NAME = "PromptLayoutFiller";
 
 const NUM_SLOTS = 10;
-
-const COLORS = {
-    connected: "#a5d6a7",
-    missing: "#ef9a9a",
-};
 
 // --- Helpers ---
 
@@ -32,9 +29,7 @@ const buildHighlightedHtml = (raw, connectedSlots) => {
         result += escapeHtml(raw.slice(lastIndex, match.index));
 
         const idx = parseInt(match[1]);
-        const color = connectedSlots.has(idx)
-            ? COLORS.connected
-            : COLORS.missing;
+        const color = connectedSlots.has(idx) ? COLORS.green : COLORS.red;
         result += `<span style="color:${color}">${escapeHtml(match[0])}</span>`;
 
         lastIndex = match.index + match[0].length;
@@ -60,17 +55,11 @@ const getConnectedSlots = (node) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    if (node.type !== NODE_NAME) return;
-
     const templateWidget = node.widgets?.find((w) => w.name === "template");
     if (!templateWidget) return;
 
     const textarea = templateWidget.inputEl || templateWidget.element;
     if (!textarea?.parentNode) return;
-
-    // Prevent double initialization
-    if (textarea._editorAttached) return;
-    textarea._editorAttached = true;
 
     // Create contentEditable div
     const editor = createEditor(textarea, {
@@ -87,7 +76,6 @@ const attachEditor = (node) => {
 
     const debouncedUpdate = debounce(() => {
         updateSlotVisibility(node, NUM_SLOTS, "slot");
-        refreshDropdown(node, selectedWidget, comboWidget);
     }, 64);
 
     // --- Connection change hook - Re-render when slots are connected or disconnected ---
@@ -105,28 +93,6 @@ const attachEditor = (node) => {
 
 // --- Registration ---
 
-app.registerExtension({
-    name: NODE_NAME,
-    beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== NODE_NAME) return;
-
-        const original = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (original) original.call(this);
-
-            const node = this;
-            // Retry until widgets DOM is ready
-            const tryAttach = () => {
-                const templateWidget = node.widgets?.find(
-                    (w) => w.name === "template",
-                );
-                if (templateWidget?.inputEl?.parentNode) {
-                    attachEditor(node);
-                } else {
-                    requestAnimationFrame(tryAttach);
-                }
-            };
-            requestAnimationFrame(tryAttach);
-        };
-    },
-});
+registerNode(NODE_NAME, (node) =>
+    waitForWidget(node, "template", attachEditor),
+);
