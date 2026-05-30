@@ -1,4 +1,4 @@
-import { DEFAULT_TEXT_COLOR } from "./constants.js";
+import { COLORS } from "./constants";
 
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
@@ -182,7 +182,7 @@ export const adjustWeight = (text, delta) => {
 
 export const createEditor = (
     textarea,
-    { activeColor = DEFAULT_TEXT_COLOR, onInput } = {},
+    { activeColor = COLORS.text, onInput } = {},
 ) => {
     // Hide native textarea
     textarea.style.display = "none";

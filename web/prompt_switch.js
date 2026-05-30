@@ -1,15 +1,10 @@
+import { COLORS } from "./constants.js";
 import { hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
 const NODE_NAME = "PromptSwitch";
-
-const COLORS = {
-    true: "#ff9800",
-    false: "#64b5f6",
-    inactive: "#888888",
-};
 
 // --- Highlight ---
 
@@ -27,7 +22,7 @@ const updateInputColors = (node, condition) => {
 
     trueInput.color_on = trueActive
         ? condition
-            ? COLORS.true
+            ? COLORS.orange
             : COLORS.inactive
         : undefined;
     trueInput.color_off = trueInput.color_on;
@@ -35,7 +30,7 @@ const updateInputColors = (node, condition) => {
     falseInput.color_on = falseActive
         ? condition
             ? COLORS.inactive
-            : COLORS.false
+            : COLORS.blue
         : undefined;
     falseInput.color_off = falseInput.color_on;
 
@@ -98,10 +93,10 @@ const attachSwitch = (node) => {
         // Draw inactive first, active on top
         if (condition) {
             drawBorder(falseWidget, COLORS.inactive, falseInput);
-            drawBorder(trueWidget, COLORS.true, trueInput);
+            drawBorder(trueWidget, COLORS.orange, trueInput);
         } else {
             drawBorder(trueWidget, COLORS.inactive, trueInput);
-            drawBorder(falseWidget, COLORS.false, falseInput);
+            drawBorder(falseWidget, COLORS.blue, falseInput);
         }
     };
 

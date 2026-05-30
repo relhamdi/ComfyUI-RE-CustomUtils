@@ -1,3 +1,4 @@
+import { COLORS } from "./constants.js";
 import {
     createEditor,
     debounce,
@@ -11,11 +12,6 @@ import { app } from "/scripts/app.js";
 const NODE_NAME = "PromptLayoutFiller";
 
 const NUM_SLOTS = 10;
-
-const COLORS = {
-    connected: "#a5d6a7",
-    missing: "#ef9a9a",
-};
 
 // --- Helpers ---
 
@@ -32,9 +28,7 @@ const buildHighlightedHtml = (raw, connectedSlots) => {
         result += escapeHtml(raw.slice(lastIndex, match.index));
 
         const idx = parseInt(match[1]);
-        const color = connectedSlots.has(idx)
-            ? COLORS.connected
-            : COLORS.missing;
+        const color = connectedSlots.has(idx) ? COLORS.green : COLORS.red;
         result += `<span style="color:${color}">${escapeHtml(match[0])}</span>`;
 
         lastIndex = match.index + match[0].length;

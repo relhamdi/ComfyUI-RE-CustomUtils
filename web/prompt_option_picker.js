@@ -1,4 +1,4 @@
-import { DEFAULT_TEXT_COLOR } from "./constants.js";
+import { COLORS, EMPTY_VALUE } from "./constants.js";
 import { createEditor, escapeHtml, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
@@ -7,12 +7,6 @@ import { app } from "/scripts/app.js";
 const NODE_NAME = "PromptOptionPicker";
 
 const EMPTY_SENTINEL = "\u200B";
-
-const COLORS = {
-    tag: "#ff9800",
-    label: "#4dd0e1",
-    sep: "#888888",
-};
 
 // --- Highlight ---
 
@@ -31,12 +25,12 @@ const buildHighlightedHtml = (raw) => {
 
         if (stripped === "@combine") {
             inCombine = true;
-            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
+            lineHtml = `<span style="color:${COLORS.orange}">${escapeHtml(line)}</span>`;
         } else if (stripped === "@end") {
             inCombine = false;
-            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
+            lineHtml = `<span style="color:${COLORS.orange}">${escapeHtml(line)}</span>`;
         } else if (stripped === "---" && inCombine) {
-            lineHtml = `<span style="color:${COLORS.tag}">${escapeHtml(line)}</span>`;
+            lineHtml = `<span style="color:${COLORS.orange}">${escapeHtml(line)}</span>`;
         } else if (!inCombine && stripped.includes(" $: ")) {
             // "label $: value"
             const sep = " $: ";
@@ -44,18 +38,18 @@ const buildHighlightedHtml = (raw) => {
             const label = line.slice(0, sepIdx);
             const value = line.slice(sepIdx + 4);
             lineHtml =
-                `<span style="color:${COLORS.label}">${escapeHtml(label)}</span>` +
-                `<span style="color:${COLORS.sep}">${escapeHtml(sep)}</span>` +
-                `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(value)}</span>`;
+                `<span style="color:${COLORS.cyan}">${escapeHtml(label)}</span>` +
+                `<span style="color:${COLORS.inactive}">${escapeHtml(sep)}</span>` +
+                `<span style="color:${COLORS.text}">${escapeHtml(value)}</span>`;
         } else if (!inCombine && stripped.startsWith("$: ")) {
             // "$: value", no label
             const sep = "$: ";
             const value = line.slice(line.indexOf(sep) + 3);
             lineHtml =
-                `<span style="color:${COLORS.sep}">${escapeHtml(sep)}</span>` +
-                `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(value)}</span>`;
+                `<span style="color:${COLORS.inactive}">${escapeHtml(sep)}</span>` +
+                `<span style="color:${COLORS.text}">${escapeHtml(value)}</span>`;
         } else {
-            lineHtml = `<span style="color:${DEFAULT_TEXT_COLOR}">${escapeHtml(line)}</span>`;
+            lineHtml = `<span style="color:${COLORS.text}">${escapeHtml(line)}</span>`;
         }
 
         result += lineHtml;
@@ -112,7 +106,7 @@ const parseOptions = (raw) => {
 
             for (const combo of combos) {
                 const value = combo || "";
-                result.push({ label: value || "--", value });
+                result.push({ label: value || EMPTY_VALUE, value });
                 optionCounter++;
             }
         } else if (stripped === "---") {
@@ -127,7 +121,7 @@ const parseOptions = (raw) => {
             if (inCombine) {
                 currentList.push(line);
             } else if (stripped === "") {
-                result.push({ label: "--", value: EMPTY_SENTINEL });
+                result.push({ label: EMPTY_VALUE, value: EMPTY_SENTINEL });
                 optionCounter++;
             } else if (stripped.includes(" $: ")) {
                 const idx = stripped.indexOf(" $: ");
@@ -186,8 +180,8 @@ const attachEditor = (node) => {
 
         if (!options) {
             // Reset dropdown to default empty state
-            selectedWidget.options.values = ["--"];
-            selectedWidget.value = "--";
+            selectedWidget.options.values = [EMPTY_VALUE];
+            selectedWidget.value = EMPTY_VALUE;
             if (node.graph) node.graph.setDirtyCanvas(true, true);
             return;
         }

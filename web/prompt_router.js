@@ -1,3 +1,4 @@
+import { EMPTY_VALUE } from "./constants.js";
 import { debounce, hideWidget, updateSlotVisibility } from "./utils.js";
 import { app } from "/scripts/app.js";
 
@@ -6,7 +7,6 @@ import { app } from "/scripts/app.js";
 const NODE_NAME = "PromptRouter";
 
 const NUM_INPUTS = 10;
-const EMPTY_VALUE = "--";
 
 // --- Helpers ---
 

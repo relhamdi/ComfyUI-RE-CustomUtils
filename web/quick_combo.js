@@ -1,11 +1,10 @@
+import { EMPTY_VALUE } from "./constants.js";
 import { hideWidget, hookWidget } from "./utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
 const NODE_NAME = "QuickCombo";
-
-const EMPTY_VALUE = "--";
 
 // --- Helpers ---
 
@@ -61,7 +60,7 @@ const attachQuickCombo = (node) => {
         comboWidget.value = options.includes(current) ? current : options[0];
 
         selectedWidget.value = comboWidget.value;
-        
+
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
