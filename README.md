@@ -309,6 +309,7 @@ Sub-routing is limited to one level deep, and **does** change the actual value i
 #### Known limitations
 
 - If a child router's connections change while it is selected in the parent, the parent dropdown may not update immediately. Reconnecting or modifying the parent will trigger a refresh.
+- If a getter node is connected to the router, the getter's name will be in the router's dropdown but, the getter being "invisible" (directly getting the setter's value), the value would be provided by the node before the setter. Thus, the router would receive an empty string, because of not getting the right node. Linking the getter with a string node before connecting to the router solves the issue.
 
 ---
 
