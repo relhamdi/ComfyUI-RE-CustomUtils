@@ -58,17 +58,16 @@ const getRouterOptions = (routerNode) => {
 const destroySubDropdown = (node) => {
     if (!node._subComboWidget) return;
 
-    // Restore child router's original onConnectionsChange
-    if (node._hookedChildRouter?._parentRouterHook) {
-        delete node._hookedChildRouter._parentRouterHook;
-        node._hookedChildRouter.onConnectionsChange =
-            node._hookedChildRouter._originalConnectionChange;
+    // Remove this parent's connection change listener from child router
+    if (node._hookedChildRouter) {
+        node._hookedChildRouter._parentConnectionListeners?.delete(node);
+        node._hookedChildRouter = null;
     }
-    node._hookedChildRouter = null;
 
+    // Remove this parent's combo listener from child router
     if (node._hookedChildCombo) {
-        node._hookedChildCombo.widget.callback =
-            node._hookedChildCombo.original;
+        const { widget, listener } = node._hookedChildCombo;
+        widget._parentListeners?.delete(listener);
         node._hookedChildCombo = null;
     }
 
@@ -83,14 +82,19 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     destroySubDropdown(node);
 
     // --- Connection change hook - Refresh items when child nodes are updated ---
-    const originalChildConnectionChange = routerNode.onConnectionsChange;
-    routerNode._parentRouterHook = function (...args) {
-        if (originalChildConnectionChange)
-            originalChildConnectionChange.call(this, ...args);
-        // Refresh parent dropdown after debounce
-        setTimeout(() => node.refreshDropdown(), 100);
-    };
-    routerNode.onConnectionsChange = routerNode._parentRouterHook;
+    if (!routerNode._parentConnectionListeners) {
+        routerNode._parentConnectionListeners = new Set();
+        const originalConnectionChange = routerNode.onConnectionsChange;
+        routerNode.onConnectionsChange = function (...args) {
+            if (originalConnectionChange)
+                originalConnectionChange.call(this, ...args);
+            for (const parentNode of routerNode._parentConnectionListeners) {
+                // Refresh parent dropdown after debounce
+                setTimeout(() => parentNode.refreshDropdown?.(), 100);
+            }
+        };
+    }
+    routerNode._parentConnectionListeners.add(node);
     node._hookedChildRouter = routerNode;
 
     const subOptions = getRouterOptions(routerNode);
@@ -110,28 +114,27 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     );
 
     if (childComboWidget) {
-        const originalChildCallback = childComboWidget.callback;
-        childComboWidget.callback = function (value) {
-            if (originalChildCallback) originalChildCallback.call(this, value);
-            // Sync parent sub-combo
-            if (node._subComboWidget) {
-                const label = `${routerNode.inputs?.findIndex(
-                    (inp) =>
-                        inp.link != null &&
-                        app.graph.links[inp.link] &&
-                        routerNode.widgets?.find((w) => w.name === "selected")
-                            ?.value === value,
-                )}: ${value}`;
-                if (node._subComboWidget.options.values.includes(value)) {
-                    node._subComboWidget.value = value;
+        // Initialize listener set once on the child widget
+        if (!childComboWidget._parentListeners) {
+            childComboWidget._parentListeners = new Set();
+            const originalCallback = childComboWidget.callback;
+            childComboWidget.callback = function (value) {
+                if (originalCallback) originalCallback.call(this, value);
+                for (const listener of childComboWidget._parentListeners) {
+                    listener(value);
                 }
+            };
+        }
+
+        // Add this parent's listener
+        const listener = (value) => {
+            if (node._subComboWidget?.options.values.includes(value)) {
+                node._subComboWidget.value = value;
             }
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         };
-        node._hookedChildCombo = {
-            widget: childComboWidget,
-            original: originalChildCallback,
-        };
+        childComboWidget._parentListeners.add(listener);
+        node._hookedChildCombo = { widget: childComboWidget, listener };
     }
 
     // Restore saved value if still valid, fallback to child's own selection
@@ -157,6 +160,13 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
 
             // Refresh child router's own dropdown to reflect the change visually
             if (routerNode.refreshDropdown) routerNode.refreshDropdown();
+
+            // Notify all other parent listeners manually
+            if (childComboWidget?._parentListeners) {
+                for (const listener of childComboWidget._parentListeners) {
+                    listener(value);
+                }
+            }
 
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         },
