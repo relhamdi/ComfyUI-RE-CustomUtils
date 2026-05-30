@@ -299,7 +299,7 @@ If a connected source node is itself a `PromptRouter`, it is marked with a `▶`
 
 Selecting it reveals a second dropdown populated with the options of the child router. The parent node outputs the value selected in the child dropdown.
 
-Sub-routing is limited to one level deep, and does not change the actual value in the sub-router node.
+Sub-routing is limited to one level deep, and **does** change the actual value in the sub-router node. As well, changing the selected value in the sub-router **does** update the main one.
 
 #### Editor
 
