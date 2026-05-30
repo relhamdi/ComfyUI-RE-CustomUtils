@@ -1,6 +1,23 @@
 import { COLORS } from "./constants";
 import { app } from "/scripts/app.js";
 
+// --- Text ---
+
+// Escape HTML to prevent injections
+export const escapeHtml = (str) =>
+    str.replace(
+        /[&<>"]/g,
+        (c) =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+            })[c],
+    );
+
+// --- Widget helpers ---
+
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
@@ -17,18 +34,51 @@ export const hookWidget = (widget, onChange) => {
     };
 };
 
-// Escape HTML to prevent injections
-export const escapeHtml = (str) =>
-    str.replace(
-        /[&<>"]/g,
-        (c) =>
-            ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-            })[c],
-    );
+export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
+    const minVisible = 1; // Always keep at least one slot
+
+    // Remove unused inputs from the end, stop at first connected
+    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
+        const input = node.inputs[i];
+        if (!input) continue;
+        if (!input.link) {
+            // Only remove if it matches our prefix pattern
+            if (input.name.startsWith(prefix)) {
+                node.removeInput(i);
+            }
+        } else {
+            break; // Stop at first connected input from the end
+        }
+    }
+
+    // Find highest connected index by name
+    let highestConnected = -1;
+    for (let i = 0; i < numSlots; i++) {
+        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
+        if (input?.link != null) highestConnected = i;
+    }
+
+    // Add one free slot after the last connected
+    const targetVisible = highestConnected + 2;
+    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
+        const slotName = `${prefix}_${i}`;
+        if (!node.inputs?.find((inp) => inp.name === slotName)) {
+            node.addInput(slotName, "STRING");
+        }
+    }
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+export const debounce = (fn, ms = 64) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+};
+
+// --- Editor ---
 
 // Loop over text nodes in the DOM
 export const walkTextNodes = (root, callback) => {
@@ -270,50 +320,6 @@ export const createEditor = (
     });
 
     return editor;
-};
-
-export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
-    const minVisible = 1; // Always keep at least one slot
-
-    // Remove unused inputs from the end, stop at first connected
-    for (let i = node.inputs.length - 1; i >= minVisible; i--) {
-        const input = node.inputs[i];
-        if (!input) continue;
-        if (!input.link) {
-            // Only remove if it matches our prefix pattern
-            if (input.name.startsWith(prefix)) {
-                node.removeInput(i);
-            }
-        } else {
-            break; // Stop at first connected input from the end
-        }
-    }
-
-    // Find highest connected index by name
-    let highestConnected = -1;
-    for (let i = 0; i < numSlots; i++) {
-        const input = node.inputs?.find((inp) => inp.name === `${prefix}_${i}`);
-        if (input?.link != null) highestConnected = i;
-    }
-
-    // Add one free slot after the last connected
-    const targetVisible = highestConnected + 2;
-    for (let i = 0; i < Math.min(targetVisible, numSlots); i++) {
-        const slotName = `${prefix}_${i}`;
-        if (!node.inputs?.find((inp) => inp.name === slotName)) {
-            node.addInput(slotName, "STRING");
-        }
-    }
-
-    if (node.graph) node.graph.setDirtyCanvas(true, true);
-};
-
-export const debounce = (fn, ms = 64) => {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
-    };
 };
 
 // --- Registration ---
