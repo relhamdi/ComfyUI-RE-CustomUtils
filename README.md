@@ -406,6 +406,24 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 
 ---
 
+## Tests
+
+This project uses `pytest`and `pytest-aiohtttp` for its tests, and [uv](https://github.com/astral-sh/uv) for the versioning.
+After downloading `uv`, just run:
+```sh
+uv sync --dev
+.venv\Scripts\activate.bat    # Windows
+source .venv/bin/activate     # Linux/MacOS
+```
+and you should have the dependencies ready.
+
+Then, to run the tests:
+```sh
+uv run pytest
+```
+
+---
+
 ## TODO
 
 `PromptPresetSelector`

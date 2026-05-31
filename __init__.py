@@ -1,39 +1,39 @@
 """Top-level package for the node pack."""
 
-from .src.nodes.prompt_layout_filler import (
+from src.nodes.prompt_layout_filler import (
     NODE_CLASS_MAPPINGS as PromptLayoutFillerMappings,
 )
-from .src.nodes.prompt_layout_filler import (
+from src.nodes.prompt_layout_filler import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptLayoutFillerDisplayMappings,
 )
-from .src.nodes.prompt_option_picker import (
+from src.nodes.prompt_option_picker import (
     NODE_CLASS_MAPPINGS as PromptOptionPickerMappings,
 )
-from .src.nodes.prompt_option_picker import (
+from src.nodes.prompt_option_picker import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptOptionPickerDisplayMappings,
 )
-from .src.nodes.prompt_preset_selector import (
+from src.nodes.prompt_preset_selector import (
     NODE_CLASS_MAPPINGS as PromptPresetSelectorMappings,
 )
-from .src.nodes.prompt_preset_selector import (
+from src.nodes.prompt_preset_selector import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptPresetSelectorDisplayMappings,
 )
-from .src.nodes.prompt_router import (
+from src.nodes.prompt_router import (
     NODE_CLASS_MAPPINGS as PromptRouterMappings,
 )
-from .src.nodes.prompt_router import (
+from src.nodes.prompt_router import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptRouterDisplayMappings,
 )
-from .src.nodes.prompt_switch import (
+from src.nodes.prompt_switch import (
     NODE_CLASS_MAPPINGS as PromptSwitchMappings,
 )
-from .src.nodes.prompt_switch import (
+from src.nodes.prompt_switch import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptSwitchDisplayMappings,
 )
-from .src.nodes.quick_combo import (
+from src.nodes.quick_combo import (
     NODE_CLASS_MAPPINGS as QuickComboMappings,
 )
-from .src.nodes.quick_combo import (
+from src.nodes.quick_combo import (
     NODE_DISPLAY_NAME_MAPPINGS as QuickComboDisplayMappings,
 )
 
