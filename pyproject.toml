@@ -9,3 +9,9 @@ dependencies = []
 
 [project.urls]
 Repository = "https://github.com/relhamdi/ComfyUI-RE-CustomUtils"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-aiohttp>=1.1.0",
+]
