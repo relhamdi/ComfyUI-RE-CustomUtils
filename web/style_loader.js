@@ -1,4 +1,5 @@
-import { hideWidget, registerNode, waitForWidgets } from "./utils.js";
+import { LoraRowWidget } from "./lora_row_widget.js";
+import { registerNode, waitForWidgets } from "./utils.js";
 
 // --- Constants ---
 
@@ -8,6 +9,7 @@ const BASE_ENDPOINT = "/re-customutils/styles";
 const NO_STYLE = "-- no styles found --";
 const NO_VAE = "none";
 const MAX_LORAS = 15;
+const DEFAULT_LORA_WEIGHT = 0.8;
 
 // --- Assets ---
 
@@ -41,110 +43,82 @@ const setWidgetValue = (widget, value) => {
     widget.callback?.(value);
 };
 
-// --- LoRA management ---
+// --- LoRA slot management ---
 
-// Each LoRA slot: { comboWidget, weightWidget, removeWidget, hidden }
-const getLoraSlots = (node) => node._loraSlots ?? [];
+const getLoraRows = (node) => node._loraRows ?? [];
 
-const serializeLoras = (node) => {
-    return getLoraSlots(node)
-        .filter((slot) => !slot.hidden && slot.comboWidget.value)
-        .map((slot) => ({
-            name: slot.comboWidget.value,
-            weight: slot.weightWidget.value,
-        }));
-};
+const serializeLoras = (node) =>
+    getLoraRows(node)
+        .filter((r) => !r._removed)
+        .map((r) => ({ name: r.value.lora, weight: r.value.weight }));
 
 const persistLoras = (node) => {
-    const lorasWidget = findWidget(node, "loras_data");
-    if (lorasWidget) {
-        lorasWidget.value = JSON.stringify(serializeLoras(node));
-    }
+    const w = findWidget(node, "loras_data");
+    if (w) w.value = JSON.stringify(serializeLoras(node));
 };
 
-const hideSlot = (node, slot) => {
-    slot.hidden = true;
-    hideWidget(slot.comboWidget);
-    hideWidget(slot.weightWidget);
-    hideWidget(slot.removeWidget);
-    persistLoras(node);
-    if (node.graph) node.graph.setDirtyCanvas(true, true);
-};
-
-const addLoraSlot = (node, addButtonWidget, name = "", weight = 0.8) => {
-    const slots = node._loraSlots ?? [];
-
-    // Reuse a hidden slot if available
-    const reusable = slots.find((s) => s.hidden);
-    if (reusable) {
-        reusable.hidden = false;
-        reusable.comboWidget.value = name;
-        reusable.comboWidget.type = "combo";
-        reusable.comboWidget.computeSize = null;
-        reusable.weightWidget.value = weight;
-        reusable.weightWidget.type = "number";
-        reusable.weightWidget.computeSize = null;
-        reusable.removeWidget.type = "button";
-        reusable.removeWidget.computeSize = null;
-        persistLoras(node);
-        if (node.graph) node.graph.setDirtyCanvas(true, true);
-        return;
-    }
-
-    if (slots.length >= MAX_LORAS) {
+const addLoraRow = (
+    node,
+    addButtonWidget,
+    lora = "",
+    weight = DEFAULT_LORA_WEIGHT,
+) => {
+    const rows = node._loraRows ?? [];
+    if (rows.filter((r) => !r._removed).length >= MAX_LORAS) {
         alert(`[${NODE_NAME}] Maximum ${MAX_LORAS} LoRAs reached.`);
         return;
     }
 
-    // Insert before the Add button
-    const addBtnIdx = node.widgets.indexOf(addButtonWidget);
+    const idx = node.widgets.indexOf(addButtonWidget);
+    const name = `lora_row_${rows.length}`;
 
-    const comboWidget = node.addWidget(
-        "combo",
-        `lora_name_${slots.length}`,
-        name || ASSETS.loras[0] || "",
-        () => persistLoras(node),
-        { values: ASSETS.loras },
-    );
-    if (name) comboWidget.value = name;
-
-    const weightWidget = node.addWidget(
-        "number",
-        `lora_weight_${slots.length}`,
-        weight,
-        () => persistLoras(node),
-        { min: 0.0, max: 2.0, step: 0.5, precision: 2 },
-    );
-
-    const removeWidget = node.addWidget("button", `✕ Remove`, null, () =>
-        hideSlot(node, slot),
+    const row = new LoraRowWidget(
+        name,
+        ASSETS.loras,
+        DEFAULT_LORA_WEIGHT,
+        (action) => {
+            if (action === "remove") {
+                row._removed = true;
+                const wi = node.widgets.indexOf(row);
+                if (wi !== -1) node.widgets.splice(wi, 1);
+                persistLoras(node);
+                if (node.graph) node.graph.setDirtyCanvas(true, true);
+            } else {
+                persistLoras(node);
+                if (node.graph) node.graph.setDirtyCanvas(true, true);
+            }
+        },
     );
 
-    // Move the three new widgets before the Add button
-    if (addBtnIdx !== -1) {
-        const w = node.widgets;
-        const combo = w.pop();
-        const weight_ = w.pop();
-        const remove = w.pop();
-        w.splice(addBtnIdx, 0, combo, weight_, remove);
-    }
+    if (lora) row.value.lora = lora;
+    row.value.weight = weight;
 
-    const slot = { comboWidget, weightWidget, removeWidget, hidden: false };
-    slots.push(slot);
-    node._loraSlots = slots;
+    node.widgets.splice(idx, 0, row);
+    rows.push(row);
+    node._loraRows = rows;
 
     persistLoras(node);
+
+    // Resize node
+    const computed = node.computeSize();
+    node.size[1] = Math.max(node.size[1], computed[1]);
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
-const rebuildLoraSlots = (node, loras, addButtonWidget) => {
-    // Hide all existing slots first
-    for (const slot of getLoraSlots(node)) {
-        hideSlot(node, slot);
+const clearLoraRows = (node) => {
+    const rows = getLoraRows(node);
+    for (const row of rows) {
+        row._removed = true;
+        const wi = node.widgets.indexOf(row);
+        if (wi !== -1) node.widgets.splice(wi, 1);
     }
-    // Rebuild from data
+    node._loraRows = [];
+};
+
+const rebuildLoraRows = (node, loras, addButtonWidget) => {
+    clearLoraRows(node);
     for (const { name, weight } of loras) {
-        addLoraSlot(node, addButtonWidget, name, weight ?? 0.8);
+        addLoraRow(node, addButtonWidget, name, weight ?? DEFAULT_LORA_WEIGHT);
     }
 };
 
@@ -168,7 +142,7 @@ const buildJsonFromWidgets = (node) => {
     );
 };
 
-const pushJsonToWidgets = (node, data, addButtonWidget) => {
+const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
     const safe = (key, fallback) =>
         data[key] !== undefined ? data[key] : fallback;
 
@@ -184,13 +158,9 @@ const pushJsonToWidgets = (node, data, addButtonWidget) => {
     setWidgetValue(findWidget(node, "refiner_step"), safe("refiner_step", 24));
     setWidgetValue(findWidget(node, "cfg"), safe("cfg", 4.0));
 
-    // Rebuild LoRA slots
-    const lorasDataWidget = findWidget(node, "loras_data");
-    const hasPersistedLoras =
-        lorasDataWidget?.value && JSON.parse(lorasDataWidget.value).length > 0;
-
-    if (!hasPersistedLoras) {
-        rebuildLoraSlots(node, safe("loras", []), addButtonWidget);
+    // Only rebuild LoRAs if loras_data is empty (file load vs workflow restore)
+    if (loadLoras) {
+        rebuildLoraRows(node, safe("loras", []), addButtonWidget);
     }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
@@ -198,7 +168,12 @@ const pushJsonToWidgets = (node, data, addButtonWidget) => {
 
 // --- File loading ---
 
-const loadFileIntoWidgets = async (file, node, addButtonWidget) => {
+const loadFileIntoWidgets = async (
+    file,
+    node,
+    addButtonWidget,
+    loadLoras = true,
+) => {
     if (!file || file === NO_STYLE) return;
 
     try {
@@ -210,8 +185,12 @@ const loadFileIntoWidgets = async (file, node, addButtonWidget) => {
             console.warn(`[${NODE_NAME}] Load error:`, data.error);
             return;
         }
-        const parsed = JSON.parse(data.content);
-        pushJsonToWidgets(node, parsed, addButtonWidget);
+        pushJsonToWidgets(
+            node,
+            JSON.parse(data.content),
+            addButtonWidget,
+            loadLoras,
+        );
     } catch (e) {
         console.warn(`[${NODE_NAME}] Failed to load or parse file:`, e);
     }
@@ -275,13 +254,10 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
             if (!values.includes(data.file)) {
                 values.push(data.file);
                 values.sort();
-                styleFileWidget.options.values = values;
             }
+            styleFileWidget.options.values = values;
             styleFileWidget.value = data.file;
-
-            const parsed = JSON.parse(data.content);
-            pushJsonToWidgets(node, parsed, addButtonWidget);
-
+            pushJsonToWidgets(node, JSON.parse(data.content), addButtonWidget);
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         } else {
             alert(`[${NODE_NAME}] ${data.error}`);
@@ -293,27 +269,31 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
 
 const attachStyleLoader = (node) => {
     const styleFileWidget = findWidget(node, "style_file");
-    if (!styleFileWidget) return;
+    const lorasDataWidget = findWidget(node, "loras_data");
+    if (!styleFileWidget || !lorasDataWidget) return;
 
-    // Add LoRA button (added before Save/New so slots insert above it)
+    // Add LoRA button
     const addButtonWidget = node.addWidget(
         "button",
         "➕ Add LoRA",
         null,
         () => {
-            addLoraSlot(node, addButtonWidget);
+            addLoraRow(node, addButtonWidget);
         },
     );
 
     // Save / New buttons
     addButtons(node, styleFileWidget, addButtonWidget);
 
-    // Restore LoRA slots from persisted loras_data
-    const lorasDataWidget = findWidget(node, "loras_data");
+    // Restore loras_data first
+    let hasPersistedLoras = false;
     if (lorasDataWidget?.value) {
         try {
             const loras = JSON.parse(lorasDataWidget.value);
-            if (loras.length) rebuildLoraSlots(node, loras, addButtonWidget);
+            if (loras.length) {
+                rebuildLoraRows(node, loras, addButtonWidget);
+                hasPersistedLoras = true;
+            }
         } catch (e) {
             console.warn(`[${NODE_NAME}] Failed to restore LoRA slots:`, e);
         }
@@ -323,7 +303,12 @@ const attachStyleLoader = (node) => {
     }
 
     // Load initial file
-    loadFileIntoWidgets(styleFileWidget.value, node, addButtonWidget);
+    loadFileIntoWidgets(
+        styleFileWidget.value,
+        node,
+        addButtonWidget,
+        !hasPersistedLoras,
+    );
 
     // Reload on file change
     const originalCallback = styleFileWidget.callback;
