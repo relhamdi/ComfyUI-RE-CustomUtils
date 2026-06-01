@@ -8,6 +8,7 @@ const ROW_MARGIN = 10;
 const WEIGHT_WIDTH = 90;
 const REMOVE_WIDTH = 24;
 const INNER_MARGIN = 4;
+const ARROW_WIDTH = 18;
 
 // --- LoraRowWidget ---
 
@@ -22,7 +23,9 @@ export class LoraRowWidget {
 
         // Hit areas: [x, width]
         this._hitLora = [0, 0];
-        this._hitWeight = [0, 0];
+        this._hitWeightDec = [0, 0];
+        this._hitWeightVal = [0, 0];
+        this._hitWeightInc = [0, 0];
         this._hitRemove = [0, 0];
 
         // Drag state
@@ -65,20 +68,58 @@ export class LoraRowWidget {
 
         // Weight zone
         const weightX = removeX - INNER_MARGIN - WEIGHT_WIDTH;
-        ctx.fillStyle = "#222233";
-        ctx.beginPath();
-        ctx.roundRect(weightX, posY + 4, WEIGHT_WIDTH, h - 8, 3);
-        ctx.fill();
-        ctx.fillStyle = COLORS.text;
         ctx.font = "11px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+
+        // Weight - Left arrow
+        ctx.fillStyle = "#2a2a3a";
+        ctx.beginPath();
+        ctx.roundRect(weightX, posY + 4, ARROW_WIDTH, h - 8, 3);
+        ctx.fill();
+        ctx.fillStyle = COLORS.text;
+        ctx.fillText("◀", weightX + ARROW_WIDTH / 2, midY);
+        this._hitWeightDec = [weightX, ARROW_WIDTH];
+
+        // Weight - Central value
+        ctx.fillStyle = "#222233";
+        ctx.beginPath();
+        ctx.roundRect(
+            weightX + ARROW_WIDTH + 2,
+            posY + 4,
+            WEIGHT_WIDTH - ARROW_WIDTH * 2 - 4,
+            h - 8,
+            3,
+        );
+        ctx.fill();
+        ctx.fillStyle = COLORS.text;
         ctx.fillText(
             this.value.weight.toFixed(2),
             weightX + WEIGHT_WIDTH / 2,
             midY,
         );
-        this._hitWeight = [weightX, WEIGHT_WIDTH];
+        this._hitWeightVal = [
+            weightX + ARROW_WIDTH + 2,
+            WEIGHT_WIDTH - ARROW_WIDTH * 2 - 4,
+        ];
+
+        // Weight - Right arrow
+        ctx.fillStyle = "#2a2a3a";
+        ctx.beginPath();
+        ctx.roundRect(
+            weightX + WEIGHT_WIDTH - ARROW_WIDTH,
+            posY + 4,
+            ARROW_WIDTH,
+            h - 8,
+            3,
+        );
+        ctx.fill();
+        ctx.fillStyle = COLORS.text;
+        ctx.fillText("▶", weightX + WEIGHT_WIDTH - ARROW_WIDTH / 2, midY);
+        this._hitWeightInc = [
+            weightX + WEIGHT_WIDTH - ARROW_WIDTH,
+            ARROW_WIDTH,
+        ];
 
         // LoRA name zone
         const loraX = margin + INNER_MARGIN;
@@ -106,8 +147,28 @@ export class LoraRowWidget {
             }
         }
 
-        // Weight drag
-        if (this._inHit(x, this._hitWeight)) {
+        // Weight drag - Left arrow
+        if (this._inHit(x, this._hitWeightDec)) {
+            if (type === "pointerdown" || type === "mousedown") {
+                this.value.weight =
+                    Math.round((this.value.weight - 0.05) * 100) / 100;
+                this.onChange("weight");
+                return true;
+            }
+        }
+
+        // Weight drag - Right arrow
+        if (this._inHit(x, this._hitWeightInc)) {
+            if (type === "pointerdown" || type === "mousedown") {
+                this.value.weight =
+                    Math.round((this.value.weight + 0.05) * 100) / 100;
+                this.onChange("weight");
+                return true;
+            }
+        }
+
+        // Weight drag - Central value: drag + prompt click
+        if (this._inHit(x, this._hitWeightVal)) {
             if (type === "pointerdown" || type === "mousedown") {
                 this._dragging = true;
                 this._dragStartX = event.clientX ?? event.x ?? 0;
@@ -119,7 +180,6 @@ export class LoraRowWidget {
                 (type === "pointerup" || type === "mouseup") &&
                 !this._hasDragged
             ) {
-                // Click -> prompt
                 app.canvas.prompt(
                     "Weight",
                     this.value.weight,
