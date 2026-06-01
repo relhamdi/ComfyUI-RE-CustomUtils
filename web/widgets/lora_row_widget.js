@@ -1,4 +1,4 @@
-import { COLORS } from "./constants.js";
+import { COLORS } from "../constants.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---

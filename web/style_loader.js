@@ -1,5 +1,5 @@
-import { LoraRowWidget } from "./lora_row_widget.js";
 import { registerNode, waitForWidgets } from "./utils.js";
+import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 
 // --- Constants ---
 
