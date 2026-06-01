@@ -136,6 +136,8 @@ const buildJsonFromWidgets = (node) => {
             steps: findWidget(node, "steps")?.value ?? 15,
             refiner_step: findWidget(node, "refiner_step")?.value ?? 24,
             cfg: findWidget(node, "cfg")?.value ?? 4.0,
+            sampler: findWidget(node, "sampler")?.value ?? "euler_ancestral",
+            scheduler: findWidget(node, "scheduler")?.value ?? "normal",
             loras: serializeLoras(node),
         },
         null,
@@ -158,6 +160,11 @@ const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
     setWidgetValue(findWidget(node, "steps"), safe("steps", 15));
     setWidgetValue(findWidget(node, "refiner_step"), safe("refiner_step", 24));
     setWidgetValue(findWidget(node, "cfg"), safe("cfg", 4.0));
+    setWidgetValue(
+        findWidget(node, "sampler"),
+        safe("sampler", "euler_ancestral"),
+    );
+    setWidgetValue(findWidget(node, "scheduler"), safe("scheduler", "normal"));
 
     // Only rebuild LoRAs if loras_data is empty (file load vs workflow restore)
     if (loadLoras) {
