@@ -77,6 +77,7 @@ const attachEditor = (node) => {
 
     const debouncedUpdate = debounce(() => {
         updateSlotVisibility(node, NUM_SLOTS, "slot");
+        renderColored();
     }, 64);
 
     // --- Connection change hook - Re-render when slots are connected or disconnected ---
