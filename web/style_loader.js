@@ -12,6 +12,20 @@ const NO_VAE = "none";
 const MAX_LORAS = 15;
 const DEFAULT_LORA_WEIGHT = 0.8;
 
+const STYLE_TEMPLATE = {
+    checkpoint: "",
+    vae: NO_VAE,
+    clip_skip: -2,
+    quality_tags: "",
+    negative_tags: "",
+    steps: 15,
+    refiner_step: 24,
+    cfg: 4.0,
+    sampler: "euler_ancestral",
+    scheduler: "normal",
+    loras: [],
+};
+
 // --- Assets ---
 
 const ASSETS = {
@@ -149,29 +163,55 @@ const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
     const safe = (key, fallback) =>
         data[key] !== undefined ? data[key] : fallback;
 
-    setWidgetValue(findWidget(node, "checkpoint"), safe("checkpoint", ""));
-    setWidgetValue(findWidget(node, "vae"), safe("vae", NO_VAE));
-    setWidgetValue(findWidget(node, "clip_skip"), safe("clip_skip", -2));
-    setWidgetValue(findWidget(node, "quality_tags"), safe("quality_tags", ""));
+    setWidgetValue(
+        findWidget(node, "checkpoint"),
+        safe("checkpoint", STYLE_TEMPLATE.checkpoint),
+    );
+    setWidgetValue(findWidget(node, "vae"), safe("vae", STYLE_TEMPLATE.vae));
+    setWidgetValue(
+        findWidget(node, "clip_skip"),
+        safe("clip_skip", STYLE_TEMPLATE.clip_skip),
+    );
+    setWidgetValue(
+        findWidget(node, "quality_tags"),
+        safe("quality_tags", STYLE_TEMPLATE.quality_tags),
+    );
     setWidgetValue(
         findWidget(node, "negative_tags"),
-        safe("negative_tags", ""),
+        safe("negative_tags", STYLE_TEMPLATE.negative_tags),
     );
-    setWidgetValue(findWidget(node, "steps"), safe("steps", 15));
-    setWidgetValue(findWidget(node, "refiner_step"), safe("refiner_step", 24));
-    setWidgetValue(findWidget(node, "cfg"), safe("cfg", 4.0));
+    setWidgetValue(
+        findWidget(node, "steps"),
+        safe("steps", STYLE_TEMPLATE.steps),
+    );
+    setWidgetValue(
+        findWidget(node, "refiner_step"),
+        safe("refiner_step", STYLE_TEMPLATE.refiner_step),
+    );
+    setWidgetValue(findWidget(node, "cfg"), safe("cfg", STYLE_TEMPLATE.cfg));
     setWidgetValue(
         findWidget(node, "sampler"),
-        safe("sampler", "euler_ancestral"),
+        safe("sampler", STYLE_TEMPLATE.sampler),
     );
-    setWidgetValue(findWidget(node, "scheduler"), safe("scheduler", "normal"));
+    setWidgetValue(
+        findWidget(node, "scheduler"),
+        safe("scheduler", STYLE_TEMPLATE.scheduler),
+    );
 
     // Only rebuild LoRAs if loras_data is empty (file load vs workflow restore)
     if (loadLoras) {
-        rebuildLoraRows(node, safe("loras", []), addButtonWidget);
+        rebuildLoraRows(
+            node,
+            safe("loras", STYLE_TEMPLATE.loras),
+            addButtonWidget,
+        );
     }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const clearWidgets = (node, addButtonWidget) => {
+    pushJsonToWidgets(node, STYLE_TEMPLATE, addButtonWidget, true);
 };
 
 // --- File loading ---
@@ -317,7 +357,7 @@ const handleClone = async (node, styleFileWidget) => {
     }
 };
 
-const handleDelete = async (node, styleFileWidget) => {
+const handleDelete = async (node, styleFileWidget, addButtonWidget) => {
     const file = styleFileWidget.value;
     if (!file || file === NO_STYLE) {
         alert(`[${NODE_NAME}] No style file selected.`);
@@ -337,9 +377,12 @@ const handleDelete = async (node, styleFileWidget) => {
         const idx = values.indexOf(file);
         if (idx !== -1) values.splice(idx, 1);
         if (!values.length) values.push(NO_STYLE);
+
         styleFileWidget.options.values = values;
         styleFileWidget.value = values[0];
         styleFileWidget.callback?.(values[0]);
+        if (values[0] === NO_STYLE) clearWidgets(node, addButtonWidget);
+
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] Delete failed: ${data.error}`);
@@ -363,7 +406,7 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
         {
             label: "🗑️ Delete",
             color: "#4a1a1a",
-            onClick: () => handleDelete(node, styleFileWidget),
+            onClick: () => handleDelete(node, styleFileWidget, addButtonWidget),
         },
     ]);
     node.widgets.push(buttonRowWidget);
