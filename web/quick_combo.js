@@ -1,5 +1,6 @@
 import { EMPTY_VALUE } from "./constants.js";
 import {
+    findWidget,
     hideWidget,
     hookWidget,
     registerNode,
@@ -24,8 +25,8 @@ const parseOptions = (raw) => {
 // --- Attach ---
 
 const attachQuickCombo = (node) => {
-    const optionsWidget = node.widgets?.find((w) => w.name === "options");
-    const selectedWidget = node.widgets?.find((w) => w.name === "selected");
+    const optionsWidget = findWidget(node, "options");
+    const selectedWidget = findWidget(node, "selected");
     if (!optionsWidget || !selectedWidget) return;
 
     // Hide native STRING widget

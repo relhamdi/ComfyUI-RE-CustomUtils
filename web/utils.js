@@ -18,6 +18,10 @@ export const escapeHtml = (str) =>
 
 // --- Widget helpers ---
 
+// Find widget by name
+export const findWidget = (node, name) =>
+    node.widgets?.find((w) => w.name === name);
+
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
@@ -346,7 +350,7 @@ export const waitForWidget = (node, widgetName, callback) => {
 
     // Retry until widgets DOM is ready
     const tryAttach = () => {
-        const widget = node.widgets?.find((w) => w.name === widgetName);
+        const widget = findWidget(node, widgetName);
         if (widget?.inputEl?.parentNode) {
             callback(node);
         } else {

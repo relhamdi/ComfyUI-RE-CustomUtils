@@ -3,6 +3,7 @@ import {
     createEditor,
     debounce,
     escapeHtml,
+    findWidget,
     registerNode,
     updateSlotVisibility,
     waitForWidget,
@@ -55,7 +56,7 @@ const getConnectedSlots = (node) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    const templateWidget = node.widgets?.find((w) => w.name === "template");
+    const templateWidget = findWidget(node, "template");
     if (!templateWidget) return;
 
     const textarea = templateWidget.inputEl || templateWidget.element;
