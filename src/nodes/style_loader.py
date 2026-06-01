@@ -120,7 +120,10 @@ class StyleLoader:
             "required": {
                 "style_file": (style_files,),
                 "checkpoint": (folder_paths.get_filename_list("checkpoints"),),
-                "vae": (["none"] + folder_paths.get_filename_list("vae"),),
+                "vae": (
+                    ["none"] + folder_paths.get_filename_list("vae"),
+                    {"default": "none"},
+                ),
                 "clip_skip": (
                     "INT",
                     {
