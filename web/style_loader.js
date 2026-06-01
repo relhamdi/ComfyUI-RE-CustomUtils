@@ -1,4 +1,5 @@
 import { registerNode, waitForWidgets } from "./utils.js";
+import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 
 // --- Constants ---
@@ -198,71 +199,124 @@ const loadFileIntoWidgets = async (
 
 // --- Buttons ---
 
-const flashButton = (node, buttonName, flashLabel) => {
-    const btn = findWidget(node, buttonName);
-    if (!btn) return;
-    btn.name = flashLabel;
+const flashButton = (node, index, flashLabel) => {
+    const buttonRowWidget = node.widgets.find(
+        (w) => w.name === "action_buttons",
+    );
+    if (!buttonRowWidget) return;
+
+    const original = buttonRowWidget.buttons[index].label;
+    buttonRowWidget.buttons[index].label = flashLabel;
     if (node.graph) node.graph.setDirtyCanvas(true, true);
     setTimeout(() => {
-        btn.name = buttonName;
+        buttonRowWidget.buttons[index].label = original;
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     }, 1500);
 };
 
+const handleNew = async (node, styleFileWidget, addButtonWidget) => {
+    const name = prompt("New style file name (e.g. anime/illustrious):");
+    if (!name?.trim()) return;
+
+    const res = await fetch(`${BASE_ENDPOINT}/new`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: name.trim() }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        const values = styleFileWidget.options?.values ?? [];
+        const placeholderIdx = values.indexOf(NO_STYLE);
+        if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
+        if (!values.includes(data.file)) {
+            values.push(data.file);
+            values.sort();
+        }
+        styleFileWidget.options.values = values;
+        styleFileWidget.value = data.file;
+        pushJsonToWidgets(
+            node,
+            JSON.parse(data.content),
+            addButtonWidget,
+            true,
+        );
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    } else {
+        alert(`[${NODE_NAME}] ${data.error}`);
+    }
+};
+
+const handleSave = async (node, styleFileWidget) => {
+    const file = styleFileWidget.value;
+    if (!file || file === NO_STYLE) {
+        alert(`[${NODE_NAME}] No style file selected.`);
+        return;
+    }
+
+    const content = buildJsonFromWidgets(node);
+    const res = await fetch(`${BASE_ENDPOINT}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file, content }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        flashButton(node, 1, "✅ Saved!");
+    } else {
+        alert(`[${NODE_NAME}] Save failed: ${data.error}`);
+    }
+};
+
+const handleClone = async (node, styleFileWidget) => {
+    const name = prompt("Clone to new file (e.g. anime/illustrious_v2):");
+    if (!name?.trim()) return;
+
+    const content = buildJsonFromWidgets(node);
+    const file = name.trim().endsWith(".json")
+        ? name.trim()
+        : `${name.trim()}.json`;
+
+    const res = await fetch(`${BASE_ENDPOINT}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file, content }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        const values = styleFileWidget.options?.values ?? [];
+        const placeholderIdx = values.indexOf(NO_STYLE);
+        if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
+        if (!values.includes(file)) {
+            values.push(file);
+            values.sort();
+        }
+        styleFileWidget.options.values = values;
+        styleFileWidget.value = file;
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    } else {
+        alert(`[${NODE_NAME}] Clone failed: ${data.error}`);
+    }
+};
+
 const addButtons = (node, styleFileWidget, addButtonWidget) => {
-    // Save
-    node.addWidget("button", "💾 Save", null, async () => {
-        const file = styleFileWidget.value;
-        if (!file || file === NO_STYLE) {
-            alert(`[${NODE_NAME}] No style file selected.`);
-            return;
-        }
-
-        const content = buildJsonFromWidgets(node);
-
-        const res = await fetch(`${BASE_ENDPOINT}/save`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ file, content }),
-        });
-
-        const data = await res.json();
-        if (data.ok) {
-            flashButton(node, "💾 Save", "✅ Saved!");
-        } else {
-            alert(`[${NODE_NAME}] Save failed: ${data.error}`);
-        }
-    });
-
-    // New
-    node.addWidget("button", "➕ New", null, async () => {
-        const name = prompt("New style file name (e.g. anime/illustrious):");
-        if (!name?.trim()) return;
-
-        const res = await fetch(`${BASE_ENDPOINT}/new`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ file: name.trim() }),
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-            const values = styleFileWidget.options?.values ?? [];
-            const placeholderIdx = values.indexOf(NO_STYLE);
-            if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
-            if (!values.includes(data.file)) {
-                values.push(data.file);
-                values.sort();
-            }
-            styleFileWidget.options.values = values;
-            styleFileWidget.value = data.file;
-            pushJsonToWidgets(node, JSON.parse(data.content), addButtonWidget);
-            if (node.graph) node.graph.setDirtyCanvas(true, true);
-        } else {
-            alert(`[${NODE_NAME}] ${data.error}`);
-        }
-    });
+    const buttonRowWidget = new ButtonRowWidget("action_buttons", [
+        {
+            label: "➕ New",
+            onClick: () => handleNew(node, styleFileWidget, addButtonWidget),
+        },
+        {
+            label: "💾 Save",
+            onClick: () => handleSave(node, styleFileWidget),
+        },
+        {
+            label: "📋 Clone",
+            onClick: () => handleClone(node, styleFileWidget),
+        },
+    ]);
+    node.widgets.push(buttonRowWidget);
 };
 
 // --- Attach ---
@@ -282,7 +336,7 @@ const attachStyleLoader = (node) => {
         },
     );
 
-    // Save / New buttons
+    // New / Save / Clone buttons
     addButtons(node, styleFileWidget, addButtonWidget);
 
     // Restore loras_data first
