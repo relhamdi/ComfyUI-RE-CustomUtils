@@ -282,6 +282,23 @@ async def new_style(request: web.Request) -> web.Response:
         return web.json_response({"error": str(e)}, status=500)
 
 
+@PromptServer.instance.routes.post(f"{BASE_ENDPOINT}/delete")
+async def delete_style(request: web.Request) -> web.Response:
+    try:
+        body = await request.json()
+        file = body.get("file", "")
+        rel = _safe_relative_path(file)
+        if not rel:
+            return web.json_response({"error": "Invalid file path."}, status=400)
+        path = os.path.join(STYLES_DIR, rel)
+        if not os.path.isfile(path):
+            return web.json_response({"error": "File not found."}, status=404)
+        os.remove(path)
+        return web.json_response({"ok": True})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 @PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/assets")
 async def get_assets(request: web.Request) -> web.Response:
     return web.json_response(
