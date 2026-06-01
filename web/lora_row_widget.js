@@ -3,7 +3,7 @@ import { app } from "/scripts/app.js";
 
 // --- Constants ---
 
-const ROW_HEIGHT = 30;
+const ROW_HEIGHT = 20;
 const ROW_MARGIN = 10;
 const WEIGHT_WIDTH = 90;
 const REMOVE_WIDTH = 24;
