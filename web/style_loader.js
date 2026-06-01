@@ -211,12 +211,21 @@ const flashButton = (node, index, flashLabel) => {
         (w) => w.name === "action_buttons",
     );
     if (!buttonRowWidget) return;
+    const btn = buttonRowWidget.buttons[index];
 
-    const original = buttonRowWidget.buttons[index].label;
-    buttonRowWidget.buttons[index].label = flashLabel;
+    // Cancel previous timer if existing
+    if (btn._flashTimer) clearTimeout(btn._flashTimer);
+
+    // Save original if not flashing
+    if (!btn._originalLabel) btn._originalLabel = btn.label;
+
+    btn.label = flashLabel;
     if (node.graph) node.graph.setDirtyCanvas(true, true);
-    setTimeout(() => {
-        buttonRowWidget.buttons[index].label = original;
+
+    btn._flashTimer = setTimeout(() => {
+        btn.label = btn._originalLabel;
+        btn._originalLabel = null;
+        btn._flashTimer = null;
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     }, 1500);
 };
