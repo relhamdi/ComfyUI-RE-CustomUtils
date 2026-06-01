@@ -121,7 +121,15 @@ class StyleLoader:
                 "style_file": (style_files,),
                 "checkpoint": (folder_paths.get_filename_list("checkpoints"),),
                 "vae": (["none"] + folder_paths.get_filename_list("vae"),),
-                "clip_skip": ("INT", {"default": -2, "min": -24, "max": -1}),
+                "clip_skip": (
+                    "INT",
+                    {
+                        "default": -2,
+                        "min": -24,
+                        "max": -1,
+                        "tooltip": "-1 = No clip skip",
+                    },
+                ),
                 "loras_data": ("STRING", {"default": "[]"}),
                 "quality_tags": ("STRING", {"multiline": True, "default": ""}),
                 "negative_tags": ("STRING", {"multiline": True, "default": ""}),
@@ -192,7 +200,9 @@ class StyleLoader:
         vae_out = _load_vae(vae) if vae != "none" else vae_from_ckpt
 
         clip = clip.clone()
-        clip.clip_layer(clip_skip)
+        # -1 -> No clip skip (default)
+        if clip_skip != -1:
+            clip.clip_layer(clip_skip)
 
         try:
             loras = json.loads(loras_data) if loras_data else []
