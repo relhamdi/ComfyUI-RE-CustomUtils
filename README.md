@@ -367,6 +367,84 @@ Toggle `one_based` to match the indexing convention of other nodes in your workf
 
 ---
 
+### StyleLoader
+
+#### Inputs
+
+- `style_file` (combo) — dropdown listing all `.json` files found recursively under the `styles/` folder. Supports subfolders (e.g. `anime/illustrious.json`).
+- `checkpoint` (combo) — model checkpoint to load.
+- `vae` (combo) — VAE override. Select `none` to use the checkpoint's built-in VAE.
+- `clip_skip` (int), default `-2` — number of CLIP layers to skip. Set to `-1` to disable.
+- `quality_tags` (str) — positive quality prompt, passed through as a string output.
+- `negative_tags` (str) — negative quality prompt, passed through as a string output.
+- `steps` (int), default `15` — number of sampling steps.
+- `refiner_step` (int), default `24` — step at which a refiner pass begins, if used.
+- `cfg` (float), default `4.0` — classifier-free guidance scale.
+- `sampler` (combo) — sampler name, sourced from ComfyUI's own sampler list.
+- `scheduler` (combo) — scheduler name, sourced from ComfyUI's own scheduler list.
+- `loras_data` (str, internal) — serialized LoRA list for workflow persistence.
+
+#### Outputs
+
+- `model` — loaded model with LoRAs applied.
+- `clip` — CLIP encoder with clip skip and LoRAs applied.
+- `vae` — VAE (overridden or from checkpoint).
+- `quality_tags` (str) — positive prompt passthrough.
+- `negative_tags` (str) — negative prompt passthrough.
+- `steps` (int)
+- `refiner_step` (int)
+- `cfg` (float)
+- `sampler` (str)
+- `scheduler` (str)
+
+#### Usage
+
+Style files are `.json` files stored under the `styles/` folder at the root of the extension. Subfolders are supported and reflected in the dropdown after a page refresh.
+
+A style file contains all parameters for a generation setup:
+
+```json
+{
+  "checkpoint": "model.safetensors",
+  "vae": "none",
+  "clip_skip": -2,
+  "loras": [
+    { "name": "lora.safetensors", "weight": 0.8 }
+  ],
+  "quality_tags": "masterpiece, best quality",
+  "negative_tags": "worst quality, low quality",
+  "steps": 15,
+  "refiner_step": 24,
+  "cfg": 4.0,
+  "sampler": "euler_ancestral",
+  "scheduler": "karras"
+}
+```
+
+LoRAs support a single `weight` (applied to both model and clip), or separate `model_weight` and `clip_weight`.
+
+#### Editor
+
+The node includes a built-in styled editor:
+
+- All fields are native ComfyUI widgets — checkpoints, VAE and samplers have built-in search and autocomplete.
+- LoRA rows are displayed as canvas widgets, one per line, with a name picker, weight control, and remove button.
+- The weight can be adjusted by dragging horizontally, clicking the `◀` / `▶` arrows, or clicking the value to type it directly.
+- Clicking the LoRA name opens a searchable dropdown.
+
+#### Actions
+
+| Button     | Action                                                  |
+| ---------- | ------------------------------------------------------- |
+| `➕ New`    | Creates a new style file from a blank template          |
+| `💾 Save`   | Saves current widget values to the selected style file  |
+| `📋 Clone`  | Saves current values to a new file                      |
+| `🗑️ Delete` | Deletes the selected style file (requires confirmation) |
+
+Adding a new style file or refreshing an existing one takes effect immediately without restarting ComfyUI. Adding new files to the `styles/` folder externally requires a page refresh (F5) to appear in the dropdown.
+
+---
+
 ### Web
 
 #### contentEditable editor
@@ -432,3 +510,8 @@ uv run pytest
 
 `PromptRouter`
 - Add support for more sub-routing levels?
+
+`StyleLoader`
+- LoRA toggle on/off per row
+- Separate model/clip weight per LoRA on UI
+- Better LoRA row style
