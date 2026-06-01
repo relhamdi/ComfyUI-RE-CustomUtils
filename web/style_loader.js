@@ -142,16 +142,29 @@ const rebuildLoraRows = (node, loras, addButtonWidget) => {
 const buildJsonFromWidgets = (node) => {
     return JSON.stringify(
         {
-            checkpoint: findWidget(node, "checkpoint")?.value ?? "",
-            vae: findWidget(node, "vae")?.value ?? NO_VAE,
-            clip_skip: findWidget(node, "clip_skip")?.value ?? -2,
-            quality_tags: findWidget(node, "quality_tags")?.value ?? "",
-            negative_tags: findWidget(node, "negative_tags")?.value ?? "",
-            steps: findWidget(node, "steps")?.value ?? 15,
-            refiner_step: findWidget(node, "refiner_step")?.value ?? 24,
-            cfg: findWidget(node, "cfg")?.value ?? 4.0,
-            sampler: findWidget(node, "sampler")?.value ?? "euler_ancestral",
-            scheduler: findWidget(node, "scheduler")?.value ?? "normal",
+            checkpoint:
+                findWidget(node, "checkpoint")?.value ??
+                STYLE_TEMPLATE.checkpoint,
+            vae: findWidget(node, "vae")?.value ?? STYLE_TEMPLATE.vae,
+            clip_skip:
+                findWidget(node, "clip_skip")?.value ??
+                STYLE_TEMPLATE.clip_skip,
+            quality_tags:
+                findWidget(node, "quality_tags")?.value ??
+                STYLE_TEMPLATE.quality_tags,
+            negative_tags:
+                findWidget(node, "negative_tags")?.value ??
+                STYLE_TEMPLATE.negative_tags,
+            steps: findWidget(node, "steps")?.value ?? STYLE_TEMPLATE.steps,
+            refiner_step:
+                findWidget(node, "refiner_step")?.value ??
+                STYLE_TEMPLATE.refiner_step,
+            cfg: findWidget(node, "cfg")?.value ?? STYLE_TEMPLATE.cfg,
+            sampler:
+                findWidget(node, "sampler")?.value ?? STYLE_TEMPLATE.sampler,
+            scheduler:
+                findWidget(node, "scheduler")?.value ??
+                STYLE_TEMPLATE.scheduler,
             loras: serializeLoras(node),
         },
         null,
