@@ -317,6 +317,35 @@ const handleClone = async (node, styleFileWidget) => {
     }
 };
 
+const handleDelete = async (node, styleFileWidget) => {
+    const file = styleFileWidget.value;
+    if (!file || file === NO_STYLE) {
+        alert(`[${NODE_NAME}] No style file selected.`);
+        return;
+    }
+    if (!confirm(`Delete "${file}" ? This cannot be undone.`)) return;
+
+    const res = await fetch(`${BASE_ENDPOINT}/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+        const values = styleFileWidget.options?.values ?? [];
+        const idx = values.indexOf(file);
+        if (idx !== -1) values.splice(idx, 1);
+        if (!values.length) values.push(NO_STYLE);
+        styleFileWidget.options.values = values;
+        styleFileWidget.value = values[0];
+        styleFileWidget.callback?.(values[0]);
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    } else {
+        alert(`[${NODE_NAME}] Delete failed: ${data.error}`);
+    }
+};
+
 const addButtons = (node, styleFileWidget, addButtonWidget) => {
     const buttonRowWidget = new ButtonRowWidget("action_buttons", [
         {
@@ -330,6 +359,11 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
         {
             label: "📋 Clone",
             onClick: () => handleClone(node, styleFileWidget),
+        },
+        {
+            label: "🗑️ Delete",
+            color: "#4a1a1a",
+            onClick: () => handleDelete(node, styleFileWidget),
         },
     ]);
     node.widgets.push(buttonRowWidget);
@@ -352,7 +386,7 @@ const attachStyleLoader = (node) => {
         },
     );
 
-    // New / Save / Clone buttons
+    // Action buttons
     addButtons(node, styleFileWidget, addButtonWidget);
 
     // Restore loras_data first
