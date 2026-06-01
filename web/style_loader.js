@@ -178,7 +178,10 @@ const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
         findWidget(node, "checkpoint"),
         safe("checkpoint", STYLE_TEMPLATE.checkpoint),
     );
-    setWidgetValue(findWidget(node, "vae"), safe("vae", STYLE_TEMPLATE.vae));
+    setWidgetValue(
+        findWidget(node, "vae"),
+        safe("vae", STYLE_TEMPLATE.vae) || STYLE_TEMPLATE.vae,
+    );
     setWidgetValue(
         findWidget(node, "clip_skip"),
         safe("clip_skip", STYLE_TEMPLATE.clip_skip),
