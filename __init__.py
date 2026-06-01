@@ -36,6 +36,12 @@ from src.nodes.quick_combo import (
 from src.nodes.quick_combo import (
     NODE_DISPLAY_NAME_MAPPINGS as QuickComboDisplayMappings,
 )
+from src.nodes.style_loader import (
+    NODE_CLASS_MAPPINGS as StyleLoaderMappings,
+)
+from src.nodes.style_loader import (
+    NODE_DISPLAY_NAME_MAPPINGS as StyleLoaderDisplayMappings,
+)
 
 NODE_CLASS_MAPPINGS = {}
 NODE_CLASS_MAPPINGS.update(PromptPresetSelectorMappings)
@@ -44,6 +50,7 @@ NODE_CLASS_MAPPINGS.update(PromptLayoutFillerMappings)
 NODE_CLASS_MAPPINGS.update(PromptSwitchMappings)
 NODE_CLASS_MAPPINGS.update(PromptRouterMappings)
 NODE_CLASS_MAPPINGS.update(QuickComboMappings)
+NODE_CLASS_MAPPINGS.update(StyleLoaderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -52,6 +59,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(PromptLayoutFillerDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptSwitchDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptRouterDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(QuickComboDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(StyleLoaderDisplayMappings)
 
 # Node registration
 __all__ = [
