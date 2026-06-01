@@ -287,10 +287,23 @@ def app(tmp_path):
         except FileNotFoundError:
             return web.json_response({"error": "File not found."}, status=404)
 
+    async def delete_handler(request):
+        body = await request.json()
+        file = body.get("file", "")
+        rel = _safe_relative_path(file)
+        if not rel:
+            return web.json_response({"error": "Invalid file path."}, status=400)
+        path = os.path.join(str(tmp_path), rel)
+        if not os.path.isfile(path):
+            return web.json_response({"error": "File not found."}, status=404)
+        os.remove(path)
+        return web.json_response({"ok": True})
+
     application = web.Application()
     application.router.add_post("/styles/save", save_handler)
     application.router.add_post("/styles/new", new_handler)
     application.router.add_get("/styles/load", load_handler)
+    application.router.add_post("/styles/delete", delete_handler)
     return application
 
 
@@ -399,4 +412,26 @@ async def test_load_not_found(client):
 
 async def test_load_invalid_path(client):
     resp = await client.get("/styles/load?file=../../etc/passwd")
+    assert resp.status == 400
+
+
+# --- /styles/delete ---
+
+
+async def test_delete_existing(client, tmp_path):
+    (tmp_path / "to_delete.json").write_text("{}")
+    resp = await client.post("/styles/delete", json={"file": "to_delete.json"})
+    assert resp.status == 200
+    data = await resp.json()
+    assert data["ok"] is True
+    assert not (tmp_path / "to_delete.json").exists()
+
+
+async def test_delete_not_found(client):
+    resp = await client.post("/styles/delete", json={"file": "missing.json"})
+    assert resp.status == 404
+
+
+async def test_delete_invalid_path(client):
+    resp = await client.post("/styles/delete", json={"file": "../../evil.json"})
     assert resp.status == 400
