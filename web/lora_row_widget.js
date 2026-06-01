@@ -249,9 +249,9 @@ export class LoraRowWidget {
         `;
 
         const input = document.createElement("input");
-            input.type = "text";
-            input.placeholder = "Search LoRA...";
-            input.style.cssText = `
+        input.type = "text";
+        input.placeholder = "Search LoRA...";
+        input.style.cssText = `
             background: #111;
             color: #e0e0e0;
             border: none;
