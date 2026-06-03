@@ -98,7 +98,7 @@ class StyleLoader:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "style_file": (scan_files(_get_styles_dir())),
+                "style_file": (scan_files(_get_styles_dir()),),
                 "checkpoint": (folder_paths.get_filename_list("checkpoints"),),
                 "vae": (
                     ["none"] + folder_paths.get_filename_list("vae"),
