@@ -4,120 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from aiohttp import web
-from src.nodes.style_loader import (
-    STYLE_TEMPLATE,
-    _apply_loras,
-    _load_style,
-    _safe_relative_path,
-    _scan_style_files,
-)
-
-# --- Fixtures ---
-
-
-@pytest.fixture
-def styles_dir(tmp_path):
-    return tmp_path
-
-
-@pytest.fixture
-def style_file(tmp_path):
-    def _make(data: dict, name: str = "test.json", subdir: str | None = None):
-        target = tmp_path / subdir if subdir else tmp_path
-        target.mkdir(parents=True, exist_ok=True)
-        path = target / name
-        path.write_text(json.dumps(data), encoding="utf-8")
-        return str(tmp_path)
-
-    return _make
-
-
-# --- _safe_relative_path ---
-
-
-def test_safe_relative_path_simple():
-    assert _safe_relative_path("anime.json") == "anime.json"
-
-
-def test_safe_relative_path_subdir():
-    result = _safe_relative_path("anime/illustrious.json")
-    assert result == os.path.normpath("anime/illustrious.json")
-
-
-def test_safe_relative_path_traversal():
-    assert _safe_relative_path("../../etc/passwd") is None
-
-
-def test_safe_relative_path_absolute():
-    assert _safe_relative_path("/etc/passwd") is None
-
-
-def test_safe_relative_path_dotdot_middle():
-    result = _safe_relative_path("anime/../../../etc/passwd")
-    assert result is None
-
-
-# --- _scan_style_files ---
-
-
-def test_scan_empty_dir(styles_dir):
-    result = _scan_style_files(str(styles_dir))
-    assert result == ["-- no styles found --"]
-
-
-def test_scan_single_file(styles_dir):
-    (styles_dir / "anime.json").write_text("{}")
-    result = _scan_style_files(str(styles_dir))
-    assert result == ["anime.json"]
-
-
-def test_scan_subdir(styles_dir):
-    sub = styles_dir / "realistic"
-    sub.mkdir()
-    (sub / "photon.json").write_text("{}")
-    result = _scan_style_files(str(styles_dir))
-    assert result == ["realistic/photon.json"]
-
-
-def test_scan_ignores_non_json(styles_dir):
-    (styles_dir / "readme.txt").write_text("hello")
-    (styles_dir / "style.json").write_text("{}")
-    result = _scan_style_files(str(styles_dir))
-    assert result == ["style.json"]
-
-
-def test_scan_sorted(styles_dir):
-    for name in ["zebra.json", "alpha.json", "middle.json"]:
-        (styles_dir / name).write_text("{}")
-    result = _scan_style_files(str(styles_dir))
-    assert result == ["alpha.json", "middle.json", "zebra.json"]
-
-
-# --- _load_style ---
-
-
-def test_load_style_basic(style_file):
-    data = {"checkpoint": "model.safetensors", "cfg": 7.5}
-    base_dir = style_file(data)
-    with patch("src.nodes.style_loader.STYLES_DIR", base_dir):
-        result = _load_style("test.json")
-    assert result["checkpoint"] == "model.safetensors"
-    assert result["cfg"] == 7.5
-
-
-def test_load_style_not_found(tmp_path):
-    with patch("src.nodes.style_loader.STYLES_DIR", str(tmp_path)):
-        with pytest.raises(FileNotFoundError):
-            _load_style("missing.json")
-
-
-def test_load_style_subdir(style_file):
-    data = {"checkpoint": "model.safetensors"}
-    base_dir = style_file(data, name="photon.json", subdir="realistic")
-    with patch("src.nodes.style_loader.STYLES_DIR", base_dir):
-        result = _load_style("realistic/photon.json")
-    assert result["checkpoint"] == "model.safetensors"
-
+from src.nodes.style_loader import STYLE_TEMPLATE, _apply_loras
+from src.utils_loader import safe_relative_path
 
 # --- _apply_loras ---
 
@@ -240,7 +128,7 @@ def app(tmp_path):
         body = await request.json()
         file = body.get("file", "")
         content = body.get("content", "")
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
         try:
@@ -260,7 +148,7 @@ def app(tmp_path):
             return web.json_response({"error": "File name is required."}, status=400)
         if not file.endswith(".json"):
             file += ".json"
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
         path = os.path.join(str(tmp_path), rel)
@@ -276,7 +164,7 @@ def app(tmp_path):
 
     async def load_handler(request):
         file = request.rel_url.query.get("file", "")
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
         path = os.path.join(str(tmp_path), rel)
@@ -290,7 +178,7 @@ def app(tmp_path):
     async def delete_handler(request):
         body = await request.json()
         file = body.get("file", "")
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
         path = os.path.join(str(tmp_path), rel)
