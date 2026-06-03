@@ -380,3 +380,29 @@ export const waitForWidgets = (node, callback) => {
     };
     requestAnimationFrame(tryAttach);
 };
+
+// --- Buttons ---
+
+export const flashButton = (node, index, flashLabel) => {
+    const buttonRowWidget = node.widgets.find(
+        (w) => w.name === "action_buttons",
+    );
+    if (!buttonRowWidget) return;
+    const btn = buttonRowWidget.buttons[index];
+
+    // Cancel previous timer if existing
+    if (btn._flashTimer) clearTimeout(btn._flashTimer);
+
+    // Save original if not flashing
+    if (!btn._originalLabel) btn._originalLabel = btn.label;
+
+    btn.label = flashLabel;
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+
+    btn._flashTimer = setTimeout(() => {
+        btn.label = btn._originalLabel;
+        btn._originalLabel = null;
+        btn._flashTimer = null;
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    }, 1500);
+};
