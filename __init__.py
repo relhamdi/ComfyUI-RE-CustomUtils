@@ -1,5 +1,11 @@
 """Top-level package for the node pack."""
 
+from src.nodes.character_loader import (
+    NODE_CLASS_MAPPINGS as CharacterLoaderMappings,
+)
+from src.nodes.character_loader import (
+    NODE_DISPLAY_NAME_MAPPINGS as CharacterLoaderDisplayMappings,
+)
 from src.nodes.prompt_layout_filler import (
     NODE_CLASS_MAPPINGS as PromptLayoutFillerMappings,
 )
@@ -51,6 +57,7 @@ NODE_CLASS_MAPPINGS.update(PromptSwitchMappings)
 NODE_CLASS_MAPPINGS.update(PromptRouterMappings)
 NODE_CLASS_MAPPINGS.update(QuickComboMappings)
 NODE_CLASS_MAPPINGS.update(StyleLoaderMappings)
+NODE_CLASS_MAPPINGS.update(CharacterLoaderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -60,6 +67,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(PromptSwitchDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptRouterDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(QuickComboDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(StyleLoaderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(CharacterLoaderDisplayMappings)
 
 # Node registration
 __all__ = [
