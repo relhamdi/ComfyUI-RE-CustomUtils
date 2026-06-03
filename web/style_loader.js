@@ -1,5 +1,10 @@
 import { API_ROOT, EMPTY_VALUE } from "./constants.js";
-import { findWidget, registerNode, waitForWidgets } from "./utils.js";
+import {
+    findWidget,
+    registerNode,
+    setWidgetValue,
+    waitForWidgets,
+} from "./utils.js";
 import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 
@@ -47,14 +52,6 @@ const fetchAssets = async () => {
 };
 
 fetchAssets();
-
-// --- Widget helpers ---
-
-const setWidgetValue = (widget, value) => {
-    if (!widget) return;
-    widget.value = value;
-    widget.callback?.(value);
-};
 
 // --- LoRA slot management ---
 

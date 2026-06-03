@@ -22,6 +22,12 @@ export const escapeHtml = (str) =>
 export const findWidget = (node, name) =>
     node.widgets?.find((w) => w.name === name);
 
+export const setWidgetValue = (widget, value) => {
+    if (!widget) return;
+    widget.value = value;
+    widget.callback?.(value);
+};
+
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
