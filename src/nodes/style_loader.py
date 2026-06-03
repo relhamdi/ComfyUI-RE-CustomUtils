@@ -209,6 +209,36 @@ class StyleLoader:
 # --- API Routes ---
 
 
+@PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/assets")
+async def get_assets(request: web.Request) -> web.Response:
+    return web.json_response(
+        {
+            "checkpoints": folder_paths.get_filename_list("checkpoints"),
+            "vae": folder_paths.get_filename_list("vae"),
+            "loras": folder_paths.get_filename_list("loras"),
+            "samplers": SAMPLER_NAMES,
+            "schedulers": SCHEDULER_NAMES,
+        }
+    )
+
+
+@PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/load")
+async def load_style_content(request: web.Request) -> web.Response:
+    file = request.rel_url.query.get("file", "")
+    rel = safe_relative_path(file)
+    if not rel:
+        return web.json_response({"error": "Invalid file path."}, status=400)
+    try:
+        data = load_json_file(STYLES_DIR, rel)
+        content = json.dumps(data, indent=2, ensure_ascii=False)
+
+        return web.json_response({"content": content})
+    except FileNotFoundError:
+        return web.json_response({"error": "File not found."}, status=404)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 @PromptServer.instance.routes.post(f"{BASE_ENDPOINT}/save")
 async def save_style(request: web.Request) -> web.Response:
     try:
@@ -275,36 +305,6 @@ async def delete_style(request: web.Request) -> web.Response:
             return web.json_response({"error": "File not found."}, status=404)
 
         return web.json_response({"ok": True})
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
-@PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/assets")
-async def get_assets(request: web.Request) -> web.Response:
-    return web.json_response(
-        {
-            "checkpoints": folder_paths.get_filename_list("checkpoints"),
-            "vae": folder_paths.get_filename_list("vae"),
-            "loras": folder_paths.get_filename_list("loras"),
-            "samplers": SAMPLER_NAMES,
-            "schedulers": SCHEDULER_NAMES,
-        }
-    )
-
-
-@PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/load")
-async def load_style_content(request: web.Request) -> web.Response:
-    file = request.rel_url.query.get("file", "")
-    rel = safe_relative_path(file)
-    if not rel:
-        return web.json_response({"error": "Invalid file path."}, status=400)
-    try:
-        data = load_json_file(STYLES_DIR, rel)
-        content = json.dumps(data, indent=2, ensure_ascii=False)
-
-        return web.json_response({"content": content})
-    except FileNotFoundError:
-        return web.json_response({"error": "File not found."}, status=404)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
