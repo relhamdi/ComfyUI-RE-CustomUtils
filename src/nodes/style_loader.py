@@ -10,6 +10,13 @@ import folder_paths
 from server import PromptServer
 
 from ..config import NODE_CATEGORY
+from ..utils_loader import (
+    delete_file,
+    load_json_file,
+    safe_relative_path,
+    save_json_file,
+    scan_files,
+)
 
 # --- Constants ---
 
@@ -39,25 +46,6 @@ STYLE_TEMPLATE = {
 def _get_styles_dir() -> str:
     os.makedirs(STYLES_DIR, exist_ok=True)
     return STYLES_DIR
-
-
-def _scan_style_files(base_dir: str) -> list[str]:
-    """Recursively scan for JSON files, return paths relative to base_dir."""
-    results = []
-    for root, _, files in os.walk(base_dir):
-        for f in files:
-            if f.endswith(".json"):
-                rel = os.path.relpath(os.path.join(root, f), base_dir)
-                results.append(rel.replace("\\", "/"))
-    return sorted(results) or ["-- no styles found --"]
-
-
-def _load_style(style_file: str) -> dict:
-    path = os.path.join(STYLES_DIR, style_file)
-    if not os.path.isfile(path):
-        raise FileNotFoundError(f"Style file not found: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 def _load_checkpoint(checkpoint_name: str):
@@ -101,24 +89,15 @@ def _apply_loras(model, clip, loras: list[dict]):
     return model, clip
 
 
-def _safe_relative_path(file: str) -> str | None:
-    """Validate that file stays within STYLES_DIR, return normalized path or None."""
-    norm = os.path.normpath(file)
-    if norm.startswith("..") or os.path.isabs(norm):
-        return None
-    return norm
-
-
 # --- Node ---
 
 
 class StyleLoader:
     @classmethod
     def INPUT_TYPES(cls):
-        style_files = _scan_style_files(_get_styles_dir())
         return {
             "required": {
-                "style_file": (style_files,),
+                "style_file": (scan_files(_get_styles_dir(), "-- no styles found --"),),
                 "checkpoint": (folder_paths.get_filename_list("checkpoints"),),
                 "vae": (
                     ["none"] + folder_paths.get_filename_list("vae"),
@@ -237,7 +216,7 @@ async def save_style(request: web.Request) -> web.Response:
         file = body.get("file", "")
         content = body.get("content", "")
 
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
 
@@ -247,14 +226,8 @@ async def save_style(request: web.Request) -> web.Response:
         except json.JSONDecodeError as e:
             return web.json_response({"error": f"Invalid JSON: {e}"}, status=400)
 
-        path = os.path.join(STYLES_DIR, rel)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-
+        save_json_file(STYLES_DIR, rel, content)
         return web.json_response({"ok": True})
-
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
@@ -264,7 +237,6 @@ async def new_style(request: web.Request) -> web.Response:
     try:
         body = await request.json()
         file = body.get("file", "").strip()
-
         if not file:
             return web.json_response({"error": "File name is required."}, status=400)
 
@@ -272,25 +244,19 @@ async def new_style(request: web.Request) -> web.Response:
         if not file.endswith(".json"):
             file += ".json"
 
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
 
         path = os.path.join(STYLES_DIR, rel)
-
         if os.path.exists(path):
             return web.json_response({"error": "File already exists."}, status=409)
 
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
         content = json.dumps(STYLE_TEMPLATE, indent=2, ensure_ascii=False)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-
+        save_json_file(STYLES_DIR, rel, content)
         return web.json_response(
             {"ok": True, "file": rel.replace("\\", "/"), "content": content}
         )
-
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
@@ -300,13 +266,14 @@ async def delete_style(request: web.Request) -> web.Response:
     try:
         body = await request.json()
         file = body.get("file", "")
-        rel = _safe_relative_path(file)
+        rel = safe_relative_path(file)
         if not rel:
             return web.json_response({"error": "Invalid file path."}, status=400)
-        path = os.path.join(STYLES_DIR, rel)
-        if not os.path.isfile(path):
+        try:
+            delete_file(STYLES_DIR, rel)
+        except FileNotFoundError:
             return web.json_response({"error": "File not found."}, status=404)
-        os.remove(path)
+
         return web.json_response({"ok": True})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
@@ -328,14 +295,18 @@ async def get_assets(request: web.Request) -> web.Response:
 @PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/load")
 async def load_style_content(request: web.Request) -> web.Response:
     file = request.rel_url.query.get("file", "")
-    rel = _safe_relative_path(file)
+    rel = safe_relative_path(file)
     if not rel:
         return web.json_response({"error": "Invalid file path."}, status=400)
     try:
-        data = _load_style(rel)
-        return web.json_response({"content": json.dumps(data, indent=2)})
+        data = load_json_file(STYLES_DIR, rel)
+        content = json.dumps(data, indent=2, ensure_ascii=False)
+
+        return web.json_response({"content": content})
     except FileNotFoundError:
         return web.json_response({"error": "File not found."}, status=404)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 
 # --- Registration ---
