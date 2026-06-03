@@ -9,4 +9,5 @@ export const COLORS = {
     cyan: "#4dd0e1",
     green: "#a5d6a7",
     red: "#ef9a9a",
+    dark_red: "#4a1a1a",
 };

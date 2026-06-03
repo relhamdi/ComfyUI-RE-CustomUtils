@@ -1,4 +1,4 @@
-import { API_ROOT, EMPTY_VALUE } from "./constants.js";
+import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
 import {
     findWidget,
     registerNode,
@@ -416,7 +416,7 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
         },
         {
             label: "🗑️ Delete",
-            color: "#4a1a1a",
+            color: COLORS.dark_red,
             onClick: () => handleDelete(node, styleFileWidget, addButtonWidget),
         },
     ]);
