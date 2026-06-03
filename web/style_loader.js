@@ -22,6 +22,7 @@ const STYLE_TEMPLATE = {
     vae: NO_VAE,
     clip_skip: -2,
     quality_tags: "",
+    extra_quality_tags: "",
     negative_tags: "",
     steps: 15,
     refiner_step: 24,
@@ -147,6 +148,9 @@ const buildJsonFromWidgets = (node) => {
             quality_tags:
                 findWidget(node, "quality_tags")?.value ??
                 STYLE_TEMPLATE.quality_tags,
+            extra_quality_tags:
+                findWidget(node, "extra_quality_tags")?.value ??
+                STYLE_TEMPLATE.extra_quality_tags,
             negative_tags:
                 findWidget(node, "negative_tags")?.value ??
                 STYLE_TEMPLATE.negative_tags,
@@ -186,6 +190,10 @@ const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
     setWidgetValue(
         findWidget(node, "quality_tags"),
         safe("quality_tags", STYLE_TEMPLATE.quality_tags),
+    );
+    setWidgetValue(
+        findWidget(node, "extra_quality_tags"),
+        safe("extra_quality_tags", STYLE_TEMPLATE.extra_quality_tags),
     );
     setWidgetValue(
         findWidget(node, "negative_tags"),
