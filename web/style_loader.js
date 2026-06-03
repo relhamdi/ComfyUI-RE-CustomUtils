@@ -2,6 +2,7 @@ import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
 import {
     findWidget,
     flashButton,
+    patchFileDropdown,
     registerNode,
     setWidgetValue,
     waitForWidgets,
@@ -278,15 +279,7 @@ const handleNew = async (node, styleFileWidget, addButtonWidget) => {
     const data = await res.json();
 
     if (data.ok) {
-        const values = styleFileWidget.options?.values ?? [];
-        const placeholderIdx = values.indexOf(EMPTY_VALUE);
-        if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
-        if (!values.includes(data.file)) {
-            values.push(data.file);
-            values.sort();
-        }
-        styleFileWidget.options.values = values;
-        styleFileWidget.value = data.file;
+        patchFileDropdown(styleFileWidget, EMPTY_VALUE, data.file);
         pushJsonToWidgets(
             node,
             JSON.parse(data.content),
@@ -338,15 +331,7 @@ const handleClone = async (node, styleFileWidget) => {
     const data = await res.json();
 
     if (data.ok) {
-        const values = styleFileWidget.options?.values ?? [];
-        const placeholderIdx = values.indexOf(EMPTY_VALUE);
-        if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
-        if (!values.includes(file)) {
-            values.push(file);
-            values.sort();
-        }
-        styleFileWidget.options.values = values;
-        styleFileWidget.value = file;
+        patchFileDropdown(styleFileWidget, EMPTY_VALUE, file);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] Clone failed: ${data.error}`);

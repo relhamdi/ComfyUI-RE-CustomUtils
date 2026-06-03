@@ -44,6 +44,18 @@ export const hookWidget = (widget, onChange) => {
     };
 };
 
+export const patchFileDropdown = (widget, noValueLabel, file) => {
+    const values = widget.options?.values ?? [];
+    const placeholderIdx = values.indexOf(noValueLabel);
+    if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
+    if (!values.includes(file)) {
+        values.push(file);
+        values.sort();
+    }
+    widget.options.values = values;
+    widget.value = file;
+};
+
 export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
     const minVisible = 1; // Always keep at least one slot
 
