@@ -1,4 +1,4 @@
-import { EMPTY_VALUE } from "./constants.js";
+import { API_ROOT, EMPTY_VALUE } from "./constants.js";
 import { findWidget, registerNode, waitForWidgets } from "./utils.js";
 import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { LoraRowWidget } from "./widgets/lora_row_widget.js";
@@ -7,7 +7,7 @@ import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 
 const NODE_NAME = "StyleLoader";
 
-const BASE_ENDPOINT = "/re-customutils/styles";
+const BASE_ENDPOINT = `${API_ROOT}/styles`;
 const NO_VAE = "none";
 const MAX_LORAS = 15;
 const DEFAULT_LORA_WEIGHT = 0.8;

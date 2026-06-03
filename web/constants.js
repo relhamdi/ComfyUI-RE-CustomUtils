@@ -1,3 +1,4 @@
+export const API_ROOT = "/re-customutils";
 export const EMPTY_VALUE = "--";
 
 export const COLORS = {
