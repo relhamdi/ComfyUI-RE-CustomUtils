@@ -101,6 +101,7 @@ def test_style_template_has_required_keys():
         "clip_skip",
         "loras",
         "quality_tags",
+        "extra_quality_tags",
         "negative_tags",
         "steps",
         "refiner_step",
