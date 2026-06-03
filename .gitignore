@@ -78,4 +78,4 @@ cython_debug/
 ############################
 
 .vscode/
-src/styles/
+src/data/
