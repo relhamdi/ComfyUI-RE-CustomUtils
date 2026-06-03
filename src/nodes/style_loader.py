@@ -9,7 +9,7 @@ import comfy.utils
 import folder_paths
 from server import PromptServer
 
-from ..config import NODE_CATEGORY
+from ..config import API_ROOT, DATA_DIR, NODE_CATEGORY
 from ..utils_loader import (
     delete_file,
     load_json_file,
@@ -20,13 +20,12 @@ from ..utils_loader import (
 
 # --- Constants ---
 
-STYLES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "styles")
+STYLES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), DATA_DIR, "styles")
 
 SAMPLER_NAMES = comfy.samplers.KSampler.SAMPLERS
 SCHEDULER_NAMES = comfy.samplers.KSampler.SCHEDULERS
 
-BASE_ENDPOINT = "/re-customutils/styles"
-
+BASE_ENDPOINT = f"{API_ROOT}/styles"
 
 STYLE_TEMPLATE = {
     "checkpoint": "",
