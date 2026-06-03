@@ -12,7 +12,7 @@ import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 const NODE_NAME = "CharacterLoader";
 const BASE_ENDPOINT = `${API_ROOT}/characters`;
 
-const CHARACTER_TEMPLATE_JS = {
+const CHARACTER_TEMPLATE = {
     eyes: "",
     hair_type: "",
     hair_style: "",
@@ -21,7 +21,7 @@ const CHARACTER_TEMPLATE_JS = {
     body_type: "",
 };
 
-const FIELDS = Object.keys(CHARACTER_TEMPLATE_JS);
+const FIELDS = Object.keys(CHARACTER_TEMPLATE);
 
 // --- JSON <-> Widgets sync ---
 
@@ -42,7 +42,7 @@ const pushJsonToWidgets = (node, data) => {
 };
 
 const clearWidgets = (node) => {
-    pushJsonToWidgets(node, CHARACTER_TEMPLATE_JS);
+    pushJsonToWidgets(node, CHARACTER_TEMPLATE);
 };
 
 // --- File loading ---
