@@ -1,8 +1,10 @@
 import json
 import os
 
+from .config import EMPTY_VALUE
 
-def scan_files(base_dir: str, empty_label: str = "--") -> list[str]:
+
+def scan_files(base_dir: str, empty_label: str = EMPTY_VALUE) -> list[str]:
     """Recursively scan for JSON files, return paths relative to base_dir."""
     results = []
     for root, _, files in os.walk(base_dir):

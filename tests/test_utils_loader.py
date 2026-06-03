@@ -3,6 +3,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+from src.config import EMPTY_VALUE
 from src.utils_loader import (
     delete_file,
     load_json_file,
@@ -61,7 +62,7 @@ def test_safe_relative_path_dotdot_middle():
 
 def test_scan_empty_dir(styles_dir):
     result = scan_files(str(styles_dir))
-    assert result == ["--"]
+    assert result == [EMPTY_VALUE]
 
 
 def test_scan_single_file(styles_dir):

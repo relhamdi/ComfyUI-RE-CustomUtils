@@ -1,4 +1,5 @@
 import pytest
+from src.config import EMPTY_VALUE
 from src.nodes.prompt_option_picker import PromptOptionPicker
 
 
@@ -26,7 +27,7 @@ def test_second_option(node):
 
 def test_empty_option_displayed_as_dash(node):
     # -- displays an empty string
-    (value,) = run(node, "sitting down\n\nstanding up", "--")
+    (value,) = run(node, "sitting down\n\nstanding up", EMPTY_VALUE)
     assert value == ""
 
 
@@ -37,12 +38,12 @@ def test_single_option(node):
 
 def test_whitespace_only_lines(node):
     # Line with only whitespaces counts as empty
-    (value,) = run(node, "a\n   \nb", "--")
+    (value,) = run(node, "a\n   \nb", EMPTY_VALUE)
     assert value == ""
 
 
 def test_empty_options_returns_empty(node):
-    (value,) = node.process(options="", selected="--")
+    (value,) = node.process(options="", selected=EMPTY_VALUE)
     assert value == ""
 
 

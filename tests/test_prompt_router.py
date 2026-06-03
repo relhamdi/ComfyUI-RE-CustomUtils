@@ -1,4 +1,5 @@
 import pytest
+from src.config import EMPTY_VALUE
 from src.nodes.prompt_router import PromptRouter
 
 
@@ -32,7 +33,7 @@ def make_prompt(unique_id, slot_titles):
 def run(node, selected, prompt=None, unique_id=None, **inputs):
     return node.process(
         selected=selected,
-        _sub_selected="--",
+        _sub_selected=EMPTY_VALUE,
         prompt=prompt,
         unique_id=unique_id,
         **inputs,
@@ -85,13 +86,13 @@ def test_router_indicator_in_label(node):
 
 
 def test_no_input_connected(node):
-    text, index = run(node, "--")
+    text, index = run(node, EMPTY_VALUE)
     assert text == ""
     assert index == 0
 
 
 def test_selected_dash(node):
-    text, index = run(node, "--", prompt={}, unique_id=1)
+    text, index = run(node, EMPTY_VALUE, prompt={}, unique_id=1)
     assert text == ""
     assert index == 0
 

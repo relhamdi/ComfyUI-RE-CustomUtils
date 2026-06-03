@@ -1,6 +1,6 @@
 import re
 
-from .. import config
+from ..config import NODE_CATEGORY
 from ..utils import clean_prompt
 
 
@@ -17,7 +17,7 @@ class PromptPresetSelector:
     - Index is 0-based.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
 
     @classmethod
     def INPUT_TYPES(cls):
