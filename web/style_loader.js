@@ -1,3 +1,4 @@
+import { EMPTY_VALUE } from "./constants.js";
 import { findWidget, registerNode, waitForWidgets } from "./utils.js";
 import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { LoraRowWidget } from "./widgets/lora_row_widget.js";
@@ -7,7 +8,6 @@ import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 const NODE_NAME = "StyleLoader";
 
 const BASE_ENDPOINT = "/re-customutils/styles";
-const NO_STYLE = "-- no styles found --";
 const NO_VAE = "none";
 const MAX_LORAS = 15;
 const DEFAULT_LORA_WEIGHT = 0.8;
@@ -236,7 +236,7 @@ const loadFileIntoWidgets = async (
     addButtonWidget,
     loadLoras = true,
 ) => {
-    if (!file || file === NO_STYLE) return;
+    if (!file || file === EMPTY_VALUE) return;
 
     try {
         const res = await fetch(
@@ -297,7 +297,7 @@ const handleNew = async (node, styleFileWidget, addButtonWidget) => {
 
     if (data.ok) {
         const values = styleFileWidget.options?.values ?? [];
-        const placeholderIdx = values.indexOf(NO_STYLE);
+        const placeholderIdx = values.indexOf(EMPTY_VALUE);
         if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
         if (!values.includes(data.file)) {
             values.push(data.file);
@@ -319,7 +319,7 @@ const handleNew = async (node, styleFileWidget, addButtonWidget) => {
 
 const handleSave = async (node, styleFileWidget) => {
     const file = styleFileWidget.value;
-    if (!file || file === NO_STYLE) {
+    if (!file || file === EMPTY_VALUE) {
         alert(`[${NODE_NAME}] No style file selected.`);
         return;
     }
@@ -357,7 +357,7 @@ const handleClone = async (node, styleFileWidget) => {
 
     if (data.ok) {
         const values = styleFileWidget.options?.values ?? [];
-        const placeholderIdx = values.indexOf(NO_STYLE);
+        const placeholderIdx = values.indexOf(EMPTY_VALUE);
         if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
         if (!values.includes(file)) {
             values.push(file);
@@ -373,7 +373,7 @@ const handleClone = async (node, styleFileWidget) => {
 
 const handleDelete = async (node, styleFileWidget, addButtonWidget) => {
     const file = styleFileWidget.value;
-    if (!file || file === NO_STYLE) {
+    if (!file || file === EMPTY_VALUE) {
         alert(`[${NODE_NAME}] No style file selected.`);
         return;
     }
@@ -390,12 +390,12 @@ const handleDelete = async (node, styleFileWidget, addButtonWidget) => {
         const values = styleFileWidget.options?.values ?? [];
         const idx = values.indexOf(file);
         if (idx !== -1) values.splice(idx, 1);
-        if (!values.length) values.push(NO_STYLE);
+        if (!values.length) values.push(EMPTY_VALUE);
 
         styleFileWidget.options.values = values;
         styleFileWidget.value = values[0];
         styleFileWidget.callback?.(values[0]);
-        if (values[0] === NO_STYLE) clearWidgets(node, addButtonWidget);
+        if (values[0] === EMPTY_VALUE) clearWidgets(node, addButtonWidget);
 
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
