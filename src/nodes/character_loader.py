@@ -24,7 +24,8 @@ BASE_ENDPOINT = f"{API_ROOT}/characters"
 
 CHARACTER_TEMPLATE = {
     "eyes": "",
-    "hair": "",
+    "hair_type": "",
+    "hair_style": "",
     "makeup": "",
     "jewelry": "",
     "body_type": "",
@@ -48,20 +49,30 @@ class CharacterLoader:
             "required": {
                 "character_file": (scan_files(_get_characters_dir()),),
                 "eyes": ("STRING", {"multiline": True, "default": ""}),
-                "hair": ("STRING", {"multiline": True, "default": ""}),
+                "hair_type": ("STRING", {"multiline": True, "default": ""}),
+                "hair_style": ("STRING", {"multiline": True, "default": ""}),
                 "makeup": ("STRING", {"multiline": True, "default": ""}),
                 "jewelry": ("STRING", {"multiline": True, "default": ""}),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
             }
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING")
-    RETURN_NAMES = ("eyes", "hair", "makeup", "jewelry", "body_type")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("eyes", "hair_type", "hair_style", "makeup", "jewelry", "body_type")
     FUNCTION = "load_character"
     CATEGORY = NODE_CATEGORY
 
-    def load_character(self, character_file, eyes, hair, makeup, jewelry, body_type):
-        return (eyes, hair, makeup, jewelry, body_type)
+    def load_character(
+        self,
+        character_file,
+        eyes,
+        hair_type,
+        hair_style,
+        makeup,
+        jewelry,
+        body_type,
+    ):
+        return (eyes, hair_type, hair_style, makeup, jewelry, body_type)
 
 
 # --- API Routes ---
