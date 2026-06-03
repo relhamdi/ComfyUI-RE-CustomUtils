@@ -2,7 +2,7 @@ import json
 import os
 
 
-def scan_files(base_dir: str, empty_label: str = "-- no files found --") -> list[str]:
+def scan_files(base_dir: str, empty_label: str = "--") -> list[str]:
     """Recursively scan for JSON files, return paths relative to base_dir."""
     results = []
     for root, _, files in os.walk(base_dir):

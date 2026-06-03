@@ -61,7 +61,7 @@ def test_safe_relative_path_dotdot_middle():
 
 def test_scan_empty_dir(styles_dir):
     result = scan_files(str(styles_dir))
-    assert result == ["-- no files found --"]
+    assert result == ["--"]
 
 
 def test_scan_single_file(styles_dir):

@@ -20,7 +20,9 @@ from ..utils_loader import (
 
 # --- Constants ---
 
-STYLES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), DATA_DIR, "styles")
+STYLES_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), DATA_DIR, "styles"
+)
 
 SAMPLER_NAMES = comfy.samplers.KSampler.SAMPLERS
 SCHEDULER_NAMES = comfy.samplers.KSampler.SCHEDULERS
@@ -96,7 +98,7 @@ class StyleLoader:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "style_file": (scan_files(_get_styles_dir(), "-- no styles found --"),),
+                "style_file": (scan_files(_get_styles_dir())),
                 "checkpoint": (folder_paths.get_filename_list("checkpoints"),),
                 "vae": (
                     ["none"] + folder_paths.get_filename_list("vae"),
