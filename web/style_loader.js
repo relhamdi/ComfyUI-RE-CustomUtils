@@ -245,6 +245,10 @@ const loadFileIntoWidgets = async (
 ) => {
     if (!file || file === EMPTY_VALUE) return;
 
+    // Empty loras_data before loading
+    const lorasDataWidget = findWidget(node, "loras_data");
+    if (lorasDataWidget) lorasDataWidget.value = "[]";
+
     try {
         const res = await fetch(
             `${BASE_ENDPOINT}/load?file=${encodeURIComponent(file)}`,
