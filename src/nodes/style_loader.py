@@ -316,6 +316,34 @@ async def delete_style(request: web.Request) -> web.Response:
         return web.json_response({"error": str(e)}, status=500)
 
 
+@PromptServer.instance.routes.get(f"{BASE_ENDPOINT}/preview")
+async def get_style_preview(request: web.Request) -> web.Response:
+    file = request.rel_url.query.get("file", "")
+    rel = safe_relative_path(file)
+    if not rel:
+        return web.json_response({"error": "Invalid path."}, status=400)
+
+    base = os.path.splitext(os.path.join(STYLES_DIR, rel))[0]
+    for ext in [".png", ".jpg", ".webp", ".jpeg"]:
+        path = base + ext
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
+                data = f.read()
+            import base64
+
+            b64 = base64.b64encode(data).decode()
+            mime = (
+                "image/png"
+                if ext == ".png"
+                else "image/jpeg"
+                if ext in [".jpg", ".jpeg"]
+                else "image/webp"
+            )
+            return web.json_response({"image": f"data:{mime};base64,{b64}"})
+
+    return web.json_response({"image": None})
+
+
 # --- Registration ---
 
 NODE_CLASS_MAPPINGS = {

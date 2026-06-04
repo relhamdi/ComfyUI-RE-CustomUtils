@@ -397,6 +397,61 @@ const addButtons = (node, styleFileWidget, addButtonWidget) => {
     node.widgets.push(buttonRowWidget);
 };
 
+// --- Preview ---
+
+const loadPreviewImage = async (file, node) => {
+    if (!file || file === EMPTY_VALUE) {
+        node._previewImage = null;
+        return;
+    }
+    try {
+        const res = await fetch(
+            `${BASE_ENDPOINT}/preview?file=${encodeURIComponent(file)}`,
+        );
+        const data = await res.json();
+        if (data.image) {
+            const img = new Image();
+            img.onload = () => {
+                node._previewImage = img;
+                if (node.graph) node.graph.setDirtyCanvas(true, true);
+            };
+            img.src = data.image;
+        } else {
+            node._previewImage = null;
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        }
+    } catch (e) {
+        console.warn(`[${NODE_NAME}] Failed to load preview:`, e);
+        node._previewImage = null;
+    }
+};
+
+const attachPreview = (node) => {
+    const original = node.onDrawBackground;
+    node.onDrawBackground = function (ctx) {
+        if (original) original.call(this, ctx);
+        if (!node._previewImage) return;
+
+        const img = node._previewImage;
+        const margin = 10;
+        const maxH = 200;
+        const maxW = node.size[0] - margin * 2;
+
+        const ratio = Math.min(maxW / img.width, maxH / img.height);
+        const w = img.width * ratio;
+        const h = img.height * ratio;
+
+        // Position: top center
+        const x = (node.size[0] - w) / 2;
+        const y = margin;
+
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(img, x, y, w, h);
+        ctx.restore();
+    };
+};
+
 // --- Attach ---
 
 const attachStyleLoader = (node) => {
@@ -434,19 +489,24 @@ const attachStyleLoader = (node) => {
         lorasDataWidget.hidden = true;
     }
 
-    // Load initial file
+    // Attach preview
+    attachPreview(node);
+
+    // Load initial file + preview
     loadFileIntoWidgets(
         styleFileWidget.value,
         node,
         addButtonWidget,
         !hasPersistedLoras,
     );
+    loadPreviewImage(styleFileWidget.value, node);
 
     // Reload on file change
     const originalCallback = styleFileWidget.callback;
     styleFileWidget.callback = function (value) {
         if (originalCallback) originalCallback.call(this, value);
         loadFileIntoWidgets(value, node, addButtonWidget);
+        loadPreviewImage(value, node);
     };
 };
 

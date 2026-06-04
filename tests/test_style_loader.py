@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from unittest.mock import MagicMock, patch
@@ -188,11 +189,36 @@ def app(tmp_path):
         os.remove(path)
         return web.json_response({"ok": True})
 
+    async def preview_handler(request):
+        file = request.rel_url.query.get("file", "")
+        rel = safe_relative_path(file)
+        if not rel:
+            return web.json_response({"error": "Invalid path."}, status=400)
+
+        base = os.path.splitext(os.path.join(str(tmp_path), rel))[0]
+        for ext in [".png", ".jpg", ".webp", ".jpeg"]:
+            path = base + ext
+            if os.path.isfile(path):
+                with open(path, "rb") as f:
+                    data = f.read()
+                b64 = base64.b64encode(data).decode()
+                mime = (
+                    "image/png"
+                    if ext == ".png"
+                    else "image/jpeg"
+                    if ext in [".jpg", ".jpeg"]
+                    else "image/webp"
+                )
+                return web.json_response({"image": f"data:{mime};base64,{b64}"})
+
+        return web.json_response({"image": None})
+
     application = web.Application()
     application.router.add_post("/styles/save", save_handler)
     application.router.add_post("/styles/new", new_handler)
     application.router.add_get("/styles/load", load_handler)
     application.router.add_post("/styles/delete", delete_handler)
+    application.router.add_get("/styles/preview", preview_handler)
     return application
 
 
@@ -324,3 +350,86 @@ async def test_delete_not_found(client):
 async def test_delete_invalid_path(client):
     resp = await client.post("/styles/delete", json={"file": "../../evil.json"})
     assert resp.status == 400
+
+
+# --- /styles/preview ---
+
+
+async def test_preview_png_found(client, tmp_path):
+    # Create a minimal 1x1 PNG
+    png_bytes = (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+        b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00"
+        b"\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18"
+        b"\xd8N\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    (tmp_path / "style.png").write_bytes(png_bytes)
+    resp = await client.get("/styles/preview?file=style.json")
+    assert resp.status == 200
+    data = await resp.json()
+    assert data["image"] is not None
+    assert data["image"].startswith("data:image/png;base64,")
+
+
+async def test_preview_jpg_found(client, tmp_path):
+    # Minimal JPEG bytes
+    jpg_bytes = bytes(
+        [
+            0xFF,
+            0xD8,
+            0xFF,
+            0xE0,
+            0x00,
+            0x10,
+            0x4A,
+            0x46,
+            0x49,
+            0x46,
+            0x00,
+            0x01,
+            0x01,
+            0x00,
+            0x00,
+            0x01,
+            0x00,
+            0x01,
+            0x00,
+            0x00,
+            0xFF,
+            0xD9,
+        ]
+    )
+    (tmp_path / "style.jpg").write_bytes(jpg_bytes)
+    resp = await client.get("/styles/preview?file=style.json")
+    assert resp.status == 200
+    data = await resp.json()
+    assert data["image"].startswith("data:image/jpeg;base64,")
+
+
+async def test_preview_no_image(client, tmp_path):
+    (tmp_path / "style.json").write_text("{}")
+    resp = await client.get("/styles/preview?file=style.json")
+    assert resp.status == 200
+    data = await resp.json()
+    assert data["image"] is None
+
+
+async def test_preview_invalid_path(client):
+    resp = await client.get("/styles/preview?file=../../etc/passwd")
+    assert resp.status == 400
+
+
+async def test_preview_subdir(client, tmp_path):
+    sub = tmp_path / "anime"
+    sub.mkdir()
+    png_bytes = (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+        b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00"
+        b"\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18"
+        b"\xd8N\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    (sub / "illustrious.png").write_bytes(png_bytes)
+    resp = await client.get("/styles/preview?file=anime/illustrious.json")
+    assert resp.status == 200
+    data = await resp.json()
+    assert data["image"] is not None
