@@ -1,5 +1,11 @@
 """Top-level package for the node pack."""
 
+from src.nodes.break_encoder import (
+    NODE_CLASS_MAPPINGS as BreakEncoderMappings,
+)
+from src.nodes.break_encoder import (
+    NODE_DISPLAY_NAME_MAPPINGS as BreakEncoderDisplayMappings,
+)
 from src.nodes.character_loader import (
     NODE_CLASS_MAPPINGS as CharacterLoaderMappings,
 )
@@ -58,6 +64,7 @@ NODE_CLASS_MAPPINGS.update(PromptRouterMappings)
 NODE_CLASS_MAPPINGS.update(QuickComboMappings)
 NODE_CLASS_MAPPINGS.update(StyleLoaderMappings)
 NODE_CLASS_MAPPINGS.update(CharacterLoaderMappings)
+NODE_CLASS_MAPPINGS.update(BreakEncoderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -68,6 +75,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(PromptRouterDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(QuickComboDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(StyleLoaderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(CharacterLoaderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(BreakEncoderDisplayMappings)
 
 # Node registration
 __all__ = [
