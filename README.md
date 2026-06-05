@@ -600,7 +600,7 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 
 ## Tests
 
-This project uses `pytest`and `pytest-aiohtttp` for its tests, and [uv](https://github.com/astral-sh/uv) for the versioning.
+This project uses `pytest` and `pytest-aiohtttp` for its tests, and [uv](https://github.com/astral-sh/uv) for the versioning.
 After downloading `uv`, just run:
 ```sh
 uv sync --dev
@@ -613,6 +613,10 @@ Then, to run the tests:
 ```sh
 uv run pytest
 ```
+
+### Limitations
+
+Currently, the relative imports in the root `__init__.py` file are preventing pytest from running. The solution is to change all the imports from `.src.xxx` to `src.xxx` for the tests, and then revert them for the ComfyUI execution.
 
 ---
 
