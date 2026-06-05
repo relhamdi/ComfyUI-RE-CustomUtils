@@ -1,6 +1,6 @@
 [project]
 name = "ComfyUI-RE-CustomUtils"
-version = "0.6.1"
+version = "0.7.0"
 description = "A collection of custom nodes for ComfyUI."
 license = { file = "LICENSE" }
 readme = "README.md"
