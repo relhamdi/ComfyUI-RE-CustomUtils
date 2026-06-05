@@ -1,6 +1,6 @@
 import re
 
-from .. import config
+from ..config import NODE_CATEGORY
 from ..utils import clean_prompt
 
 
@@ -12,7 +12,7 @@ class PromptLayoutFiller:
     Unconnected slots referenced in the template raise an error.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
     NUM_SLOTS = 10
 
     PLACEHOLDER_PATTERN = re.compile(r"\{(\d+)(?::[^}]*)?\}")

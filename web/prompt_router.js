@@ -1,6 +1,7 @@
 import { EMPTY_VALUE } from "./constants.js";
 import {
     debounce,
+    findWidget,
     hideWidget,
     registerNode,
     updateSlotVisibility,
@@ -108,16 +109,10 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
         subOptions.length > 0 ? subOptions.map((o) => o.label) : [EMPTY_VALUE];
 
     // Find Python-backed widget for persistence
-    const subSelectedWidget = node.widgets?.find(
-        (w) => w.name === "_sub_selected",
-    );
+    const subSelectedWidget = findWidget(node, "_sub_selected");
     // Read child router's current selection for initial value
-    const childSelectedWidget = routerNode.widgets?.find(
-        (w) => w.name === "selected",
-    );
-    const childComboWidget = routerNode.widgets?.find(
-        (w) => w.name === "source",
-    );
+    const childSelectedWidget = findWidget(routerNode, "selected");
+    const childComboWidget = findWidget(routerNode, "source");
 
     if (childComboWidget) {
         // Initialize listener set once on the child widget
@@ -234,10 +229,8 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
 // --- Attach ---
 
 const attachRouter = (node) => {
-    const selectedWidget = node.widgets?.find((w) => w.name === "selected");
-    const subSelectedWidget = node.widgets?.find(
-        (w) => w.name === "_sub_selected",
-    );
+    const selectedWidget = findWidget(node, "selected");
+    const subSelectedWidget = findWidget(node, "_sub_selected");
     if (!selectedWidget) return;
 
     // Hide native Python widgets

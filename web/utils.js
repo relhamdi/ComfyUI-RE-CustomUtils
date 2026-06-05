@@ -18,6 +18,16 @@ export const escapeHtml = (str) =>
 
 // --- Widget helpers ---
 
+// Find widget by name
+export const findWidget = (node, name) =>
+    node.widgets?.find((w) => w.name === name);
+
+export const setWidgetValue = (widget, value) => {
+    if (!widget) return;
+    widget.value = value;
+    widget.callback?.(value);
+};
+
 // Hide ComfyUI widget component
 export const hideWidget = (widgetName) => {
     widgetName.type = "hidden";
@@ -32,6 +42,18 @@ export const hookWidget = (widget, onChange) => {
         if (original) original.call(this, value);
         onChange(value);
     };
+};
+
+export const patchFileDropdown = (widget, noValueLabel, file) => {
+    const values = widget.options?.values ?? [];
+    const placeholderIdx = values.indexOf(noValueLabel);
+    if (placeholderIdx !== -1) values.splice(placeholderIdx, 1);
+    if (!values.includes(file)) {
+        values.push(file);
+        values.sort();
+    }
+    widget.options.values = values;
+    widget.value = file;
 };
 
 export const updateSlotVisibility = (node, numSlots, prefix = "input") => {
@@ -346,7 +368,7 @@ export const waitForWidget = (node, widgetName, callback) => {
 
     // Retry until widgets DOM is ready
     const tryAttach = () => {
-        const widget = node.widgets?.find((w) => w.name === widgetName);
+        const widget = findWidget(node, widgetName);
         if (widget?.inputEl?.parentNode) {
             callback(node);
         } else {
@@ -369,4 +391,30 @@ export const waitForWidgets = (node, callback) => {
         }
     };
     requestAnimationFrame(tryAttach);
+};
+
+// --- Buttons ---
+
+export const flashButton = (node, index, flashLabel) => {
+    const buttonRowWidget = node.widgets.find(
+        (w) => w.name === "action_buttons",
+    );
+    if (!buttonRowWidget) return;
+    const btn = buttonRowWidget.buttons[index];
+
+    // Cancel previous timer if existing
+    if (btn._flashTimer) clearTimeout(btn._flashTimer);
+
+    // Save original if not flashing
+    if (!btn._originalLabel) btn._originalLabel = btn.label;
+
+    btn.label = flashLabel;
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+
+    btn._flashTimer = setTimeout(() => {
+        btn.label = btn._originalLabel;
+        btn._originalLabel = null;
+        btn._flashTimer = null;
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    }, 1500);
 };

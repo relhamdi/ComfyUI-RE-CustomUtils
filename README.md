@@ -367,6 +367,198 @@ Toggle `one_based` to match the indexing convention of other nodes in your workf
 
 ---
 
+### StyleLoader
+
+![StyleLoader_v1](docs/images/StyleLoader_v1.png)
+
+#### Inputs
+
+- `style_file` (combo) — dropdown listing all `.json` files found recursively under the `styles/` folder. Supports subfolders (e.g. `anime/illustrious.json`).
+- `checkpoint` (combo) — model checkpoint to load.
+- `vae` (combo) — VAE override. Select `none` to use the checkpoint's built-in VAE.
+- `clip_skip` (int), default `-2` — number of CLIP layers to skip. Set to `-1` to disable.
+- `quality_tags` (str) — positive quality prompt, passed through as a string output.
+- `extra_quality_tags` (str) — extra positive quality prompt, passed through as a string output.
+- `negative_tags` (str) — negative quality prompt, passed through as a string output.
+- `steps` (int), default `15` — number of sampling steps.
+- `refiner_step` (int), default `24` — step at which a refiner pass begins, if used.
+- `cfg` (float), default `4.0` — classifier-free guidance scale.
+- `sampler` (combo) — sampler name, sourced from ComfyUI's own sampler list.
+- `scheduler` (combo) — scheduler name, sourced from ComfyUI's own scheduler list.
+- `loras_data` (str, internal) — serialized LoRA list for workflow persistence.
+
+#### Outputs
+
+- `model` — loaded model with LoRAs applied.
+- `clip` — CLIP encoder with clip skip and LoRAs applied.
+- `vae` — VAE (overridden or from checkpoint).
+- `quality_tags` (str) — positive prompt passthrough.
+- `extra_quality_tags` (str) — extra positive prompt passthrough.
+- `negative_tags` (str) — negative prompt passthrough.
+- `steps` (int)
+- `refiner_step` (int)
+- `cfg` (float)
+- `sampler` (str)
+- `scheduler` (str)
+
+#### Usage
+
+Style files are `.json` files stored under the `src/data/styles/` folder at the root of the extension. Subfolders are supported and reflected in the dropdown after a page refresh.
+
+A style file contains all parameters for a generation setup:
+
+```json
+{
+  "checkpoint": "model.safetensors",
+  "vae": "none",
+  "clip_skip": -2,
+  "loras": [
+    { "name": "lora.safetensors", "weight": 0.8 }
+  ],
+  "quality_tags": "masterpiece, best quality",
+  "extra_quality_tags": "perfect face",
+  "negative_tags": "worst quality, low quality",
+  "steps": 15,
+  "refiner_step": 24,
+  "cfg": 4.0,
+  "sampler": "euler_ancestral",
+  "scheduler": "karras"
+}
+```
+
+LoRAs support a single `weight` (applied to both model and clip), or separate `model_weight` and `clip_weight`.
+
+#### Preview
+
+You can embed a preview image for each of your styles by putting an image with the same name as the style in its directory. The node looks for `png`, `jpg`, `webp` or `jpeg` files, and display the image if found on top of the style_file input, next to the outputs.
+
+#### Editor
+
+The node includes a built-in styled editor:
+
+- All fields are native ComfyUI widgets — checkpoints, VAE and samplers have built-in search and autocomplete.
+- LoRA rows are displayed as canvas widgets, one per line, with a name picker, weight control, and remove button.
+- The weight can be adjusted by dragging horizontally, clicking the `◀` / `▶` arrows, or clicking the value to type it directly.
+- Clicking the LoRA name opens a searchable dropdown.
+
+#### Actions
+
+| Button     | Action                                                  |
+| ---------- | ------------------------------------------------------- |
+| `➕ New`    | Creates a new style file from a blank template          |
+| `💾 Save`   | Saves current widget values to the selected style file  |
+| `📋 Clone`  | Saves current values to a new file                      |
+| `🗑️ Delete` | Deletes the selected style file (requires confirmation) |
+
+Adding a new style file or refreshing an existing one takes effect immediately without restarting ComfyUI. Adding new files to the `styles/` folder externally requires a page refresh (F5) to appear in the dropdown.
+
+---
+
+### CharacterLoader
+
+![CharacterLoader_v1](docs/images/CharacterLoader_v1.png)
+
+#### Inputs
+
+- `character_file` (combo) — dropdown listing all `.json` files found recursively under the `src/data/characters/` folder.
+- `eyes` (str) — eye description tags.
+- `hair_type` (str) — hair type tags.
+- `hair_style` (str) — hair style tags.
+- `makeup` (str) — makeup tags.
+- `jewelry` (str) — jewelry tags.
+- `body_type` (str) — body type tags.
+
+#### Outputs
+
+- `eyes` (str)
+- `hair_type` (str)
+- `hair_style` (str)
+- `makeup` (str)
+- `jewelry` (str)
+- `body_type` (str)
+
+#### Usage
+
+Same file system as `StyleLoader`, JSON files stored under `src/data/characters/`. Subfolders are supported and reflected in the dropdown after a page refresh.
+
+```json
+{
+  "eyes": "blue eyes, detailed eyes",
+  "hair_type": "long hair, black hair",
+  "hair_style": "ponytail, hair ribbon",
+  "makeup": "eyeliner",
+  "jewelry": "gold earrings, necklace",
+  "body_type": "slim, tall"
+}
+```
+
+Each field is output as a plain string, ready to be plugged into any other string input.
+
+#### Actions
+
+| Button     | Action                                                      |
+| ---------- | ----------------------------------------------------------- |
+| `➕ New`    | Creates a new character file from a blank template          |
+| `💾 Save`   | Saves current field values to the selected character file   |
+| `📋 Clone`  | Saves current values to a new file                          |
+| `🗑️ Delete` | Deletes the selected character file (requires confirmation) |
+
+---
+
+### BreakEncoder
+
+![BreakEncoder_v1](docs/images/BreakEncoder_v1.png)
+
+#### Inputs
+
+- `clip` (CLIP) — CLIP encoder, typically from a checkpoint loader.
+- `break_keyword` (str), default `BREAK` — keyword used to split the prompt into blocks. Case-sensitive.
+- `text` (str) — multiline prompt with break blocks.
+- `cleanup` (bool), default `True` — applies prompt cleanup on each block before encoding.
+
+#### Outputs
+
+- `conditioning` (CONDITIONING) — concatenated conditioning from all blocks.
+- `text` (str) — cleaned blocks joined by `\n---\n`, reflecting exactly what was encoded.
+
+#### Usage
+
+Write a prompt with break blocks separated by the keyword:
+
+```
+masterpiece, best quality,
+BREAK
+character, solo, long hair,
+BREAK
+white background, simple background
+```
+
+Each block is encoded separately then concatenated, equivalent to ComfyUI's `ConditioningConcat` chained across all blocks. This matches the behavior of A1111/Yodayo's `BREAK` keyword.
+
+The `text` output reflects exactly what was encoded after cleanup, useful for debugging:
+
+```
+masterpiece, best quality
+---
+character, solo, long hair
+---
+white background, simple background
+```
+
+#### Cleanup
+
+When enabled, applies the same cleanup rules as `PromptPresetSelector` on each block individually. Blocks that become empty after cleanup are silently filtered out.
+
+#### Validation
+
+The node stops the workflow on error if:
+- `clip` input is `None`
+- `text` is empty or whitespace only
+- `break_keyword` is empty or whitespace only
+- No valid blocks remain after splitting and cleanup
+
+---
+
 ### Web
 
 #### contentEditable editor
@@ -408,7 +600,7 @@ The selection is preserved after each keypress, consistent with ComfyUI native b
 
 ## Tests
 
-This project uses `pytest`and `pytest-aiohtttp` for its tests, and [uv](https://github.com/astral-sh/uv) for the versioning.
+This project uses `pytest` and `pytest-aiohtttp` for its tests, and [uv](https://github.com/astral-sh/uv) for the versioning.
 After downloading `uv`, just run:
 ```sh
 uv sync --dev
@@ -422,6 +614,10 @@ Then, to run the tests:
 uv run pytest
 ```
 
+### Limitations
+
+Currently, the relative imports in the root `__init__.py` file are preventing pytest from running. The solution is to change all the imports from `.src.xxx` to `src.xxx` for the tests, and then revert them for the ComfyUI execution.
+
 ---
 
 ## TODO
@@ -432,3 +628,14 @@ uv run pytest
 
 `PromptRouter`
 - Add support for more sub-routing levels?
+
+`StyleLoader`
+- LoRA toggle on/off per row
+- Separate model/clip weight per LoRA on UI
+- Better LoRA row style
+
+`CharacterLoader`
+- Preview image for characters
+
+`BreakEncoder`
+- Colored editor highlighting BREAK keywords

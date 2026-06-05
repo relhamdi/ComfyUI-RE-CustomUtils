@@ -1,4 +1,4 @@
-from .. import config
+from ..config import EMPTY_VALUE, NODE_CATEGORY
 
 
 class QuickCombo:
@@ -6,7 +6,7 @@ class QuickCombo:
     Creates a dropdown from a comma-separated list typed inline.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -29,7 +29,7 @@ class QuickCombo:
                 "selected": (
                     "STRING",
                     {
-                        "default": "--",
+                        "default": EMPTY_VALUE,
                         "tooltip": "Internal — stores selected value.",
                     },
                 ),
@@ -49,7 +49,7 @@ class QuickCombo:
         if not parsed:
             return ("", 0)
 
-        value = "" if selected == "--" else selected
+        value = "" if selected == EMPTY_VALUE else selected
         index = parsed.index(value) if value in parsed else 0
 
         if one_based:

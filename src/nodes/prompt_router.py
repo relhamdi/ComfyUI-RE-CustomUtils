@@ -1,4 +1,4 @@
-from .. import config
+from ..config import EMPTY_VALUE, NODE_CATEGORY
 
 
 class PromptRouter:
@@ -8,7 +8,7 @@ class PromptRouter:
     showing the title of each connected source node.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
     NUM_INPUTS = 10
 
     @classmethod
@@ -18,14 +18,14 @@ class PromptRouter:
                 "selected": (
                     "STRING",
                     {
-                        "default": "--",
+                        "default": EMPTY_VALUE,
                         "tooltip": "Select the active input.",
                     },
                 ),
                 "_sub_selected": (
                     "STRING",
                     {
-                        "default": "--",
+                        "default": EMPTY_VALUE,
                         "tooltip": "Internal use only.",
                     },
                 ),
@@ -91,7 +91,7 @@ class PromptRouter:
         # Remove internal widgets from kwargs
         kwargs.pop("_sub_source", None)
 
-        if not selected or selected == "--":
+        if not selected or selected == EMPTY_VALUE:
             return ("", 0)
 
         mapping = self._build_mapping(prompt, unique_id, kwargs)

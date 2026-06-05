@@ -1,4 +1,4 @@
-from .. import config
+from ..config import NODE_CATEGORY
 
 
 class PromptSwitch:
@@ -8,7 +8,7 @@ class PromptSwitch:
     If the node is bypassed, ComfyUI returns on_true by convention.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
 
     @classmethod
     def INPUT_TYPES(cls):

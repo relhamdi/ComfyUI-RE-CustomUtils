@@ -1,5 +1,10 @@
 import { COLORS } from "./constants.js";
-import { hookWidget, registerNode, waitForWidgets } from "./utils.js";
+import {
+    findWidget,
+    hookWidget,
+    registerNode,
+    waitForWidgets,
+} from "./utils.js";
 
 // --- Constants ---
 
@@ -10,8 +15,8 @@ const NODE_NAME = "PromptSwitch";
 const updateInputColors = (node, condition) => {
     const trueInput = node.inputs?.find((inp) => inp.name === "on_true");
     const falseInput = node.inputs?.find((inp) => inp.name === "on_false");
-    const trueWidget = node.widgets?.find((w) => w.name === "on_true");
-    const falseWidget = node.widgets?.find((w) => w.name === "on_false");
+    const trueWidget = findWidget(node, "on_true");
+    const falseWidget = findWidget(node, "on_false");
     if (!trueInput || !falseInput) return;
 
     const trueActive =
@@ -39,9 +44,9 @@ const updateInputColors = (node, condition) => {
 // --- Attach ---
 
 const attachSwitch = (node) => {
-    const trueWidget = node.widgets?.find((w) => w.name === "on_true");
-    const falseWidget = node.widgets?.find((w) => w.name === "on_false");
-    const conditionWidget = node.widgets?.find((w) => w.name === "condition");
+    const trueWidget = findWidget(node, "on_true");
+    const falseWidget = findWidget(node, "on_false");
+    const conditionWidget = findWidget(node, "condition");
     if (!conditionWidget) return;
 
     const refresh = () => {
@@ -60,14 +65,13 @@ const attachSwitch = (node) => {
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
 
-        const trueWidget = node.widgets?.find((w) => w.name === "on_true");
-        const falseWidget = node.widgets?.find((w) => w.name === "on_false");
+        const trueWidget = findWidget(node, "on_true");
+        const falseWidget = findWidget(node, "on_false");
         const trueInput = node.inputs?.find((inp) => inp.name === "on_true");
         const falseInput = node.inputs?.find((inp) => inp.name === "on_false");
         if (!trueWidget || !falseWidget) return;
 
-        const condition =
-            node.widgets?.find((w) => w.name === "condition")?.value ?? true;
+        const condition = findWidget(node, "condition")?.value ?? true;
 
         const drawBorder = (widget, color, input) => {
             // Skip if not connected AND widget value is empty

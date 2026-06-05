@@ -1,4 +1,4 @@
-from .. import config
+from ..config import EMPTY_VALUE, NODE_CATEGORY
 from ..utils import parse_options
 
 
@@ -11,7 +11,7 @@ class PromptOptionPicker:
     --- outside a block is treated as a literal option.
     """
 
-    CATEGORY = config.NODE_CATEGORY
+    CATEGORY = NODE_CATEGORY
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -28,7 +28,7 @@ class PromptOptionPicker:
                     },
                 ),
                 "selected": (
-                    ["--"],
+                    [EMPTY_VALUE],
                     {
                         "tooltip": "Select an option.",
                     },
@@ -50,7 +50,7 @@ class PromptOptionPicker:
 
     def process(self, options, selected):
         # -- displays an empty string
-        value = "" if selected in ("--", "\u200b") else selected
+        value = "" if selected in (EMPTY_VALUE, "\u200b") else selected
         return (value,)
 
 

@@ -1,5 +1,12 @@
 import { COLORS, EMPTY_VALUE } from "./constants.js";
-import { createEditor, escapeHtml, hookWidget, registerNode, waitForWidget } from "./utils.js";
+import {
+    createEditor,
+    escapeHtml,
+    findWidget,
+    hookWidget,
+    registerNode,
+    waitForWidget,
+} from "./utils.js";
 
 // --- Constants ---
 
@@ -149,8 +156,8 @@ const parseOptions = (raw) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    const optionsWidget = node.widgets?.find((w) => w.name === "options");
-    const selectedWidget = node.widgets?.find((w) => w.name === "selected");
+    const optionsWidget = findWidget(node, "options");
+    const selectedWidget = findWidget(node, "selected");
 
     if (!optionsWidget || !selectedWidget) return;
 

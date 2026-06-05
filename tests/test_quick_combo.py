@@ -1,4 +1,5 @@
 import pytest
+from src.config import EMPTY_VALUE
 from src.nodes.quick_combo import QuickCombo
 
 
@@ -37,13 +38,13 @@ def test_last_option(node):
 
 
 def test_empty_selected(node):
-    value, index = run(node, "neutral, happy", "--")
+    value, index = run(node, "neutral, happy", EMPTY_VALUE)
     assert value == ""
     assert index == 0
 
 
 def test_empty_options(node):
-    value, index = run(node, "", "--")
+    value, index = run(node, "", EMPTY_VALUE)
     assert value == ""
     assert index == 0
 

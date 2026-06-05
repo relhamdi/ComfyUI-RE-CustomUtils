@@ -2,6 +2,7 @@ import { COLORS } from "./constants.js";
 import {
     createEditor,
     escapeHtml,
+    findWidget,
     hideWidget,
     hookWidget,
     registerNode,
@@ -95,11 +96,11 @@ const buildHighlightedHtml = (raw, syntax, presetIndex) => {
 // --- Editor ---
 
 const attachEditor = (node) => {
-    const textWidget = node.widgets?.find((w) => w.name === "text");
-    const syntaxWidget = node.widgets?.find((w) => w.name === "syntax");
-    const presetWidget = node.widgets?.find((w) => w.name === "preset_index");
-    const comboWidget = node.widgets?.find((w) => w.name === "preset_name");
-    const namesWidget = node.widgets?.find((w) => w.name === "preset_names");
+    const textWidget = findWidget(node, "text");
+    const syntaxWidget = findWidget(node, "syntax");
+    const presetWidget = findWidget(node, "preset_index");
+    const comboWidget = findWidget(node, "preset_name");
+    const namesWidget = findWidget(node, "preset_names");
 
     // Saving widget type
     const originalPresetType = presetWidget.type;
