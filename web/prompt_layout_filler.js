@@ -1,4 +1,4 @@
-import { COLORS, EMPTY_VALUE } from "./constants.js";
+import { COLORS } from "./constants.js";
 import {
     createEditor,
     debounce,
@@ -65,21 +65,29 @@ const getSourceNode = (node, slotIndex) => {
     return app.graph.getNodeById(link.origin_id) ?? null;
 };
 
-const getSourceValue = (sourceNode) => {
-    const widget = sourceNode?.widgets?.find((w) => w.name === "selected");
-    return widget?.value ?? null;
+const getSourceLabel = (sourceNode) => {
+    const widget = findWidget(sourceNode, "selected");
+    if (!widget) return null;
+
+    // Retrieve label from value through inverted _labelMap
+    if (sourceNode._labelMap) {
+        for (const [label, value] of sourceNode._labelMap.entries()) {
+            if (value === widget.value) return label;
+        }
+    }
+    return widget.value || null;
 };
 
-const setSourceValue = (sourceNode, value) => {
-    const widget = sourceNode?.widgets?.find((w) => w.name === "selected");
+const setSourceByLabel = (sourceNode, label) => {
+    const widget = findWidget(sourceNode, "selected");
     if (!widget) return false;
 
     // Check value exists in options
     const options = widget.options?.values ?? [];
-    if (!options.includes(value)) return false;
+    if (!options.includes(label)) return false;
 
-    widget.value = value;
-    widget.callback?.(value);
+    widget.value = sourceNode._labelMap?.get(label) ?? label;
+    widget.callback?.(label);
     return true;
 };
 
@@ -110,8 +118,8 @@ const captureSlots = (node) => {
     for (let i = 0; i < NUM_SLOTS; i++) {
         const source = getSourceNode(node, i);
         if (!source) continue;
-        const value = getSourceValue(source);
-        if (value !== null) slots[`slot_${i}`] = value || EMPTY_VALUE;
+        const label = getSourceLabel(source);
+        if (label !== null) slots[`slot_${i}`] = label;
     }
     return slots;
 };
@@ -119,7 +127,7 @@ const captureSlots = (node) => {
 const recallSlots = (node, slots) => {
     const errors = [];
 
-    for (const [slotName, value] of Object.entries(slots)) {
+    for (const [slotName, label] of Object.entries(slots)) {
         const idx = parseInt(slotName.replace("slot_", ""));
         const source = getSourceNode(node, idx);
 
@@ -128,10 +136,10 @@ const recallSlots = (node, slots) => {
             continue;
         }
 
-        const ok = setSourceValue(source, value);
+        const ok = setSourceByLabel(source, label);
         if (!ok) {
             errors.push(
-                `${slotName}: value "${value}" not found in source node options.`,
+                `${slotName}: value "${label}" not found in source node options.`,
             );
         }
     }
