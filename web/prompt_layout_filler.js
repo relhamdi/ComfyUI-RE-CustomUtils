@@ -1,4 +1,4 @@
-import { COLORS } from "./constants.js";
+import { COLORS, EMPTY_VALUE } from "./constants.js";
 import {
     createEditor,
     debounce,
@@ -111,7 +111,7 @@ const captureSlots = (node) => {
         const source = getSourceNode(node, i);
         if (!source) continue;
         const value = getSourceValue(source);
-        if (value !== null) slots[`slot_${i}`] = value;
+        if (value !== null) slots[`slot_${i}`] = value || EMPTY_VALUE;
     }
     return slots;
 };
