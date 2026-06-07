@@ -8,6 +8,7 @@ import {
     updateSlotVisibility,
     waitForWidget,
 } from "./utils.js";
+import { PresetRowWidget } from "./widgets/preset_row_widget.js";
 
 // --- Constants ---
 
@@ -53,6 +54,87 @@ const getConnectedSlots = (node) => {
     return connected;
 };
 
+// --- Source node helpers ---
+
+const getSourceNode = (node, slotIndex) => {
+    const input = node.inputs?.find((inp) => inp.name === `slot_${slotIndex}`);
+    if (!input?.link) return null;
+    const link = app.graph.links[input.link];
+    if (!link) return null;
+    return app.graph.getNodeById(link.origin_id) ?? null;
+};
+
+const getSourceValue = (sourceNode) => {
+    const widget = sourceNode?.widgets?.find((w) => w.name === "selected");
+    return widget?.value ?? null;
+};
+
+const setSourceValue = (sourceNode, value) => {
+    const widget = sourceNode?.widgets?.find((w) => w.name === "selected");
+    if (!widget) return false;
+
+    // Check value exists in options
+    const options = widget.options?.values ?? [];
+    if (!options.includes(value)) return false;
+
+    widget.value = value;
+    widget.callback?.(value);
+    return true;
+};
+
+// --- Preset management ---
+
+const loadPresets = (node) => {
+    const w = findWidget(node, "preset_data");
+    if (!w?.value) return {};
+    try {
+        return JSON.parse(w.value);
+    } catch {
+        return {};
+    }
+};
+
+const savePresets = (node, data) => {
+    const w = findWidget(node, "preset_data");
+    if (w) w.value = JSON.stringify(data);
+};
+
+const getPresetNames = (data) => Object.keys(data);
+
+const captureSlots = (node) => {
+    const slots = {};
+    for (let i = 0; i < NUM_SLOTS; i++) {
+        const source = getSourceNode(node, i);
+        if (!source) continue;
+        const value = getSourceValue(source);
+        if (value !== null) slots[`slot_${i}`] = value;
+    }
+    return slots;
+};
+
+const recallSlots = (node, slots) => {
+    const errors = [];
+
+    for (const [slotName, value] of Object.entries(slots)) {
+        const idx = parseInt(slotName.replace("slot_", ""));
+        const source = getSourceNode(node, idx);
+
+        if (!source) {
+            errors.push(`${slotName}: source node is no longer connected.`);
+            continue;
+        }
+
+        const ok = setSourceValue(source, value);
+        if (!ok) {
+            errors.push(
+                `${slotName}: value "${value}" not found in source node options.`,
+            );
+        }
+    }
+
+    return errors;
+};
+
 // --- Editor ---
 
 const attachEditor = (node) => {
@@ -74,6 +156,119 @@ const attachEditor = (node) => {
         const connected = getConnectedSlots(node);
         editor.innerHTML = buildHighlightedHtml(textarea.value, connected);
     };
+
+    // --- Preset row widget ---
+
+    let presetRow = null;
+
+    const refreshPresetRow = () => {
+        if (!presetRow) return;
+        const data = loadPresets(node);
+        presetRow.setPresets(getPresetNames(data));
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const handleNew = () => {
+        const name = prompt("New preset name:");
+        if (!name?.trim()) return;
+
+        const data = loadPresets(node);
+        const slots = captureSlots(node);
+
+        // No connected slots
+        if (!Object.keys(slots).length) {
+            alert(`[${NODE_NAME}] No connected slots to save.`);
+            return;
+        }
+
+        // Already existing
+        if (data[name.trim()]) {
+            alert(
+                `[${NODE_NAME}] Preset "${name.trim()}" already exists. Use Save to overwrite.`,
+            );
+            return;
+        }
+
+        data[name.trim()] = slots;
+        savePresets(node, data);
+        presetRow.setPresets(getPresetNames(data));
+        presetRow.value = name.trim();
+        presetRow.flashSave(node);
+
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const handleSave = () => {
+        const name = presetRow.value;
+        if (!name || presetRow.isEmpty()) return;
+
+        const data = loadPresets(node);
+        const slots = captureSlots(node);
+
+        if (!Object.keys(slots).length) {
+            alert(`[${NODE_NAME}] No connected slots to save.`);
+            return;
+        }
+
+        data[name] = slots;
+        savePresets(node, data);
+        presetRow.flashSave(node);
+
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const handleDelete = () => {
+        const name = presetRow.value;
+        if (!name || presetRow.isEmpty()) return;
+        if (!confirm(`Delete preset "${name}"?`)) return;
+
+        const data = loadPresets(node);
+        delete data[name];
+        savePresets(node, data);
+        presetRow.setPresets(getPresetNames(data));
+        if (!presetRow.isEmpty()) handleSelect(presetRow.value);
+
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    const handleSelect = (name) => {
+        const data = loadPresets(node);
+        const slots = data[name];
+        if (!slots) return;
+
+        const errors = recallSlots(node, slots);
+        if (errors.length) {
+            alert(`[${NODE_NAME}] Recall errors:\n${errors.join("\n")}`);
+        }
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    };
+
+    presetRow = new PresetRowWidget(
+        "preset_row",
+        handleNew,
+        handleSave,
+        handleDelete,
+        handleSelect,
+    );
+
+    // Initialize presets from stored data
+    refreshPresetRow();
+
+    // Invisible widget after all the other ones
+    const anchor = node.addWidget("button", "_preset_anchor", null, () => {});
+    anchor.hidden = true;
+
+    // Insert presetRow right before the anchor
+    const anchorIdx = node.widgets.indexOf(anchor);
+    node.widgets.splice(anchorIdx, 0, presetRow);
+
+    // Hide preset_data widget
+    const presetDataWidget = findWidget(node, "preset_data");
+    if (presetDataWidget) {
+        presetDataWidget.hidden = true;
+    }
+
+    // --- Connection change ---
 
     const debouncedUpdate = debounce(() => {
         updateSlotVisibility(node, NUM_SLOTS, "slot");
