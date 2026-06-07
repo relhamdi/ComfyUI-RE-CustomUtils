@@ -8,6 +8,7 @@ import {
     updateSlotVisibility,
     waitForWidget,
 } from "./utils.js";
+import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { PresetRowWidget } from "./widgets/preset_row_widget.js";
 
 // --- Constants ---
@@ -243,6 +244,44 @@ const attachEditor = (node) => {
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
+    const handleExport = () => {
+        const data = loadPresets(node);
+        if (!Object.keys(data).length) {
+            alert(`[${NODE_NAME}] No presets to export.`);
+            return;
+        }
+        const json = JSON.stringify(data, null, 2);
+        navigator.clipboard
+            .writeText(json)
+            .then(() => {
+                alert(`[${NODE_NAME}] Presets copied to clipboard.`);
+            })
+            .catch(() => {
+                // Fallback if clipboard unavailable
+                prompt("Copy this JSON:", json);
+            });
+    };
+
+    const handleImport = () => {
+        const json = prompt("Paste preset JSON:");
+        if (!json?.trim()) return;
+        try {
+            const data = JSON.parse(json);
+            if (typeof data !== "object" || Array.isArray(data)) {
+                alert(`[${NODE_NAME}] Invalid format — JSON object expected.`);
+                return;
+            }
+            savePresets(node, data);
+            presetRow.setPresets(getPresetNames(data));
+            if (!presetRow.isEmpty()) handleSelect(presetRow.value);
+
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        } catch (e) {
+            alert(`[${NODE_NAME}] Invalid JSON.`);
+            console.warn(`[${NODE_NAME}] Error during import`, e);
+        }
+    };
+
     presetRow = new PresetRowWidget(
         "preset_row",
         handleNew,
@@ -261,6 +300,15 @@ const attachEditor = (node) => {
         const idx = node.widgets.indexOf(presetDataWidget);
         node.widgets.splice(idx, 0, presetRow);
     }
+
+    const exportImportRow = new ButtonRowWidget("preset_actions", [
+        { label: "📋 Export", onClick: () => handleExport() },
+        { label: "📥 Import", onClick: () => handleImport() },
+    ]);
+
+    // Insert right after presetRow
+    const presetRowIdx = node.widgets.indexOf(presetRow);
+    node.widgets.splice(presetRowIdx + 1, 0, exportImportRow);
 
     // --- Connection change ---
 
