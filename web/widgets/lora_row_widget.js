@@ -39,6 +39,8 @@ export class LoraRowWidget {
         return [0, ROW_HEIGHT];
     }
 
+    // --- Draw ---
+
     draw(ctx, node, width, posY, height) {
         this.last_y = posY;
         const h = height ?? ROW_HEIGHT;
@@ -135,6 +137,8 @@ export class LoraRowWidget {
         ctx.restore();
     }
 
+    // --- Events ---
+
     mouse(event, pos, node) {
         const x = pos[0];
         const type = event.type;
@@ -224,9 +228,13 @@ export class LoraRowWidget {
         return false;
     }
 
+    // --- Utils ---
+
     _inHit(x, hit) {
         return x >= hit[0] && x <= hit[0] + hit[1];
     }
+
+    // --- Menu ---
 
     _showLoraMenu(event, node) {
         // Destroy any previous menu
@@ -358,7 +366,7 @@ export class LoraRowWidget {
     }
 }
 
-// --- Utils---
+// --- Helpers ---
 
 // Fit string to width (truncate with ellipsis)
 const fitString = (ctx, str, maxWidth) => {
