@@ -8,7 +8,7 @@ def node():
 
 
 def run(node, template, cleanup=False, **slots):
-    return node.process(template=template, cleanup=cleanup, **slots)
+    return node.process(template=template, cleanup=cleanup, preset_data="{}", **slots)
 
 
 # --- Base cases ---
@@ -96,7 +96,8 @@ def test_validate_valid(node):
 
 
 def test_cleanup_applied(node):
-    (text,) = node.process(
+    (text,) = run(
+        node,
         template="({0})",
         cleanup=True,
         slot_0="",
@@ -105,7 +106,8 @@ def test_cleanup_applied(node):
 
 
 def test_cleanup_not_applied(node):
-    (text,) = node.process(
+    (text,) = run(
+        node,
         template="({0})",
         cleanup=False,
         slot_0="",
@@ -114,7 +116,8 @@ def test_cleanup_not_applied(node):
 
 
 def test_cleanup_comma_residual(node):
-    (text,) = node.process(
+    (text,) = run(
+        node,
         template="tag, {0}, other",
         cleanup=True,
         slot_0="",
