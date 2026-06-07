@@ -254,18 +254,12 @@ const attachEditor = (node) => {
     // Initialize presets from stored data
     refreshPresetRow();
 
-    // Invisible widget after all the other ones
-    const anchor = node.addWidget("button", "_preset_anchor", null, () => {});
-    anchor.hidden = true;
-
-    // Insert presetRow right before the anchor
-    const anchorIdx = node.widgets.indexOf(anchor);
-    node.widgets.splice(anchorIdx, 0, presetRow);
-
-    // Hide preset_data widget
+    // Hide preset_data widget and insert presetRow right before
     const presetDataWidget = findWidget(node, "preset_data");
     if (presetDataWidget) {
         presetDataWidget.hidden = true;
+        const idx = node.widgets.indexOf(presetDataWidget);
+        node.widgets.splice(idx, 0, presetRow);
     }
 
     // --- Connection change ---
