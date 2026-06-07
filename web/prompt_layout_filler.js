@@ -97,10 +97,13 @@ const loadPresets = (node) => {
 
 const savePresets = (node, data) => {
     const w = findWidget(node, "preset_data");
-    if (w) w.value = JSON.stringify(data);
+    const sorted = Object.fromEntries(
+        Object.entries(data).sort(([a], [b]) => a.localeCompare(b)),
+    );
+    if (w) w.value = JSON.stringify(sorted);
 };
 
-const getPresetNames = (data) => Object.keys(data);
+const getPresetNames = (data) => Object.keys(data).sort();
 
 const captureSlots = (node) => {
     const slots = {};
