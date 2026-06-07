@@ -309,7 +309,7 @@ const attachEditor = (node) => {
     if (presetDataWidget) {
         presetDataWidget.hidden = true;
         const idx = node.widgets.indexOf(presetDataWidget);
-        node.widgets.splice(idx, 0, presetRow);
+        node.widgets.splice(idx + 1, 0, presetRow);
     }
 
     const exportImportRow = new ButtonRowWidget("preset_actions", [
