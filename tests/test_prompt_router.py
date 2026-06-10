@@ -34,6 +34,7 @@ def run(node, selected, prompt=None, unique_id=None, **inputs):
     return node.process(
         selected=selected,
         _sub_selected=EMPTY_VALUE,
+        _value_selected=EMPTY_VALUE,
         prompt=prompt,
         unique_id=unique_id,
         **inputs,
