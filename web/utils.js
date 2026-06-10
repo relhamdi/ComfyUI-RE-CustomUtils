@@ -3,6 +3,16 @@ import { app } from "/scripts/app.js";
 
 // --- Text ---
 
+export const parseComaString = (raw) => {
+    if (!raw || !raw?.trim() || typeof raw !== "string") return null;
+    const parsed =
+        raw
+            .split(",")
+            .map((o) => o.trim())
+            .filter(Boolean) ?? [];
+    return parsed.length ? parsed : null;
+};
+
 // Escape HTML to prevent injections
 export const escapeHtml = (str) =>
     str.replace(

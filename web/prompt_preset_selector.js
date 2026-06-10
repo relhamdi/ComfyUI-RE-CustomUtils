@@ -5,6 +5,7 @@ import {
     findWidget,
     hideWidget,
     hookWidget,
+    parseComaString,
     registerNode,
     waitForWidget,
 } from "./utils.js";
@@ -168,18 +169,8 @@ const attachEditor = (node) => {
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
-    const parseNames = () => {
-        const raw = namesWidget?.value;
-        if (!raw || typeof raw !== "string") return null;
-        const names = raw
-            .split(",")
-            .map((n) => n.trim())
-            .filter(Boolean);
-        return names.length >= 1 ? names : null;
-    };
-
     const refreshCombo = () => {
-        const names = parseNames();
+        const names = parseComaString(namesWidget?.value);
         if (!names) {
             destroyCombo();
             return;
