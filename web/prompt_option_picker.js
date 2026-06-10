@@ -191,6 +191,12 @@ const attachEditor = (node) => {
         // Build label map, handle duplicate labels
         const labelMap = new Map();
         for (const { label, value } of options) {
+            if (label === EMPTY_VALUE) {
+                // Allow duplicates for EMPTY_VALUE
+                const key = `\u200B`.repeat(labelMap.size) + EMPTY_VALUE;
+                labelMap.set(key, value);
+                continue;
+            }
             let uniqueLabel = label;
             let suffix = 1;
             while (labelMap.has(uniqueLabel)) {
