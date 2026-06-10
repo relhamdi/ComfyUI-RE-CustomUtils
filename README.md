@@ -109,7 +109,7 @@ The node runs the following checks and stops the workflow on error:
 
 ### PromptOptionPicker
 
-![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
+![PromptOptionPicker_v1](docs/images/PromptOptionPicker_v1.png)
 
 #### Inputs
 
@@ -194,7 +194,7 @@ The node stops the workflow on error if:
 
 ### PromptLayoutFiller
 
-![PromptOptionPicker_PromptLayoutFiller_v1](docs/images/PromptOptionPicker_PromptLayoutFiller_v1.png)
+![PromptLayoutFiller_v1.1](docs/images/PromptLayoutFiller_v1.1.png)
 
 #### Inputs
 
