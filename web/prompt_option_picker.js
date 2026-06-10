@@ -10,7 +10,7 @@ import {
 
 // --- Constants ---
 
-const NODE_NAME = "PromptOptionPicker";
+export const NODE_NAME = "PromptOptionPicker";
 
 const EMPTY_SENTINEL = "\u200B";
 

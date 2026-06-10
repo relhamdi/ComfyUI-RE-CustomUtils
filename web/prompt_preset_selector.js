@@ -11,7 +11,7 @@ import {
 
 // --- Constants ---
 
-const NODE_NAME = "PromptPresetSelector";
+export const NODE_NAME = "PromptPresetSelector";
 
 // --- Helpers ---
 

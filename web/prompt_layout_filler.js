@@ -13,7 +13,7 @@ import { PresetRowWidget } from "./widgets/preset_row_widget.js";
 
 // --- Constants ---
 
-const NODE_NAME = "PromptLayoutFiller";
+export const NODE_NAME = "PromptLayoutFiller";
 
 const NUM_SLOTS = 10;
 
