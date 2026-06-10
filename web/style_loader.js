@@ -290,6 +290,7 @@ const handleNew = async (node, styleFileWidget, addButtonWidget) => {
             addButtonWidget,
             true,
         );
+        loadPreviewImage(data.file, node);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] ${data.error}`);
@@ -336,6 +337,7 @@ const handleClone = async (node, styleFileWidget) => {
 
     if (data.ok) {
         patchFileDropdown(styleFileWidget, EMPTY_VALUE, file);
+        loadPreviewImage(file, node);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] Clone failed: ${data.error}`);
