@@ -290,6 +290,7 @@ const handleNew = async (node, styleFileWidget, addButtonWidget) => {
             addButtonWidget,
             true,
         );
+        loadPreviewImage(data.file, node);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] ${data.error}`);
@@ -336,6 +337,7 @@ const handleClone = async (node, styleFileWidget) => {
 
     if (data.ok) {
         patchFileDropdown(styleFileWidget, EMPTY_VALUE, file);
+        loadPreviewImage(file, node);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     } else {
         alert(`[${NODE_NAME}] Clone failed: ${data.error}`);
@@ -472,34 +474,42 @@ const attachStyleLoader = (node) => {
     // Action buttons
     addButtons(node, styleFileWidget, addButtonWidget);
 
-    // Restore loras_data first
-    let hasPersistedLoras = false;
-    if (lorasDataWidget?.value) {
-        try {
-            const loras = JSON.parse(lorasDataWidget.value);
-            if (loras.length) {
-                rebuildLoraRows(node, loras, addButtonWidget);
-                hasPersistedLoras = true;
-            }
-        } catch (e) {
-            console.warn(`[${NODE_NAME}] Failed to restore LoRA slots:`, e);
+    const init = async () => {
+        // Ensure assets are loaded
+        if (!ASSETS.loras.length) {
+            await fetchAssets();
         }
-    }
-    if (lorasDataWidget) {
-        lorasDataWidget.hidden = true;
-    }
+
+        // Restore loras_data first
+        let hasPersistedLoras = false;
+        if (lorasDataWidget?.value) {
+            try {
+                const loras = JSON.parse(lorasDataWidget.value);
+                if (loras.length) {
+                    rebuildLoraRows(node, loras, addButtonWidget);
+                    hasPersistedLoras = true;
+                }
+            } catch (e) {
+                console.warn(`[${NODE_NAME}] Failed to restore LoRA slots:`, e);
+            }
+        }
+        if (lorasDataWidget) {
+            lorasDataWidget.hidden = true;
+        }
+
+        // Load initial file + preview
+        loadFileIntoWidgets(
+            styleFileWidget.value,
+            node,
+            addButtonWidget,
+            !hasPersistedLoras,
+        );
+        loadPreviewImage(styleFileWidget.value, node);
+    };
 
     // Attach preview
     attachPreview(node);
-
-    // Load initial file + preview
-    loadFileIntoWidgets(
-        styleFileWidget.value,
-        node,
-        addButtonWidget,
-        !hasPersistedLoras,
-    );
-    loadPreviewImage(styleFileWidget.value, node);
+    init();
 
     // Reload on file change
     const originalCallback = styleFileWidget.callback;

@@ -221,6 +221,25 @@ character, {0:position}, {1:background}, {2:lighting}
 Connect a node (e.g. a `PromptOptionPicker`) to each slot. The placeholder
 is replaced by the connected value at execution.
 
+#### Presets
+
+The node supports saving and recalling slot configurations as named presets, stored directly in the workflow.
+
+```
+[preset dropdown] [➕] [💾] [🗑️]
+[📋 Export]  [📥 Import]
+```
+
+| Button     | Action                                                             |
+| ---------- | ------------------------------------------------------------------ |
+| `➕`        | Creates a new preset from current slot values (prompts for a name) |
+| `💾`        | Overwrites the selected preset with current slot values            |
+| `🗑️`        | Deletes the selected preset and recalls the next one if available  |
+| `📋 Export` | Copies all presets as JSON to clipboard                            |
+| `📥 Import` | Pastes and loads presets from JSON                                 |
+
+Presets are sorted alphabetically. Recalling a preset pushes the saved values into connected source nodes. If a saved value is no longer available in a source node, or the source node is disconnected, an error is raised.
+
 #### Cleanup
 
 Same rules as `PromptPresetSelector`. Useful when a connected slot outputs an empty string, leaving residual commas or parentheses.
@@ -319,6 +338,23 @@ Selecting it reveals a second dropdown populated with the options of the child r
 Changing the selection in either the parent sub-dropdown or the child router updates both in sync. Multiple parents connected to the same child router all stay synchronized.
 
 Sub-routing is limited to one level deep.
+
+#### Special node integration
+
+When a connected source node is a `PromptOptionPicker`, `PromptLayoutFiller`, or `PromptPresetSelector`, it is marked with a `◆` indicator in the dropdown:
+
+```
+0: position ◆
+1: Router B ▶
+2: background
+```
+
+Selecting it reveals a third dropdown populated with the options or presets of that node. The selection is synchronized in both directions: changing the value in the Router updates the source node, and changing it in the source node updates the Router.
+
+This also works one level deep through a sub-router:
+```
+[Router] → [sub-router ▶] → [OptionPicker ◆] → [value dropdown]
+```
 
 #### Editor
 
@@ -625,9 +661,11 @@ Currently, the relative imports in the root `__init__.py` file are preventing py
 `PromptPresetSelector`
 - Add a field to easily concatenate text at the end of the output
 - Wildcard mode for presets (randomly selected, index to -1 or -2?)
+- Original `preset_names` unchanged if changed from a `PromptRouter` (even though the value is still the correct one)
 
 `PromptRouter`
 - Add support for more sub-routing levels?
+- Support special node integration beyond one sub-router level?
 
 `StyleLoader`
 - LoRA toggle on/off per row

@@ -3,6 +3,16 @@ import { app } from "/scripts/app.js";
 
 // --- Text ---
 
+export const parseComaString = (raw) => {
+    if (!raw || !raw?.trim() || typeof raw !== "string") return null;
+    const parsed =
+        raw
+            .split(",")
+            .map((o) => o.trim())
+            .filter(Boolean) ?? [];
+    return parsed.length ? parsed : null;
+};
+
 // Escape HTML to prevent injections
 export const escapeHtml = (str) =>
     str.replace(
@@ -396,9 +406,7 @@ export const waitForWidgets = (node, callback) => {
 // --- Buttons ---
 
 export const flashButton = (node, index, flashLabel) => {
-    const buttonRowWidget = node.widgets.find(
-        (w) => w.name === "action_buttons",
-    );
+    const buttonRowWidget = findWidget(node, "action_buttons");
     if (!buttonRowWidget) return;
     const btn = buttonRowWidget.buttons[index];
 
@@ -407,7 +415,6 @@ export const flashButton = (node, index, flashLabel) => {
 
     // Save original if not flashing
     if (!btn._originalLabel) btn._originalLabel = btn.label;
-
     btn.label = flashLabel;
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 

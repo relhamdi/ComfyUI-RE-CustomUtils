@@ -29,6 +29,13 @@ class PromptRouter:
                         "tooltip": "Internal use only.",
                     },
                 ),
+                "_value_selected": (
+                    "STRING",
+                    {
+                        "default": EMPTY_VALUE,
+                        "tooltip": "Internal use only.",
+                    },
+                ),
             },
             "optional": {
                 f"input_{i}": ("STRING", {"forceInput": True})
@@ -78,29 +85,48 @@ class PromptRouter:
                 # Build both variants, with and without indicator
                 label = f"{i}: {title}"
                 label_router = f"{i}: {title} ▶"
+                label_special = f"{i}: {title} ◆"
+
                 entry = (input_name, i)
                 mapping[label] = entry
-                mapping[label_router] = entry  # Match both
+                mapping[label_router] = entry
+                mapping[label_special] = entry
 
         except Exception as e:
             raise ValueError(f"[PromptRouter] mapping error: {e}")
 
         return mapping
 
-    def process(self, selected, _sub_selected, prompt=None, unique_id=None, **kwargs):
+    def process(
+        self,
+        selected,
+        _sub_selected,
+        _value_selected,
+        prompt=None,
+        unique_id=None,
+        **kwargs,
+    ):
         # Remove internal widgets from kwargs
         kwargs.pop("_sub_source", None)
+        kwargs.pop("value_source", None)
 
         if not selected or selected == EMPTY_VALUE:
             return ("", 0)
 
+        # If special value selected, return it
         mapping = self._build_mapping(prompt, unique_id, kwargs)
         entry = mapping.get(selected)
+        index = entry[1] if entry else 0
+
+        # OptionPicker: direct value
+        if _value_selected and _value_selected != EMPTY_VALUE:
+            return (_value_selected, index)
 
         if entry is None:
             return ("", 0)
 
-        input_name, index = entry
+        # LayoutFiller / PresetSelector / others: value via kwargs
+        input_name, _ = entry
         value = kwargs.get(input_name, "")
         return (value, index)
 

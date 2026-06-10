@@ -1,8 +1,12 @@
 import { EMPTY_VALUE } from "./constants.js";
+import { NODE_NAME as LAYOUT_FILLER_NODE_NAME } from "./prompt_layout_filler.js";
+import { NODE_NAME as OPTION_PICKER_NODE_NAME } from "./prompt_option_picker.js";
+import { NODE_NAME as PRESET_SELECTOR_NODE_NAME } from "./prompt_preset_selector.js";
 import {
     debounce,
     findWidget,
     hideWidget,
+    parseComaString,
     registerNode,
     updateSlotVisibility,
     waitForWidgets,
@@ -33,16 +37,67 @@ const getSourceTitle = (sourceNode) => {
     return sourceNode?.title?.trim() || sourceNode?.type || "unknown";
 };
 
-const getCurrentTitles = (node) => {
-    const titles = [];
+const getCurrentSignatures = (node) => {
+    const sigs = [];
     for (let i = 0; i < NUM_INPUTS; i++) {
         const source = getSourceNode(node, i);
-        if (source) titles.push(`${i}:${getSourceTitle(source)}`);
+        if (!source) continue;
+        const title = getSourceTitle(source);
+        const sig = isSpecialNode(source)
+            ? getSpecialNodeSignature(source)
+            : isRouter(source)
+              ? getCurrentSignatures(source).join("|")
+              : "";
+        sigs.push(`${i}:${title}:${sig}`);
     }
-    return titles;
+    return sigs;
 };
 
 const isRouter = (sourceNode) => sourceNode?.type === NODE_NAME;
+const isOptionPicker = (node) => node?.type === OPTION_PICKER_NODE_NAME;
+const isLayoutFiller = (node) => node?.type === LAYOUT_FILLER_NODE_NAME;
+const isPresetSelector = (node) => node?.type === PRESET_SELECTOR_NODE_NAME;
+
+const isSpecialNode = (node) =>
+    isOptionPicker(node) || isLayoutFiller(node) || isPresetSelector(node);
+
+const getSpecialNodeOptions = (sourceNode) => {
+    if (isOptionPicker(sourceNode)) {
+        return sourceNode._labelMap ? [...sourceNode._labelMap.keys()] : [];
+    }
+    if (isLayoutFiller(sourceNode)) {
+        try {
+            const w = findWidget(sourceNode, "preset_data");
+            const data = JSON.parse(w?.value ?? "{}");
+            return Object.keys(data).sort();
+        } catch {
+            return [];
+        }
+    }
+    if (isPresetSelector(sourceNode)) {
+        const namesWidget = findWidget(sourceNode, "preset_names");
+        const names = parseComaString(namesWidget?.value);
+        if (names.length) return names;
+        // Fallback sur indices
+        const presetWidget = findWidget(sourceNode, "preset_index");
+        const count = sourceNode._presetCount ?? 1;
+        return Array.from({ length: count }, (_, i) => `preset_${i}`);
+    }
+    return [];
+};
+
+const getSpecialNodeSignature = (sourceNode) => {
+    if (isOptionPicker(sourceNode)) {
+        return [...(sourceNode._labelMap?.keys() ?? [])].join(",");
+    }
+    if (isLayoutFiller(sourceNode)) {
+        return findWidget(sourceNode, "preset_data")?.value ?? "";
+    }
+    if (isPresetSelector(sourceNode)) {
+        return findWidget(sourceNode, "preset_names")?.value ?? "";
+    }
+    return "";
+};
 
 const getRouterOptions = (routerNode) => {
     const options = [];
@@ -50,14 +105,42 @@ const getRouterOptions = (routerNode) => {
         const source = getSourceNode(routerNode, i);
         if (!source) continue;
         const title = getSourceTitle(source);
-        const indicator = isRouter(source) ? " ▶" : "";
-        options.push({
-            label: `${i}: ${title}${indicator}`,
-            index: i,
-            source,
-        });
+        const indicator = isRouter(source)
+            ? " ▶"
+            : isSpecialNode(source)
+              ? " ◆"
+              : "";
+        options.push({ label: `${i}: ${title}${indicator}`, index: i, source });
     }
     return options;
+};
+
+const setSpecialNodeValue = (sourceNode, value) => {
+    if (isOptionPicker(sourceNode)) {
+        const widget = findWidget(sourceNode, "selected");
+        if (!widget) return;
+        const options = widget.options?.values ?? [];
+        if (!options.includes(value)) return;
+        widget.value = sourceNode._labelMap?.get(value) ?? value;
+        widget.callback?.(value);
+    }
+    if (isLayoutFiller(sourceNode)) {
+        // Recall preset via presetRow
+        const presetRow = findWidget(sourceNode, "preset_row");
+        if (!presetRow) return;
+        presetRow.value = value;
+        presetRow.onSelect?.(value);
+    }
+    if (isPresetSelector(sourceNode)) {
+        const namesWidget = findWidget(sourceNode, "preset_names");
+        const names = parseComaString(namesWidget?.value);
+        const idx = names.indexOf(value);
+        const presetWidget = findWidget(sourceNode, "preset_index");
+        if (!presetWidget) return;
+        presetWidget.value =
+            idx >= 0 ? idx : parseInt(value.replace("preset_", "")) || 0;
+        presetWidget.callback?.(presetWidget.value);
+    }
 };
 
 // --- Sub-dropdown ---
@@ -114,6 +197,16 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     const childSelectedWidget = findWidget(routerNode, "selected");
     const childComboWidget = findWidget(routerNode, "source");
 
+    const checkSubSpecial = (value) => {
+        const freshSubOptions = getRouterOptions(routerNode);
+        const subOption = freshSubOptions.find((o) => o.label === value);
+        if (subOption && isSpecialNode(subOption.source)) {
+            buildValueDropdown(node, subOption.source, selectedWidget);
+        } else {
+            destroyValueDropdown(node);
+        }
+    };
+
     if (childComboWidget) {
         // Initialize listener set once on the child widget
         if (!childComboWidget._parentListeners) {
@@ -132,6 +225,7 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
             if (node._subComboWidget?.options.values.includes(value)) {
                 node._subComboWidget.value = value;
             }
+            checkSubSpecial(value);
             if (node.graph) node.graph.setDirtyCanvas(true, true);
         };
         childComboWidget._parentListeners.add(listener);
@@ -182,7 +276,229 @@ const buildSubDropdown = (node, routerNode, selectedWidget) => {
     node._subComboWidget = subCombo;
     node._subSelectedWidget = subSelectedWidget;
 
+    // Hook subCombo callback to detect special nodes
+    const originalSubCallback = subCombo.callback;
+    subCombo.callback = function (value) {
+        if (originalSubCallback) originalSubCallback.call(this, value);
+        checkSubSpecial(value);
+    };
+
+    // Initial check
+    checkSubSpecial(initialValue);
+
     if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const destroyValueDropdown = (node) => {
+    if (!node._valueComboWidget) return;
+
+    // Clean source node hook
+    if (node._hookedValueSource) {
+        const { widget, listener } = node._hookedValueSource;
+        widget._routerListeners?.delete(listener);
+        node._hookedValueSource = null;
+    }
+
+    // Empty _value_selected
+    const valueSelectedWidget = findWidget(node, "_value_selected");
+    if (valueSelectedWidget) valueSelectedWidget.value = EMPTY_VALUE;
+
+    const idx = node.widgets.indexOf(node._valueComboWidget);
+    if (idx !== -1) node.widgets.splice(idx, 1);
+    node._valueComboWidget = null;
+    node._valueSourceNode = null;
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const getCurrentSpecialValue = (sourceNode, options) => {
+    if (isOptionPicker(sourceNode)) {
+        const w = findWidget(sourceNode, "selected");
+        if (!w) return options[0];
+        const label = [...(sourceNode._labelMap?.entries() ?? [])].find(
+            ([, v]) => v === w.value,
+        )?.[0];
+        return options.includes(label) ? label : options[0];
+    }
+    if (isPresetSelector(sourceNode)) {
+        const namesWidget = findWidget(sourceNode, "preset_names");
+        const names = parseComaString(namesWidget?.value);
+        const idx = findWidget(sourceNode, "preset_index")?.value ?? 0;
+        const label = names[idx] ?? `preset_${idx}`;
+        return options.includes(label) ? label : options[0];
+    }
+    if (isLayoutFiller(sourceNode)) {
+        const presetRow = findWidget(sourceNode, "preset_row");
+        const label = presetRow?.value ?? options[0];
+        return options.includes(label) ? label : options[0];
+    }
+    return options[0];
+};
+
+// Hook source node <-> router sync
+const hookSourceNode = (
+    node,
+    sourceNode,
+    valueSelectedWidget,
+    valueCombo,
+    usesValueSelected,
+) => {
+    if (isOptionPicker(sourceNode)) {
+        const widget = findWidget(sourceNode, "selected");
+        if (!widget) return;
+
+        if (!widget._routerListeners) {
+            widget._routerListeners = new Set();
+            const original = widget.callback;
+            widget.callback = function (value) {
+                if (original) original.call(this, value);
+                for (const listener of widget._routerListeners) {
+                    listener(value);
+                }
+            };
+        }
+
+        const listener = (labelOrRaw) => {
+            const label = sourceNode._labelMap?.has(labelOrRaw)
+                ? labelOrRaw
+                : ([...(sourceNode._labelMap?.entries() ?? [])].find(
+                      ([, v]) => v === labelOrRaw,
+                  )?.[0] ?? labelOrRaw);
+
+            if (valueCombo.options.values.includes(label)) {
+                valueCombo.value = label;
+            }
+            if (usesValueSelected && valueSelectedWidget) {
+                const rawValue = sourceNode._labelMap?.get(label) ?? label;
+                valueSelectedWidget.value = rawValue;
+            }
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        };
+
+        widget._routerListeners.add(listener);
+        node._hookedValueSource = { widget, listener };
+    }
+
+    if (isPresetSelector(sourceNode)) {
+        const presetWidget = findWidget(sourceNode, "preset_index");
+        const namesWidget = findWidget(sourceNode, "preset_names");
+        if (!presetWidget) return;
+
+        if (!presetWidget._routerListeners) {
+            presetWidget._routerListeners = new Set();
+            const original = presetWidget.callback;
+            presetWidget.callback = function (value) {
+                if (original) original.call(this, value);
+                for (const listener of presetWidget._routerListeners) {
+                    listener(value);
+                }
+            };
+        }
+
+        const listener = (idx) => {
+            const names = parseComaString(namesWidget?.value);
+            const label = names[idx] ?? `preset_${idx}`;
+            if (valueCombo.options.values.includes(label)) {
+                valueCombo.value = label;
+            }
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        };
+
+        presetWidget._routerListeners.add(listener);
+        node._hookedValueSource = { widget: presetWidget, listener };
+    }
+
+    if (isLayoutFiller(sourceNode)) {
+        const presetRow = findWidget(sourceNode, "preset_row");
+        if (!presetRow) return;
+
+        if (!presetRow._routerListeners) {
+            presetRow._routerListeners = new Set();
+            const originalSelect = presetRow.onSelect;
+            presetRow.onSelect = function (value) {
+                if (originalSelect) originalSelect.call(this, value);
+                for (const listener of presetRow._routerListeners) {
+                    listener(value);
+                }
+            };
+        }
+
+        const listener = (value) => {
+            if (valueCombo.options.values.includes(value)) {
+                valueCombo.value = value;
+            }
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        };
+
+        presetRow._routerListeners.add(listener);
+        node._hookedValueSource = { widget: presetRow, listener };
+    }
+};
+
+const buildValueDropdown = (node, sourceNode, selectedWidget) => {
+    destroyValueDropdown(node);
+
+    const options = getSpecialNodeOptions(sourceNode);
+    if (!options.length) return;
+
+    const valueSelectedWidget = findWidget(node, "_value_selected");
+    const initialValue = getCurrentSpecialValue(sourceNode, options);
+    const usesValueSelected = isOptionPicker(sourceNode);
+
+    const valueCombo = node.addWidget(
+        "combo",
+        "value_source",
+        initialValue,
+        (value) => {
+            setSpecialNodeValue(sourceNode, value);
+            if (usesValueSelected && valueSelectedWidget) {
+                // Convert label to real value
+                const rawValue = sourceNode._labelMap?.get(value) ?? value;
+                valueSelectedWidget.value = rawValue;
+            } else if (valueSelectedWidget) {
+                valueSelectedWidget.value = EMPTY_VALUE; // Reset value
+            }
+
+            if (node.graph) node.graph.setDirtyCanvas(true, true);
+        },
+        { values: options },
+    );
+
+    hookSourceNode(
+        node,
+        sourceNode,
+        valueSelectedWidget,
+        valueCombo,
+        usesValueSelected,
+    );
+
+    node._valueComboWidget = valueCombo;
+    node._valueSourceNode = sourceNode;
+
+    // Sync initial value
+    setSpecialNodeValue(sourceNode, initialValue);
+    if (usesValueSelected && valueSelectedWidget) {
+        const rawValue =
+            sourceNode._labelMap?.get(initialValue) ?? initialValue;
+        valueSelectedWidget.value = rawValue;
+    } else if (valueSelectedWidget) {
+        valueSelectedWidget.value = EMPTY_VALUE;
+    }
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const buildSecondaryDropdown = (node, sourceNode, selectedWidget) => {
+    if (isRouter(sourceNode)) {
+        destroyValueDropdown(node);
+        buildSubDropdown(node, sourceNode, selectedWidget);
+    } else if (isSpecialNode(sourceNode)) {
+        destroySubDropdown(node);
+        buildValueDropdown(node, sourceNode, selectedWidget);
+    } else {
+        destroySubDropdown(node);
+        destroyValueDropdown(node);
+    }
 };
 
 // --- Dropdown refresh ---
@@ -195,6 +511,7 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
         comboWidget.value = EMPTY_VALUE;
         selectedWidget.value = EMPTY_VALUE;
         destroySubDropdown(node);
+        destroyValueDropdown(node);
         if (node.graph) node.graph.setDirtyCanvas(true, true);
         return;
     }
@@ -217,10 +534,11 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
 
     // Check if selected source is a sub-router
     const selectedOption = options.find((o) => o.label === comboWidget.value);
-    if (selectedOption && isRouter(selectedOption.source)) {
-        buildSubDropdown(node, selectedOption.source, selectedWidget);
+    if (selectedOption) {
+        buildSecondaryDropdown(node, selectedOption.source, selectedWidget);
     } else {
         destroySubDropdown(node);
+        destroyValueDropdown(node);
     }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
@@ -231,11 +549,13 @@ const refreshDropdown = (node, selectedWidget, comboWidget) => {
 const attachRouter = (node) => {
     const selectedWidget = findWidget(node, "selected");
     const subSelectedWidget = findWidget(node, "_sub_selected");
+    const valueSelectedWidget = findWidget(node, "_value_selected");
     if (!selectedWidget) return;
 
     // Hide native Python widgets
     hideWidget(selectedWidget);
     if (subSelectedWidget) hideWidget(subSelectedWidget);
+    if (valueSelectedWidget) hideWidget(valueSelectedWidget);
 
     // Create frontend combo widget
     const comboWidget = node.addWidget(
@@ -249,10 +569,15 @@ const attachRouter = (node) => {
             // Update sub-dropdown if selected source is a router
             const options = getRouterOptions(node);
             const selectedOption = options.find((o) => o.label === value);
-            if (selectedOption && isRouter(selectedOption.source)) {
-                buildSubDropdown(node, selectedOption.source, selectedWidget);
+            if (selectedOption) {
+                buildSecondaryDropdown(
+                    node,
+                    selectedOption.source,
+                    selectedWidget,
+                );
             } else {
                 destroySubDropdown(node);
+                destroyValueDropdown(node);
             }
 
             if (node.graph) node.graph.setDirtyCanvas(true, true);
@@ -265,14 +590,16 @@ const attachRouter = (node) => {
         refreshDropdown(node, selectedWidget, comboWidget);
 
     // --- Draw Foreground hook - Title change detection ---
-    let lastTitles = [];
+    let lastSignatures = [];
     const originalDrawForeground = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (originalDrawForeground) originalDrawForeground.call(this, ctx);
 
-        const currentTitles = getCurrentTitles(node);
-        if (JSON.stringify(currentTitles) !== JSON.stringify(lastTitles)) {
-            lastTitles = currentTitles;
+        const currentSignatures = getCurrentSignatures(node);
+        if (
+            JSON.stringify(currentSignatures) !== JSON.stringify(lastSignatures)
+        ) {
+            lastSignatures = currentSignatures;
             node.refreshDropdown();
         }
     };

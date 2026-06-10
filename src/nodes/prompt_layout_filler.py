@@ -35,6 +35,7 @@ class PromptLayoutFiller:
                         "tooltip": "Clean up residual artifacts from empty slots.",
                     },
                 ),
+                "preset_data": ("STRING", {"default": "{}"}),
             },
             "optional": {
                 f"slot_{i}": (
@@ -58,7 +59,7 @@ class PromptLayoutFiller:
     #     # Tests done in the process() function to avoid errors
     #     ...
 
-    def process(self, template, cleanup, **kwargs):
+    def process(self, template, cleanup, preset_data, **kwargs):
         # Validate template
         if not template or not template.strip():
             raise ValueError("PromptLayoutFiller: template cannot be empty.")

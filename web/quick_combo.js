@@ -3,6 +3,7 @@ import {
     findWidget,
     hideWidget,
     hookWidget,
+    parseComaString,
     registerNode,
     waitForWidgets,
 } from "./utils.js";
@@ -10,17 +11,6 @@ import {
 // --- Constants ---
 
 const NODE_NAME = "QuickCombo";
-
-// --- Helpers ---
-
-const parseOptions = (raw) => {
-    if (!raw?.trim()) return null;
-    const options = raw
-        .split(",")
-        .map((o) => o.trim())
-        .filter(Boolean);
-    return options.length > 0 ? options : null;
-};
 
 // --- Attach ---
 
@@ -44,7 +34,7 @@ const attachQuickCombo = (node) => {
     );
 
     const refreshDropdown = () => {
-        const options = parseOptions(optionsWidget.value);
+        const options = parseComaString(optionsWidget.value);
 
         if (!options) {
             comboWidget.options.values = [EMPTY_VALUE];

@@ -180,11 +180,13 @@ class StyleLoader:
         sampler,
         scheduler,
     ):
+        print("[Style Loader] Loading checkpoint:", checkpoint)
         model, clip, vae_from_ckpt, _ = _load_checkpoint(checkpoint)
 
         if clip is None:
             raise ValueError(f"Checkpoint '{checkpoint}' returned no CLIP.")
 
+        print("[Style Loader] Loading vae:", vae)
         vae_out = _load_vae(vae) if vae != "none" else vae_from_ckpt
 
         clip = clip.clone()
@@ -196,6 +198,7 @@ class StyleLoader:
             loras = json.loads(loras_data) if loras_data else []
         except json.JSONDecodeError:
             loras = []
+        print("[Style Loader] Loading loras:", loras_data)
         model, clip = _apply_loras(model, clip, loras)
 
         return (
