@@ -12,6 +12,12 @@ from .src.nodes.character_loader import (
 from .src.nodes.character_loader import (
     NODE_DISPLAY_NAME_MAPPINGS as CharacterLoaderDisplayMappings,
 )
+from .src.nodes.prompt_face_builder import (
+    NODE_CLASS_MAPPINGS as PromptFaceBuilderMappings,
+)
+from .src.nodes.prompt_face_builder import (
+    NODE_DISPLAY_NAME_MAPPINGS as PromptFaceBuilderDisplayMappings,
+)
 from .src.nodes.prompt_layout_filler import (
     NODE_CLASS_MAPPINGS as PromptLayoutFillerMappings,
 )
@@ -23,6 +29,12 @@ from .src.nodes.prompt_option_picker import (
 )
 from .src.nodes.prompt_option_picker import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptOptionPickerDisplayMappings,
+)
+from .src.nodes.prompt_pose_builder import (
+    NODE_CLASS_MAPPINGS as PromptPoseBuilderMappings,
+)
+from .src.nodes.prompt_pose_builder import (
+    NODE_DISPLAY_NAME_MAPPINGS as PromptPoseBuilderDisplayMappings,
 )
 from .src.nodes.prompt_preset_selector import (
     NODE_CLASS_MAPPINGS as PromptPresetSelectorMappings,
@@ -65,6 +77,8 @@ NODE_CLASS_MAPPINGS.update(QuickComboMappings)
 NODE_CLASS_MAPPINGS.update(StyleLoaderMappings)
 NODE_CLASS_MAPPINGS.update(CharacterLoaderMappings)
 NODE_CLASS_MAPPINGS.update(BreakEncoderMappings)
+NODE_CLASS_MAPPINGS.update(PromptFaceBuilderMappings)
+NODE_CLASS_MAPPINGS.update(PromptPoseBuilderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -76,6 +90,8 @@ NODE_DISPLAY_NAME_MAPPINGS.update(QuickComboDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(StyleLoaderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(CharacterLoaderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(BreakEncoderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(PromptFaceBuilderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(PromptPoseBuilderDisplayMappings)
 
 # Node registration
 __all__ = [
