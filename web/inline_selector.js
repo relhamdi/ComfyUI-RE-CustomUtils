@@ -92,6 +92,11 @@ export const attachInlineSelector = (
         },
     });
 
+    // --- Event listener - Input: Sync widget.value -> textarea ---
+    textarea.addEventListener("input", () => {
+        optionsWidget.value = textarea.value;
+    });
+
     // Render
     const renderColored = () => {
         // Don't re-render if placeholder is showing and user is typing
