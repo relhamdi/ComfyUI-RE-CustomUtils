@@ -1,34 +1,45 @@
+import { COLORS } from "./constants.js";
 import { attachInlineSelector } from "./inline_selector.js";
 import { createPresetManager } from "./preset_manager.js";
 import {
+    drawWidgetBorder,
     findWidget,
     hideWidget,
     registerNode,
-    waitForWidget,
+    waitForWidgets,
 } from "./utils.js";
 
 // --- Constants ---
 
 const NODE_NAME = "PromptPoseBuilder";
 
-const SELECT_FIELDS = [
-    "framing",
+const COMBO_FIELDS = [
     "stance",
-    "action",
-    "action_extra",
+    "posture",
+    "arms",
+    "first_arm",
+    "second_arm",
     "holding",
-    "extra",
+    "legs",
 ];
-const BOOL_FIELDS = ["pov", "contrapposto"];
+
+const SPLIT_ARMS_FIELDS = ["first_arm", "second_arm"];
+const SINGLE_ARM_FIELDS = ["arms"];
+const BOOL_FIELDS = ["split_arms"];
 
 // --- Capture / Recall ---
 
 const captureState = (node) => {
     const state = {};
-    for (const field of SELECT_FIELDS) {
-        const w = findWidget(node, `${field}_selected`);
-        if (w) state[`${field}_selected`] = w.value ?? "";
+    for (const field of COMBO_FIELDS) {
+        const w = findWidget(node, field);
+        if (w) state[field] = w.value ?? "";
     }
+
+    // Action inline selector
+    const actionSelected = findWidget(node, "action_selected");
+    if (actionSelected) state["action_selected"] = actionSelected.value ?? "";
+
     for (const field of BOOL_FIELDS) {
         const w = findWidget(node, field);
         if (w) state[field] = w.value ?? false;
@@ -36,72 +47,114 @@ const captureState = (node) => {
     return state;
 };
 
-const recallState = (node, state, selectors) => {
-    for (const field of SELECT_FIELDS) {
-        const key = `${field}_selected`;
-        if (!(key in state)) continue;
-        const w = findWidget(node, key);
-        if (!w) continue;
-        w.value = state[key];
-        w.callback?.(state[key]);
-        selectors[field]?.renderColored();
-    }
-    for (const field of BOOL_FIELDS) {
+const recallState = (node, state) => {
+    for (const field of [...COMBO_FIELDS, ...BOOL_FIELDS]) {
         if (!(field in state)) continue;
         const w = findWidget(node, field);
         if (!w) continue;
         w.value = state[field];
         w.callback?.(state[field]);
     }
+
+    // Action
+    if ("action_selected" in state) {
+        const w = findWidget(node, "action_selected");
+        if (w) {
+            w.value = state["action_selected"];
+            w.callback?.(state["action_selected"]);
+        }
+        actionSelector?.renderColored();
+    }
+
+    updateArmsVisibility(node, findWidget(node, "split_arms")?.value ?? false);
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+// --- Visibility helpers ---
+
+const updateArmsVisibility = (node, splitArms) => {
+    for (const field of SPLIT_ARMS_FIELDS) {
+        const w = findWidget(node, field);
+        if (!w) continue;
+        if (splitArms) {
+            w.type = "combo";
+            w.computeSize = null;
+        } else {
+            hideWidget(w);
+            // w.type = "hidden";
+            // w.computeSize = () => [0, -4];
+        }
+    }
+    for (const field of SINGLE_ARM_FIELDS) {
+        const w = findWidget(node, field);
+        if (!w) continue;
+        if (!splitArms) {
+            w.type = "combo";
+            w.computeSize = null;
+        } else {
+            hideWidget(w);
+            // w.type = "hidden";
+            // w.computeSize = () => [0, -4];
+        }
+    }
+
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
 // --- Attach ---
 
 const attachPoseBuilder = (node) => {
-    const selectors = {};
+    let actionSelector = null;
 
-    // --- Sort All button ---
-    const sortAllBtn = node.addWidget("button", "⇅ Sort All", null, () => {
-        for (const field of SELECT_FIELDS) selectors[field]?.sort();
-    });
+    // --- split_arms toggle ---
+    const splitArmsWidget = findWidget(node, "split_arms");
+    if (splitArmsWidget) {
+        const original = splitArmsWidget.callback;
+        splitArmsWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateArmsVisibility(node, value);
+        };
+        updateArmsVisibility(node, splitArmsWidget.value ?? false);
+    }
 
-    // --- Inline selectors ---
-    for (const field of SELECT_FIELDS) {
-        const optionsWidget = findWidget(node, `${field}_options`);
-        const selectedWidget = findWidget(node, `${field}_selected`);
-        if (!optionsWidget || !selectedWidget) continue;
-        hideWidget(selectedWidget);
-        selectedWidget.hidden = true;
-
-        const selector = attachInlineSelector(
+    const actionOptionsWidget = findWidget(node, "action_options");
+    const actionSelectedWidget = findWidget(node, "action_selected");
+    if (actionOptionsWidget && actionSelectedWidget) {
+        hideWidget(actionSelectedWidget);
+        actionSelector = attachInlineSelector(
             node,
-            optionsWidget,
-            selectedWidget,
+            actionOptionsWidget,
+            actionSelectedWidget,
             {
-                placeholder: field.replace(/_/g, " "),
+                placeholder: "action",
             },
         );
-        if (selector) selectors[field] = selector;
     }
+
+    // Draw border on toggles for visibility
+    const original = node.onDrawForeground;
+    node.onDrawForeground = function (ctx) {
+        if (original) original.call(this, ctx);
+        drawWidgetBorder(
+            ctx,
+            node,
+            "split_arms",
+            COLORS.toggle_on,
+            COLORS.toggle_off,
+        );
+    };
 
     // --- Preset manager ---
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),
-        onRecall: (state) => recallState(node, state, selectors),
+        onRecall: (state) => recallState(node, state),
     });
 
-    const presetDataWidget = findWidget(node, "preset_data");
-    if (presetDataWidget) {
-        presetDataWidget.hidden = true;
-    }
     node.widgets.push(presetRow);
     node.widgets.push(exportImportRow);
 };
 
 // --- Registration ---
 
-registerNode(NODE_NAME, (node) =>
-    waitForWidget(node, "framing_options", attachPoseBuilder),
-);
+registerNode(NODE_NAME, (node) => waitForWidgets(node, attachPoseBuilder));
