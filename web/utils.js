@@ -265,7 +265,7 @@ export const adjustWeight = (text, delta) => {
 
 export const createEditor = (
     textarea,
-    { activeColor = COLORS.text, onInput } = {},
+    { activeColor = COLORS.text, onInput, normalize = false } = {},
 ) => {
     // Hide native textarea
     textarea.style.display = "none";
@@ -297,6 +297,13 @@ export const createEditor = (
     editor.addEventListener("input", () => {
         const pos = saveCaretPosition(editor);
         textarea.value = editor.innerText;
+        if (normalize) {
+            text = text
+                .split("\n")
+                .map((l) => l.trimStart())
+                .join("\n");
+        }
+
         textarea.dispatchEvent(new Event("input", { bubbles: true }));
         if (onInput) onInput();
         restoreCaretPosition(editor, pos);

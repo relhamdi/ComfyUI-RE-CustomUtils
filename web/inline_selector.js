@@ -91,6 +91,7 @@ export const attachInlineSelector = (
 
             renderColored();
         },
+        normalize: true,
     });
 
     // Render
