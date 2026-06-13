@@ -10,4 +10,7 @@ export const COLORS = {
     green: "#a5d6a7",
     red: "#ef9a9a",
     dark_red: "#4a1a1a",
+
+    toggle_on: "#81c784",
+    toggle_off: "#e57373",
 };
