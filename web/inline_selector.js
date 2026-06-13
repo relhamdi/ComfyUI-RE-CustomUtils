@@ -11,7 +11,7 @@ import {
 
 const SELECTED_COLOR = COLORS.orange;
 const EMPTY_LINE_COLOR = COLORS.inactive;
-const PLACEHOLDER_COLOR = "#888";
+const PLACEHOLDER_COLOR = COLORS.inactive;
 
 // --- Helpers ---
 
