@@ -1,7 +1,9 @@
 import json
 import os
 
-from .config import EMPTY_VALUE
+from .config import DATA_DIR, EMPTY_VALUE
+
+BUILDERS_DIR = os.path.join(os.path.dirname(__file__), DATA_DIR, "builders")
 
 
 def scan_files(base_dir: str, empty_label: str = EMPTY_VALUE) -> list[str]:
@@ -43,3 +45,30 @@ def delete_file(base_dir: str, file: str) -> None:
     if not os.path.isfile(path):
         raise FileNotFoundError(f"File not found: {path}")
     os.remove(path)
+
+
+def load_builder_config(name: str) -> dict[str, list[str]]:
+    """Load combo options from data/builders/<name>.json."""
+
+    path = os.path.join(BUILDERS_DIR, f"{name}.json")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # Ensure each field starts with empty value
+        return {
+            k: ([EMPTY_VALUE] + v if v and v[0] != EMPTY_VALUE else v)
+            for k, v in data.items()
+        }
+    except Exception as e:
+        print(f"[BuilderConfig] Failed to load {name}.json: {e}")
+        return {}
+
+
+def get_builder_config_key(builder_config: dict, key: str):
+    return builder_config.get(key, [EMPTY_VALUE])
+
+
+def clean_val(s: str) -> str:
+    """Clean and return given value, or "" if EMPTY_VALUE is found."""
+    v = s.strip()
+    return v if v and v != EMPTY_VALUE else ""
