@@ -48,6 +48,12 @@ from .src.nodes.prompt_router import (
 from .src.nodes.prompt_router import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptRouterDisplayMappings,
 )
+from .src.nodes.prompt_scene_builder import (
+    NODE_CLASS_MAPPINGS as PromptSceneBuilderMappings,
+)
+from .src.nodes.prompt_scene_builder import (
+    NODE_DISPLAY_NAME_MAPPINGS as PromptSceneBuilderDisplayMappings,
+)
 from .src.nodes.prompt_switch import (
     NODE_CLASS_MAPPINGS as PromptSwitchMappings,
 )
@@ -79,6 +85,7 @@ NODE_CLASS_MAPPINGS.update(CharacterLoaderMappings)
 NODE_CLASS_MAPPINGS.update(BreakEncoderMappings)
 NODE_CLASS_MAPPINGS.update(PromptFaceBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptPoseBuilderMappings)
+NODE_CLASS_MAPPINGS.update(PromptSceneBuilderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -92,6 +99,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(CharacterLoaderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(BreakEncoderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptFaceBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPoseBuilderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(PromptSceneBuilderDisplayMappings)
 
 # Node registration
 __all__ = [
