@@ -1,10 +1,8 @@
-from ..config import EMPTY_VALUE, NODE_CATEGORY
+from ..config import NODE_CATEGORY
 from ..utils import clean_prompt
+from ..utils_loader import clean_val, get_builder_config_key, load_builder_config
 
-
-def _val(s: str) -> str:
-    v = s.strip()
-    return v if v and v != EMPTY_VALUE else ""
+_CFG = load_builder_config("face")
 
 
 class PromptFaceBuilder:
@@ -18,30 +16,23 @@ class PromptFaceBuilder:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "eyes": ("STRING", {"forceInput": True}),
                 "show_eyes": ("BOOLEAN", {"default": True}),
-                "eye_details_options": ("STRING", {"multiline": True, "default": ""}),
-                "eye_details_selected": ("STRING", {"default": ""}),
-                "eye_state_options": ("STRING", {"multiline": True, "default": ""}),
-                "eye_state_selected": ("STRING", {"default": ""}),
-                "gaze_options": ("STRING", {"multiline": True, "default": ""}),
-                "gaze_selected": ("STRING", {"default": ""}),
-                "show_eyewear": ("BOOLEAN", {"default": True}),
-                "eyewear": ("STRING", {"forceInput": True}),
-                "blush_options": ("STRING", {"multiline": True, "default": ""}),
-                "blush_selected": ("STRING", {"default": ""}),
-                "mouth_options": ("STRING", {"multiline": True, "default": ""}),
-                "mouth_selected": ("STRING", {"default": ""}),
-                "mouth_expression_options": (
-                    "STRING",
-                    {"multiline": True, "default": ""},
-                ),
-                "mouth_expression_selected": ("STRING", {"default": ""}),
-                "expression_options": ("STRING", {"multiline": True, "default": ""}),
-                "expression_selected": ("STRING", {"default": ""}),
-                "head_tilt": ("BOOLEAN", {"default": False}),
+                "pupils": (get_builder_config_key(_CFG, "pupils"),),
+                "eye_details": (get_builder_config_key(_CFG, "eye_details"),),
+                "eye_state": (get_builder_config_key(_CFG, "eye_state"),),
+                "gaze": (get_builder_config_key(_CFG, "gaze"),),
+                "show_eyewear": ("BOOLEAN", {"default": False}),
+                "blush": (get_builder_config_key(_CFG, "blush"),),
+                "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
+                "mouth_action": (get_builder_config_key(_CFG, "mouth_action"),),
+                "expression": (get_builder_config_key(_CFG, "expression"),),
+                "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
                 "preset_data": ("STRING", {"default": "{}"}),
-            }
+            },
+            "optional": {
+                "eyes": ("STRING", {"forceInput": True}),
+                "eyewear": ("STRING", {"forceInput": True}),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -51,62 +42,56 @@ class PromptFaceBuilder:
     def build(
         self,
         eyes,
-        show_eyes,
-        eye_details_options,
-        eye_details_selected,
-        eye_state_options,
-        eye_state_selected,
-        gaze_options,
-        gaze_selected,
-        show_eyewear,
         eyewear,
-        blush_options,
-        blush_selected,
-        mouth_options,
-        mouth_selected,
-        mouth_expression_options,
-        mouth_expression_selected,
-        expression_options,
-        expression_selected,
-        head_tilt,
+        show_eyes,
+        pupils,
+        eye_details,
+        eye_state,
+        gaze,
+        show_eyewear,
+        blush,
+        mouth_state,
+        mouth_action,
+        expression,
+        head_angle,
         preset_data,
     ):
-        eye_block = ", ".join(
-            filter(
-                None,
-                [
-                    eyes.strip() if show_eyes else "",
-                    _val(eye_details_selected) if show_eyes else "",
-                    _val(eye_state_selected),
-                    eyewear.strip() if show_eyewear else "",
-                ],
-            )
-        )
+        eye_parts = []
+        if show_eyes:
+            if v := clean_val(eyes):
+                eye_parts.append(v)
+            if v := clean_val(pupils):
+                eye_parts.append(v)
+            if v := clean_val(eye_details):
+                eye_parts.append(v)
+        if v := clean_val(eye_state):
+            eye_parts.append(v)
+        if show_eyewear:
+            if v := clean_val(eyewear):
+                eye_parts.append(v)
 
-        face_block = ", ".join(
-            filter(
-                None,
-                [
-                    _val(gaze_selected) if show_eyes else "",
-                    _val(blush_selected),
-                    _val(mouth_selected),
-                    _val(mouth_expression_selected),
-                    _val(expression_selected),
-                    "head tilt" if head_tilt else "",
-                ],
-            )
-        )
+        face_parts = []
+        if show_eyes:
+            if v := clean_val(gaze):
+                face_parts.append(v)
+        if v := clean_val(blush):
+            face_parts.append(v)
+        if v := clean_val(mouth_state):
+            face_parts.append(v)
+        if v := clean_val(mouth_action):
+            face_parts.append(v)
+        if v := clean_val(expression):
+            face_parts.append(v)
+        if v := clean_val(head_angle):
+            face_parts.append(v)
 
-        parts = filter(
-            None,
-            [
-                f"({eye_block})" if eye_block else "",
-                f"({face_block})" if face_block else "",
-            ],
-        )
+        parts = []
+        if eye_parts:
+            parts.append(f"({', '.join(eye_parts)})")
+        if face_parts:
+            parts.append(f"({', '.join(face_parts)})")
 
-        result = ", ".join(parts)
-        return (clean_prompt(result),)
+        return (clean_prompt(", ".join(parts)),)
 
 
 NODE_CLASS_MAPPINGS = {

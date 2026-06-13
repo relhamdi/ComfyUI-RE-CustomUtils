@@ -1,10 +1,8 @@
-from ..config import EMPTY_VALUE, NODE_CATEGORY
+from ..config import NODE_CATEGORY
 from ..utils import clean_prompt
+from ..utils_loader import clean_val, get_builder_config_key, load_builder_config
 
-
-def _val(s: str) -> str:
-    v = s.strip()
-    return v if v and v != EMPTY_VALUE else ""
+_CFG = load_builder_config("pose")
 
 
 class PromptPoseBuilder:
@@ -18,22 +16,21 @@ class PromptPoseBuilder:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "pov": ("BOOLEAN", {"default": False}),
-                "framing_options": ("STRING", {"multiline": True, "default": ""}),
-                "framing_selected": ("STRING", {"default": ""}),
-                "stance_options": ("STRING", {"multiline": True, "default": ""}),
-                "stance_selected": ("STRING", {"default": ""}),
-                "contrapposto": ("BOOLEAN", {"default": False}),
+                "stance": (get_builder_config_key(_CFG, "stance"),),
+                "posture": (get_builder_config_key(_CFG, "posture"),),
+                "split_arms": ("BOOLEAN", {"default": False}),
+                "arms": (get_builder_config_key(_CFG, "arms"),),
+                "first_arm": (get_builder_config_key(_CFG, "arm"),),
+                "second_arm": (get_builder_config_key(_CFG, "arm"),),
+                "holding": (get_builder_config_key(_CFG, "holding"),),
+                "legs": (get_builder_config_key(_CFG, "legs"),),
                 "action_options": ("STRING", {"multiline": True, "default": ""}),
                 "action_selected": ("STRING", {"default": ""}),
-                "action_extra_options": ("STRING", {"multiline": True, "default": ""}),
-                "action_extra_selected": ("STRING", {"default": ""}),
-                "holding_options": ("STRING", {"multiline": True, "default": ""}),
-                "holding_selected": ("STRING", {"default": ""}),
-                "extra_options": ("STRING", {"multiline": True, "default": ""}),
-                "extra_selected": ("STRING", {"default": ""}),
                 "preset_data": ("STRING", {"default": "{}"}),
-            }
+            },
+            "optional": {
+                "extra": ("STRING", {"forceInput": True}),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -42,59 +39,56 @@ class PromptPoseBuilder:
 
     def build(
         self,
-        preset_data,
-        pov,
-        framing_options,
-        framing_selected,
-        stance_options,
-        stance_selected,
-        contrapposto,
+        extra,
+        stance,
+        posture,
+        split_arms,
+        arms,
+        first_arm,
+        second_arm,
+        holding,
+        legs,
         action_options,
         action_selected,
-        action_extra_options,
-        action_extra_selected,
-        holding_options,
-        holding_selected,
-        extra_options,
-        extra_selected,
+        preset_data,
     ):
-        movement_block = ", ".join(
-            filter(
-                None,
-                [
-                    "pov" if pov else "",
-                    _val(framing_selected),
-                    _val(stance_selected),
-                    "contrapposto" if contrapposto else "",
-                ],
-            )
-        )
+        pose_parts = []
+        if v := clean_val(stance):
+            pose_parts.append(v)
+        if v := clean_val(posture):
+            pose_parts.append(v)
 
-        action_block = ", ".join(
-            filter(
-                None,
-                [
-                    _val(action_selected),
-                    _val(action_extra_selected),
-                ],
-            )
-        )
+        if split_arms:
+            if v := clean_val(first_arm):
+                pose_parts.append(v)
+            if v := clean_val(second_arm):
+                pose_parts.append(v)
+        else:
+            if v := clean_val(arms):
+                pose_parts.append(v)
 
-        holding_block = _val(holding_selected)
-        extra_block = _val(extra_selected)
+        if v := clean_val(holding):
+            pose_parts.append(f"holding {v}")
+        if v := clean_val(legs):
+            pose_parts.append(v)
 
-        parts = filter(
-            None,
-            [
-                f"({movement_block})" if movement_block else "",
-                f"({action_block})" if action_block else "",
-                f"({holding_block})" if holding_block else "",
-                f"({extra_block})" if extra_block else "",
-            ],
-        )
+        action_parts = []
+        if v := clean_val(action_selected):
+            action_parts.append(v)
 
-        result = ", ".join(parts)
-        return (clean_prompt(result),)
+        extra_parts = []
+        if v := clean_val(extra):
+            extra_parts.append(v)
+
+        parts = []
+        if pose_parts:
+            parts.append(f"({', '.join(pose_parts)})")
+        if action_parts:
+            parts.append(f"({', '.join(action_parts)})")
+        if extra_parts:
+            parts.append(f"({', '.join(extra_parts)})")
+
+        return (clean_prompt(", ".join(parts)),)
 
 
 NODE_CLASS_MAPPINGS = {
