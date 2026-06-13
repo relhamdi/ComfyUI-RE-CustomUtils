@@ -12,10 +12,13 @@ from src.utils_loader import safe_relative_path
 def test_character_template_has_required_keys():
     for key in [
         "eyes",
-        "hair_type",
-        "hair_style",
+        "eyewear",
+        "hair_color",
+        "hair_style_options",
+        "hair_style_selected",
         "makeup",
-        "jewelry",
+        "nails",
+        "piercings",
         "body_type",
     ]:
         assert key in CHARACTER_TEMPLATE
@@ -24,10 +27,13 @@ def test_character_template_has_required_keys():
 def test_character_template_defaults():
     for key in [
         "eyes",
-        "hair_type",
-        "hair_style",
+        "eyewear",
+        "hair_color",
+        "hair_style_options",
+        "hair_style_selected",
         "makeup",
-        "jewelry",
+        "nails",
+        "piercings",
         "body_type",
     ]:
         assert CHARACTER_TEMPLATE[key] == ""
@@ -186,7 +192,17 @@ async def test_new_template_has_expected_fields(client):
     resp = await client.post("/characters/new", json={"file": "template_test"})
     data = await resp.json()
     parsed = json.loads(data["content"])
-    for field in ["eyes", "hair_type", "hair_style", "makeup", "jewelry", "body_type"]:
+    for field in [
+        "eyes",
+        "eyewear",
+        "hair_color",
+        "hair_style_options",
+        "hair_style_selected",
+        "makeup",
+        "nails",
+        "piercings",
+        "body_type",
+    ]:
         assert field in parsed
 
 

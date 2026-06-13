@@ -24,10 +24,13 @@ BASE_ENDPOINT = f"{API_ROOT}/characters"
 
 CHARACTER_TEMPLATE = {
     "eyes": "",
-    "hair_type": "",
-    "hair_style": "",
+    "eyewear": "",
+    "hair_color": "",
+    "hair_style_options": "",
+    "hair_style_selected": "",
     "makeup": "",
-    "jewelry": "",
+    "nails": "",
+    "piercings": "",
     "body_type": "",
 }
 
@@ -49,16 +52,37 @@ class CharacterLoader:
             "required": {
                 "character_file": (scan_files(_get_characters_dir()),),
                 "eyes": ("STRING", {"multiline": True, "default": ""}),
-                "hair_type": ("STRING", {"multiline": True, "default": ""}),
-                "hair_style": ("STRING", {"multiline": True, "default": ""}),
+                "eyewear": ("STRING", {"default": ""}),
+                "hair_color": ("STRING", {"default": ""}),
+                "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
+                "hair_style_selected": ("STRING", {"default": ""}),
                 "makeup": ("STRING", {"multiline": True, "default": ""}),
-                "jewelry": ("STRING", {"multiline": True, "default": ""}),
+                "nails": ("STRING", {"default": ""}),
+                "piercings": ("STRING", {"multiline": True, "default": ""}),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
             }
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
-    RETURN_NAMES = ("eyes", "hair_type", "hair_style", "makeup", "jewelry", "body_type")
+    RETURN_TYPES = (
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+    )
+    RETURN_NAMES = (
+        "eyes",
+        "eyewear",
+        "hair_color",
+        "hair_style",
+        "makeup",
+        "nails",
+        "piercings",
+        "body_type",
+    )
     FUNCTION = "load_character"
     CATEGORY = NODE_CATEGORY
 
@@ -66,13 +90,25 @@ class CharacterLoader:
         self,
         character_file,
         eyes,
-        hair_type,
-        hair_style,
+        eyewear,
+        hair_color,
+        hair_style_options,
+        hair_style_selected,
         makeup,
-        jewelry,
+        nails,
+        piercings,
         body_type,
     ):
-        return (eyes, hair_type, hair_style, makeup, jewelry, body_type)
+        return (
+            eyes,
+            eyewear,
+            hair_color,
+            hair_style_selected,
+            makeup,
+            nails,
+            piercings,
+            body_type,
+        )
 
 
 # --- API Routes ---

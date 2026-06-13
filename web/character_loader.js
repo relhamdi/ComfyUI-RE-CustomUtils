@@ -1,7 +1,9 @@
 import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
+import { attachInlineSelector } from "./inline_selector.js";
 import {
     findWidget,
     flashButton,
+    hideWidget,
     patchFileDropdown,
     registerNode,
     setWidgetValue,
@@ -16,10 +18,13 @@ const BASE_ENDPOINT = `${API_ROOT}/characters`;
 
 const CHARACTER_TEMPLATE = {
     eyes: "",
-    hair_type: "",
-    hair_style: "",
+    eyewear: "",
+    hair_color: "",
+    hair_style_options: "",
+    hair_style_selected: "",
     makeup: "",
-    jewelry: "",
+    nails: "",
+    piercings: "",
     body_type: "",
 };
 
@@ -193,6 +198,15 @@ const attachCharacterLoader = (node) => {
             },
         ]),
     );
+
+    const hairStyleOptions = findWidget(node, "hair_style_options");
+    const hairStyleSelected = findWidget(node, "hair_style_selected");
+    if (hairStyleOptions && hairStyleSelected) {
+        hideWidget(hairStyleSelected);
+        attachInlineSelector(node, hairStyleOptions, hairStyleSelected, {
+            placeholder: "hair style",
+        });
+    }
 
     // Load initial file
     loadFileIntoWidgets(characterFileWidget.value, node);
