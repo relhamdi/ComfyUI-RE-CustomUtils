@@ -432,3 +432,21 @@ export const flashButton = (node, index, flashLabel) => {
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     }, 1500);
 };
+
+// --- Coloring ---
+
+export const drawWidgetBorder = (
+    ctx,
+    node,
+    widgetName,
+    colorTrue,
+    colorFalse,
+) => {
+    const w = node.widgets?.find((w) => w.name === widgetName);
+    if (!w) return;
+    ctx.save();
+    ctx.strokeStyle = w.value ? colorTrue : colorFalse;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, w.last_y - 2, node.size[0], w.computedHeight ?? 20);
+    ctx.restore();
+};
