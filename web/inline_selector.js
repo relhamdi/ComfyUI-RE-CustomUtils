@@ -33,8 +33,7 @@ const buildHighlightedHtml = (raw, selectedValue, placeholder) => {
         .split("\n")
         .map((line) => {
             const t = line.trim();
-            if (!t)
-                return `<span style="color:${EMPTY_LINE_COLOR}">\u00A0</span>`;
+            if (!t) return `<span style="color:${EMPTY_LINE_COLOR}"></span>`;
             const color = t === selectedValue ? SELECTED_COLOR : COLORS.text;
             return `<span style="color:${color}">${escapeHtml(line)}</span>`;
         })
@@ -91,7 +90,6 @@ export const attachInlineSelector = (
 
             renderColored();
         },
-        normalize: true,
     });
 
     // Render
