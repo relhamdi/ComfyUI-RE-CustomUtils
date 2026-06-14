@@ -23,7 +23,13 @@ const COMBO_FIELDS = [
 ];
 
 const EYE_FIELDS = ["pupils", "gaze"];
-const BOOL_FIELDS = ["show_eyes", "show_eyewear", "show_nails", "show_makeup"];
+const BOOL_FIELDS = [
+    "show_eyes",
+    "show_eyewear",
+    "show_piercings",
+    "show_nails",
+    "show_makeup",
+];
 
 // --- Helpers ---
 
@@ -64,6 +70,10 @@ const recallState = (node, state) => {
         node,
         findWidget(node, "show_eyewear")?.value ?? true,
     );
+    updatePiercingsVisibility(
+        node,
+        findWidget(node, "show_piercings")?.value ?? true,
+    );
 
     const showNails = findWidget(node, "show_nails")?.value ?? true;
     const showMakeup = findWidget(node, "show_makeup")?.value ?? true;
@@ -80,7 +90,6 @@ const updateEyeVisibility = (node, value) => {
         const w = findWidget(node, field);
         if (w) w.disabled = !value;
     }
-    // Color input dots
     setInputDotColor(node, "eyes", value);
     setInputDotColor(node, "eye_type", value);
 
@@ -88,14 +97,18 @@ const updateEyeVisibility = (node, value) => {
 };
 
 const updateEyewearVisibility = (node, value) => {
-    // Color input dot
     setInputDotColor(node, "eyewear", value);
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
+const updatePiercingsVisibility = (node, value) => {
+    setInputDotColor(node, "facial_piercings", value);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
 const updateNailsVisibility = (node, showNails, showMakeup) => {
-    // Color input dots
     setInputDotColor(node, "nail_type", showNails);
     setInputDotColor(node, "nail_color", showNails && showMakeup);
 
@@ -103,7 +116,6 @@ const updateNailsVisibility = (node, showNails, showMakeup) => {
 };
 
 const updateMakeupVisibility = (node, showNails, showMakeup) => {
-    // Color input dots
     setInputDotColor(node, "makeup", showMakeup);
     setInputDotColor(node, "makeup_modifiers", showMakeup);
     setInputDotColor(node, "nail_color", showNails && showMakeup);
@@ -134,6 +146,16 @@ const attachFaceBuilder = (node) => {
             updateEyewearVisibility(node, value);
         };
         updateEyewearVisibility(node, showEyewearWidget.value ?? true);
+    }
+
+    const showPiercingsWidget = findWidget(node, "show_piercings");
+    if (showPiercingsWidget) {
+        const original = showPiercingsWidget.callback;
+        showPiercingsWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updatePiercingsVisibility(node, value);
+        };
+        updatePiercingsVisibility(node, showPiercingsWidget.value ?? true);
     }
 
     const showNailsWidget = findWidget(node, "show_nails");
@@ -180,6 +202,14 @@ const attachFaceBuilder = (node) => {
             node,
             "show_eyewear",
             "show_eyewear",
+            COLORS.toggle_on,
+            COLORS.toggle_off,
+        );
+        drawGroupBorder(
+            ctx,
+            node,
+            "show_piercings",
+            "show_piercings",
             COLORS.toggle_on,
             COLORS.toggle_off,
         );

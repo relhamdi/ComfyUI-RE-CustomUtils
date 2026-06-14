@@ -26,6 +26,7 @@ class PromptFaceBuilder:
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
                 "emotion": (get_builder_config_key(_CFG, "emotion"),),
                 "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
+                "show_piercings": ("BOOLEAN", {"default": True}),
                 "show_nails": ("BOOLEAN", {"default": True}),
                 "show_makeup": ("BOOLEAN", {"default": True}),
                 "preset_data": ("STRING", {"default": "{}"}),
@@ -37,6 +38,7 @@ class PromptFaceBuilder:
                 "eye_modifiers": ("STRING", {"forceInput": True}),
                 "teeth": ("STRING", {"forceInput": True}),
                 "mouth_modifiers": ("STRING", {"forceInput": True}),
+                "facial_piercings": ("STRING", {"forceInput": True}),
                 "nail_type": ("STRING", {"forceInput": True}),
                 "nail_color": ("STRING", {"forceInput": True}),
                 "makeup": ("STRING", {"forceInput": True}),
@@ -61,6 +63,7 @@ class PromptFaceBuilder:
         mouth_expression,
         emotion,
         head_angle,
+        show_piercings,
         show_nails,
         show_makeup,
         preset_data,
@@ -70,6 +73,7 @@ class PromptFaceBuilder:
         eye_modifiers="",
         teeth="",
         mouth_modifiers="",
+        facial_piercings="",
         nail_type="",
         nail_color="",
         makeup="",
@@ -113,18 +117,23 @@ class PromptFaceBuilder:
         if v := clean_val(head_angle):
             face_parts.append(v)
 
-        extra_parts = []
+        makeup_parts = []
+        if show_piercings:
+            if v := clean_val(facial_piercings):
+                makeup_parts.append(v)
         if show_makeup:
             if v := clean_val(makeup):
-                extra_parts.append(v)
+                makeup_parts.append(v)
             if v := clean_val(makeup_modifiers):
-                extra_parts.append(v)
+                makeup_parts.append(v)
         if show_nails:
             if v := clean_val(nail_type):
-                extra_parts.append(v)
+                makeup_parts.append(v)
         if show_makeup and show_nails:
             if v := clean_val(nail_color):
-                extra_parts.append(v)
+                makeup_parts.append(v)
+
+        extra_parts = []
         if v := clean_val(face_modifiers):
             extra_parts.append(v)
 
@@ -133,6 +142,8 @@ class PromptFaceBuilder:
             parts.append(f"({', '.join(eye_parts)})")
         if face_parts:
             parts.append(f"({', '.join(face_parts)})")
+        if makeup_parts:
+            parts.append(f"({', '.join(makeup_parts)})")
         if extra_parts:
             parts.append(f"({', '.join(extra_parts)})")
 
