@@ -13,7 +13,7 @@ def node():
 
 
 def run(node, **kwargs):
-    defaults = dict(options="", selected="[]", join=", ", cleanup=True)
+    defaults = dict(join=", ", options="", selected="[]")
     defaults.update(kwargs)
     return node.process(**defaults)
 
@@ -30,7 +30,7 @@ def test_multiple_selected_appearance_order(node):
 
 
 def test_custom_join(node):
-    (text,) = run(node, options="a\nb\nc", selected=json.dumps(["a", "b"]), join=" | ")
+    (text,) = run(node, join=" | ", options="a\nb\nc", selected=json.dumps(["a", "b"]))
     assert text == "a | b"
 
 
@@ -53,8 +53,3 @@ def test_empty_lines_ignored(node):
 def test_invalid_selected_json(node):
     (text,) = run(node, options="a\nb", selected="not json")
     assert text == ""
-
-
-def test_cleanup_applied(node):
-    (text,) = run(node, options="a,\nb", selected=json.dumps(["a,", "b"]), cleanup=True)
-    assert ",," not in text

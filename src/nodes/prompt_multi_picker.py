@@ -18,7 +18,6 @@ class PromptMultiPicker:
                 "join": ("STRING", {"default": ", "}),
                 "options": ("STRING", {"multiline": True, "default": ""}),
                 "selected": ("STRING", {"default": "[]"}),
-                "cleanup": ("BOOLEAN", {"default": True}),
             }
         }
 
@@ -27,7 +26,7 @@ class PromptMultiPicker:
     FUNCTION = "process"
     CATEGORY = NODE_CATEGORY
 
-    def process(self, join, options, selected, cleanup):
+    def process(self, join, options, selected):
         # Parse selected indices
         try:
             selected_values = json.loads(selected) if selected else []
@@ -50,9 +49,6 @@ class PromptMultiPicker:
             return ("",)
 
         result = join.join(result_parts)
-        if cleanup:
-            result = clean_prompt(result)
-
         return (result,)
 
 
