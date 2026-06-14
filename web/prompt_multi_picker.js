@@ -104,6 +104,8 @@ const attachMultiPicker = (node) => {
     const textarea = optionsWidget.inputEl || optionsWidget.element;
     if (!textarea?.parentNode) return;
 
+    let clearBtn = null;
+
     // State
     let selectedSet = new Set(parseSelected(selectedWidget.value));
 
@@ -112,6 +114,14 @@ const attachMultiPicker = (node) => {
         const lines = getNonEmptyLines(textarea.value);
         const ordered = lines.filter((l) => selectedSet.has(l));
         selectedWidget.value = serializeSelected(ordered);
+
+        if (clearBtn) {
+            clearBtn.name =
+                selectedSet.size > 0
+                    ? `✕ Clear All (${selectedSet.size})`
+                    : "✕ Clear All";
+        }
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
 
     const renderColored = () => {
@@ -120,15 +130,15 @@ const attachMultiPicker = (node) => {
         restoreCaretPosition(editor, pos);
     };
 
-    // Clear All button — insert before options widget
-    const clearBtn = node.addWidget("button", "✕ Clear All", null, () => {
+    // Clear All button
+    clearBtn = node.addWidget("button", "✕ Clear All", null, () => {
         selectedSet.clear();
         syncSelected();
         renderColored();
         if (node.graph) node.graph.setDirtyCanvas(true, true);
     });
 
-    // Move Clear All before selected widget
+    // Move Clear All after selected widget
     const selectedIdx = node.widgets.indexOf(selectedWidget);
     node.widgets.splice(selectedIdx + 1, 0, clearBtn);
 
@@ -178,6 +188,7 @@ const attachMultiPicker = (node) => {
     // Initial render
     selectedSet = new Set(parseSelected(selectedWidget.value));
     renderColored();
+    syncSelected();
 };
 
 // --- Registration ---
