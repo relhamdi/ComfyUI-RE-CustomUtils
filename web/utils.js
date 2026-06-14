@@ -455,3 +455,10 @@ export const drawGroupBorder = (
     ctx.strokeRect(0, y, node.size[0], height);
     ctx.restore();
 };
+
+const setInputDotColor = (node, inputName, active) => {
+    const inp = node.inputs?.find((i) => i.name === inputName);
+    if (!inp) return;
+    inp.color_on = active ? undefined : COLORS.inactive;
+    inp.color_off = inp.color_on;
+};

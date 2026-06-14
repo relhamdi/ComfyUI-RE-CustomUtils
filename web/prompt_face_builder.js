@@ -31,15 +31,6 @@ const BOOL_FIELDS = [
     "show_makeup",
 ];
 
-// --- Helpers ---
-
-const setInputDotColor = (node, inputName, active) => {
-    const inp = node.inputs?.find((i) => i.name === inputName);
-    if (!inp) return;
-    inp.color_on = active ? undefined : COLORS.inactive;
-    inp.color_off = inp.color_on;
-};
-
 // --- Capture / Recall ---
 
 const captureState = (node) => {
