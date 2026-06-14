@@ -22,7 +22,6 @@ class PromptFaceBuilder:
                 "gaze": (get_builder_config_key(_CFG, "gaze"),),
                 "show_eyewear": ("BOOLEAN", {"default": False}),
                 "blush": (get_builder_config_key(_CFG, "blush"),),
-                "teeth": (get_builder_config_key(_CFG, "teeth"),),
                 "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
                 "emotion": (get_builder_config_key(_CFG, "emotion"),),
@@ -33,8 +32,10 @@ class PromptFaceBuilder:
                 "eyes": ("STRING", {"forceInput": True}),
                 "eye_type": ("STRING", {"forceInput": True}),
                 "eyewear": ("STRING", {"forceInput": True}),
+                "teeth": ("STRING", {"forceInput": True}),
                 "eye_modifiers": ("STRING", {"forceInput": True}),
                 "mouth_modifiers": ("STRING", {"forceInput": True}),
+                "face_modifiers": ("STRING", {"forceInput": True}),
             },
         }
 
@@ -47,15 +48,16 @@ class PromptFaceBuilder:
         eyes,
         eye_type,
         eyewear,
+        teeth,
         eye_modifiers,
         mouth_modifiers,
+        face_modifiers,
         show_eyes,
         pupils,
         eye_state,
         gaze,
         show_eyewear,
         blush,
-        teeth,
         mouth_state,
         mouth_expression,
         emotion,
@@ -99,11 +101,17 @@ class PromptFaceBuilder:
         if v := clean_val(head_angle):
             face_parts.append(v)
 
+        face_modifiers_parts = []
+        if v := clean_val(face_modifiers):
+            face_modifiers_parts.append(v)
+
         parts = []
         if eye_parts:
             parts.append(f"({', '.join(eye_parts)})")
         if face_parts:
             parts.append(f"({', '.join(face_parts)})")
+        if face_modifiers_parts:
+            parts.append(f"({', '.join(face_modifiers_parts)})")
 
         return (clean_prompt(", ".join(parts)),)
 
