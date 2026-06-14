@@ -131,7 +131,8 @@ const updateHandsVisibility = (node, splitHands) => {
 const attachPoseBuilder = (node) => {
     let actionSelector = null;
 
-    // --- split_arms toggle ---
+    // --- Toggles ---
+
     const splitArmsWidget = findWidget(node, "split_arms");
     if (splitArmsWidget) {
         const original = splitArmsWidget.callback;
@@ -142,7 +143,6 @@ const attachPoseBuilder = (node) => {
         updateArmsVisibility(node, splitArmsWidget.value ?? false);
     }
 
-    // --- split_hands toggle ---
     const splitHandsWidget = findWidget(node, "split_hands");
     if (splitHandsWidget) {
         const original = splitHandsWidget.callback;
@@ -167,7 +167,8 @@ const attachPoseBuilder = (node) => {
         );
     }
 
-    // Draw border on toggles for visibility
+    // --- Borders ---
+
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
@@ -194,6 +195,7 @@ const attachPoseBuilder = (node) => {
     };
 
     // --- Preset manager ---
+    
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),

@@ -42,6 +42,7 @@ const recallState = (node, state) => {
 
 const attachSceneBuilder = (node) => {
     // --- Preset manager ---
+
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),
