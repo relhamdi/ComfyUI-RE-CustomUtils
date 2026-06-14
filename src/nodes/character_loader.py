@@ -7,6 +7,7 @@ from server import PromptServer
 
 from ..config import API_ROOT, DATA_DIR, EMPTY_VALUE, NODE_CATEGORY
 from ..utils_loader import (
+    clean_val,
     delete_file,
     get_builder_config_key,
     load_builder_config,
@@ -39,7 +40,11 @@ CHARACTER_TEMPLATE = {
     "nail_color": "",
     "nail_type": EMPTY_VALUE,
     "facial_piercings": "",
+    "base_body": EMPTY_VALUE,
     "body_type": "",
+    "body_piercings": "",
+    "upper_body": EMPTY_VALUE,
+    "lower_body": "",
 }
 
 # --- Helpers ---
@@ -70,23 +75,15 @@ class CharacterLoader:
                 "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
                 "makeup": ("STRING", {"default": ""}),
+                "base_body": (get_builder_config_key(_CFG, "base_body"),),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
+                "body_piercings": ("STRING", {"default": ""}),
+                "upper_body": (get_builder_config_key(_CFG, "upper_body"),),
+                "lower_body": ("STRING", {"default": ""}),
             }
         }
 
-    RETURN_TYPES = (
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-        "STRING",
-    )
+    RETURN_TYPES = ("STRING",) * 15
     RETURN_NAMES = (
         "eyes",
         "eye_type",
@@ -98,7 +95,11 @@ class CharacterLoader:
         "nail_color",
         "nail_type",
         "makeup",
+        "base_body",
         "body_type",
+        "body_piercings",
+        "upper_body",
+        "lower_body",
     )
     FUNCTION = "load_character"
     CATEGORY = NODE_CATEGORY
@@ -117,21 +118,28 @@ class CharacterLoader:
         nail_color,
         nail_type,
         makeup,
+        base_body,
         body_type,
+        body_piercings,
+        upper_body,
+        lower_body,
     ):
-        eye_type_out = eye_type if eye_type and eye_type != EMPTY_VALUE else ""
         return (
-            eyes.strip(),
-            eye_type_out,
-            eyewear.strip(),
-            teeth,
-            hair_color,
-            hair_style_selected,
-            facial_piercings,
-            nail_color,
-            nail_type,
-            makeup,
-            body_type,
+            clean_val(eyes),
+            clean_val(eye_type),
+            clean_val(eyewear),
+            clean_val(teeth),
+            clean_val(hair_color),
+            clean_val(hair_style_selected),
+            clean_val(facial_piercings),
+            clean_val(nail_color),
+            clean_val(nail_type),
+            clean_val(makeup),
+            clean_val(base_body),
+            clean_val(body_type),
+            clean_val(body_piercings),
+            clean_val(upper_body),
+            clean_val(lower_body),
         )
 
 

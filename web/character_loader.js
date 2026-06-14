@@ -28,7 +28,11 @@ const CHARACTER_TEMPLATE = {
     nail_color: "",
     nail_type: EMPTY_VALUE,
     makeup: "",
+    base_body: EMPTY_VALUE,
     body_type: "",
+    body_piercings: "",
+    upper_body: EMPTY_VALUE,
+    lower_body: "",
 };
 
 const FIELDS = Object.keys(CHARACTER_TEMPLATE);
