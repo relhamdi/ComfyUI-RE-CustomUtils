@@ -66,10 +66,10 @@ class CharacterLoader:
                 "hair_color": ("STRING", {"default": ""}),
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
                 "hair_style_selected": ("STRING", {"default": ""}),
-                "makeup": ("STRING", {"multiline": True, "default": ""}),
+                "facial_piercings": ("STRING", {"multiline": True, "default": ""}),
                 "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
-                "facial_piercings": ("STRING", {"multiline": True, "default": ""}),
+                "makeup": ("STRING", {"default": ""}),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
             }
         }
@@ -94,10 +94,10 @@ class CharacterLoader:
         "teeth",
         "hair_color",
         "hair_style",
-        "makeup",
+        "facial_piercings",
         "nail_color",
         "nail_type",
-        "facial_piercings",
+        "makeup",
         "body_type",
     )
     FUNCTION = "load_character"
@@ -113,10 +113,10 @@ class CharacterLoader:
         hair_color,
         hair_style_options,
         hair_style_selected,
-        makeup,
+        facial_piercings,
         nail_color,
         nail_type,
-        facial_piercings,
+        makeup,
         body_type,
     ):
         eye_type_out = eye_type if eye_type and eye_type != EMPTY_VALUE else ""
@@ -127,10 +127,10 @@ class CharacterLoader:
             teeth,
             hair_color,
             hair_style_selected,
-            makeup,
+            facial_piercings,
             nail_color,
             nail_type,
-            facial_piercings,
+            makeup,
             body_type,
         )
 

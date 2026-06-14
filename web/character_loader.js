@@ -24,10 +24,10 @@ const CHARACTER_TEMPLATE = {
     hair_color: "",
     hair_style_options: "",
     hair_style_selected: "",
-    makeup: "",
+    facial_piercings: "",
     nail_color: "",
     nail_type: EMPTY_VALUE,
-    facial_piercings: "",
+    makeup: "",
     body_type: "",
 };
 
