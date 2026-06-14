@@ -20,6 +20,7 @@ const CHARACTER_TEMPLATE = {
     eyes: "",
     eye_type: EMPTY_VALUE,
     eyewear: "",
+    teeth: EMPTY_VALUE,
     hair_color: "",
     hair_style_options: "",
     hair_style_selected: "",
