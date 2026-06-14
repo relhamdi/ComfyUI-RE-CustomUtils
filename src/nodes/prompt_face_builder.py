@@ -36,6 +36,8 @@ class PromptFaceBuilder:
                 "eye_type": ("STRING", {"forceInput": True}),
                 "eyewear": ("STRING", {"forceInput": True}),
                 "eye_modifiers": ("STRING", {"forceInput": True}),
+                "hair_color": ("STRING", {"forceInput": True}),
+                "hair_style": ("STRING", {"forceInput": True}),
                 "teeth": ("STRING", {"forceInput": True}),
                 "mouth_modifiers": ("STRING", {"forceInput": True}),
                 "facial_piercings": ("STRING", {"forceInput": True}),
@@ -71,6 +73,8 @@ class PromptFaceBuilder:
         eye_type="",
         eyewear="",
         eye_modifiers="",
+        hair_color="",
+        hair_style="",
         teeth="",
         mouth_modifiers="",
         facial_piercings="",
@@ -97,6 +101,12 @@ class PromptFaceBuilder:
                 eye_parts.append(v)
         if v := clean_val(eye_modifiers):
             eye_parts.append(v)
+
+        hair_parts = []
+        if v := clean_val(hair_color):
+            hair_parts.append(v)
+        if v := clean_val(hair_style):
+            hair_parts.append(v)
 
         face_parts = []
         if show_eyes:
@@ -140,6 +150,8 @@ class PromptFaceBuilder:
         parts = []
         if eye_parts:
             parts.append(f"({', '.join(eye_parts)})")
+        if hair_parts:
+            parts.append(f"({', '.join(hair_parts)})")
         if face_parts:
             parts.append(f"({', '.join(face_parts)})")
         if makeup_parts:
