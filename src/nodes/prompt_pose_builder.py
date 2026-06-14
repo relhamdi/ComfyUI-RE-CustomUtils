@@ -29,11 +29,20 @@ class PromptPoseBuilder:
                 "holding": (get_builder_config_key(_CFG, "holding"),),
                 "legs": (get_builder_config_key(_CFG, "legs"),),
                 "feet": (get_builder_config_key(_CFG, "feet"),),
+                "show_piercings": ("BOOLEAN", {"default": True}),
+                "show_upper_body": ("BOOLEAN", {"default": True}),
+                "show_lower_body": ("BOOLEAN", {"default": True}),
                 "action_options": ("STRING", {"multiline": True, "default": ""}),
                 "action_selected": ("STRING", {"default": ""}),
                 "preset_data": ("STRING", {"default": "{}"}),
             },
             "optional": {
+                "base_body": ("STRING", {"forceInput": True}),
+                "body_type": ("STRING", {"forceInput": True}),
+                "body_piercings": ("STRING", {"forceInput": True}),
+                "upper_body": ("STRING", {"forceInput": True}),
+                "lower_body": ("STRING", {"forceInput": True}),
+                "body_modifiers": ("STRING", {"forceInput": True}),
                 "extra": ("STRING", {"forceInput": True}),
             },
         }
@@ -44,7 +53,6 @@ class PromptPoseBuilder:
 
     def build(
         self,
-        extra,
         stance,
         posture,
         split_arms,
@@ -58,10 +66,37 @@ class PromptPoseBuilder:
         holding,
         legs,
         feet,
+        show_piercings,
+        show_upper_body,
+        show_lower_body,
         action_options,
         action_selected,
         preset_data,
+        base_body="",
+        body_type="",
+        body_piercings="",
+        upper_body="",
+        lower_body="",
+        body_modifiers="",
+        extra="",
     ):
+        body_parts = []
+        if v := clean_val(base_body):
+            body_parts.append(v)
+        if v := clean_val(body_type):
+            body_parts.append(v)
+        if show_piercings:
+            if v := clean_val(body_piercings):
+                body_parts.append(v)
+        if show_upper_body:
+            if v := clean_val(upper_body):
+                body_parts.append(v)
+        if show_lower_body:
+            if v := clean_val(lower_body):
+                body_parts.append(v)
+        if v := clean_val(body_modifiers):
+            body_parts.append(v)
+
         pose_parts = []
         if v := clean_val(stance):
             pose_parts.append(v)
@@ -102,6 +137,8 @@ class PromptPoseBuilder:
             extra_parts.append(v)
 
         parts = []
+        if body_parts:
+            parts.append(f"({', '.join(body_parts)})")
         if pose_parts:
             parts.append(f"({', '.join(pose_parts)})")
         if action_parts:

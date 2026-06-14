@@ -6,6 +6,7 @@ import {
     findWidget,
     hideWidget,
     registerNode,
+    setInputDotColor,
     waitForWidgets,
 } from "./utils.js";
 
@@ -31,7 +32,13 @@ const SPLIT_ARMS_FIELDS = ["first_arm", "second_arm"];
 const SINGLE_ARM_FIELDS = ["arms"];
 const SPLIT_HANDS_FIELDS = ["first_hand", "second_hand"];
 const SINGLE_HAND_FIELDS = ["hands"];
-const BOOL_FIELDS = ["split_arms", "split_hands"];
+const BOOL_FIELDS = [
+    "split_arms",
+    "split_hands",
+    "show_piercings",
+    "show_upper_body",
+    "show_lower_body",
+];
 
 // --- Capture / Recall ---
 
@@ -73,6 +80,23 @@ const recallState = (node, state) => {
     }
 
     updateArmsVisibility(node, findWidget(node, "split_arms")?.value ?? false);
+    updateHandsVisibility(
+        node,
+        findWidget(node, "split_hands")?.value ?? false,
+    );
+    updatePiercingsVisibility(
+        node,
+        findWidget(node, "show_piercings")?.value ?? true,
+    );
+    updateUpperBodyVisibility(
+        node,
+        findWidget(node, "show_upper_body")?.value ?? true,
+    );
+    updateLowerBodyVisibility(
+        node,
+        findWidget(node, "show_lower_body")?.value ?? true,
+    );
+
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
@@ -126,6 +150,24 @@ const updateHandsVisibility = (node, splitHands) => {
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
+const updatePiercingsVisibility = (node, value) => {
+    setInputDotColor(node, "body_piercings", value);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const updateUpperBodyVisibility = (node, value) => {
+    setInputDotColor(node, "upper_body", value);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const updateLowerBodyVisibility = (node, value) => {
+    setInputDotColor(node, "lower_body", value);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
 // --- Attach ---
 
 const attachPoseBuilder = (node) => {
@@ -153,6 +195,36 @@ const attachPoseBuilder = (node) => {
         updateHandsVisibility(node, splitHandsWidget.value ?? false);
     }
 
+    const showPiercingsWidget = findWidget(node, "show_piercings");
+    if (showPiercingsWidget) {
+        const original = showPiercingsWidget.callback;
+        showPiercingsWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updatePiercingsVisibility(node, value);
+        };
+        updatePiercingsVisibility(node, showPiercingsWidget.value ?? true);
+    }
+
+    const showUpperBodyWidget = findWidget(node, "show_upper_body");
+    if (showUpperBodyWidget) {
+        const original = showUpperBodyWidget.callback;
+        showUpperBodyWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateUpperBodyVisibility(node, value);
+        };
+        updateUpperBodyVisibility(node, showUpperBodyWidget.value ?? true);
+    }
+
+    const showLowerBodyWidget = findWidget(node, "show_lower_body");
+    if (showLowerBodyWidget) {
+        const original = showLowerBodyWidget.callback;
+        showLowerBodyWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateLowerBodyVisibility(node, value);
+        };
+        updateLowerBodyVisibility(node, showLowerBodyWidget.value ?? true);
+    }
+
     const actionOptionsWidget = findWidget(node, "action_options");
     const actionSelectedWidget = findWidget(node, "action_selected");
     if (actionOptionsWidget && actionSelectedWidget) {
@@ -174,28 +246,29 @@ const attachPoseBuilder = (node) => {
         if (original) original.call(this, ctx);
 
         const splitArms = findWidget(node, "split_arms")?.value ?? false;
-        drawGroupBorder(
-            ctx,
-            node,
-            "split_arms",
-            splitArms ? "second_arm" : "arms",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
-
         const splitHands = findWidget(node, "split_hands")?.value ?? false;
-        drawGroupBorder(
-            ctx,
-            node,
-            "split_hands",
-            splitHands ? "second_hand" : "hands",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
+        const groups = [
+            { start: "split_arms", end: splitArms ? "second_arm" : "arms" },
+            { start: "split_hands", end: splitHands ? "second_hand" : "hands" },
+            { start: "show_piercings", end: "show_piercings" },
+            { start: "show_upper_body", end: "show_upper_body" },
+            { start: "show_lower_body", end: "show_lower_body" },
+        ];
+
+        for (const group of groups) {
+            drawGroupBorder(
+                ctx,
+                node,
+                group.start,
+                group.end,
+                COLORS.toggle_on,
+                COLORS.toggle_off,
+            );
+        }
     };
 
     // --- Preset manager ---
-    
+
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),
