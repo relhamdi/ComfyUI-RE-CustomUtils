@@ -24,6 +24,12 @@ from .src.nodes.prompt_layout_filler import (
 from .src.nodes.prompt_layout_filler import (
     NODE_DISPLAY_NAME_MAPPINGS as PromptLayoutFillerDisplayMappings,
 )
+from .src.nodes.prompt_multi_picker import (
+    NODE_CLASS_MAPPINGS as PromptMultiPickerMappings,
+)
+from .src.nodes.prompt_multi_picker import (
+    NODE_DISPLAY_NAME_MAPPINGS as PromptMultiPickerDisplayMappings,
+)
 from .src.nodes.prompt_option_picker import (
     NODE_CLASS_MAPPINGS as PromptOptionPickerMappings,
 )
@@ -86,6 +92,7 @@ NODE_CLASS_MAPPINGS.update(BreakEncoderMappings)
 NODE_CLASS_MAPPINGS.update(PromptFaceBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptPoseBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptSceneBuilderMappings)
+NODE_CLASS_MAPPINGS.update(PromptMultiPickerMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -100,6 +107,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(BreakEncoderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptFaceBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPoseBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptSceneBuilderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(PromptMultiPickerDisplayMappings)
 
 # Node registration
 __all__ = [
