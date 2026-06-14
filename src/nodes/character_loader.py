@@ -66,7 +66,7 @@ class CharacterLoader:
                 "hair_color": ("STRING", {"default": ""}),
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
                 "hair_style_selected": ("STRING", {"default": ""}),
-                "facial_piercings": ("STRING", {"multiline": True, "default": ""}),
+                "facial_piercings": ("STRING", {"default": ""}),
                 "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
                 "makeup": ("STRING", {"default": ""}),
