@@ -120,6 +120,18 @@ const attachMultiPicker = (node) => {
         restoreCaretPosition(editor, pos);
     };
 
+    // Clear All button — insert before options widget
+    const clearBtn = node.addWidget("button", "✕ Clear All", null, () => {
+        selectedSet.clear();
+        syncSelected();
+        renderColored();
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
+    });
+
+    // Move Clear All before selected widget
+    const selectedIdx = node.widgets.indexOf(selectedWidget);
+    node.widgets.splice(selectedIdx + 1, 0, clearBtn);
+
     // Create editor
     const editor = createEditor(textarea, {
         normalize: true,
