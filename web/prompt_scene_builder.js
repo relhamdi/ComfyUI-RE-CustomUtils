@@ -6,6 +6,7 @@ import { findWidget, registerNode, waitForWidgets } from "./utils.js";
 const NODE_NAME = "PromptSceneBuilder";
 
 const COMBO_FIELDS = [
+    "focus",
     "view",
     "angle",
     "framing",

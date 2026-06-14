@@ -16,6 +16,7 @@ class PromptSceneBuilder:
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "focus": (get_builder_config_key(_CFG, "focus"),),
                 "view": (get_builder_config_key(_CFG, "view"),),
                 "angle": (get_builder_config_key(_CFG, "angle"),),
                 "framing": (get_builder_config_key(_CFG, "framing"),),
@@ -33,6 +34,7 @@ class PromptSceneBuilder:
 
     def build(
         self,
+        focus,
         view,
         angle,
         framing,
@@ -43,6 +45,8 @@ class PromptSceneBuilder:
         preset_data,
     ):
         camera_parts = []
+        if v := clean_val(focus):
+            camera_parts.append(v)
         if v := clean_val(view):
             camera_parts.append(v)
         if v := clean_val(angle):
