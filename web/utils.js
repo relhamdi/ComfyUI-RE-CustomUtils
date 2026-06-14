@@ -427,19 +427,31 @@ export const flashButton = (node, index, flashLabel) => {
 };
 
 // --- Coloring ---
-
-export const drawWidgetBorder = (
+export const drawGroupBorder = (
     ctx,
     node,
-    widgetName,
+    fromWidgetName,
+    toWidgetName,
     colorTrue,
     colorFalse,
 ) => {
-    const w = node.widgets?.find((w) => w.name === widgetName);
-    if (!w) return;
+    const from = findWidget(node, fromWidgetName);
+    const to = findWidget(node, toWidgetName);
+    if (!from || !to) return;
+
+    // If colorFalse passed, toggle depending on fromWidget value
+    const color =
+        colorFalse !== undefined
+            ? from.value
+                ? colorTrue
+                : colorFalse
+            : colorTrue;
+
+    const y = from.last_y - 2;
+    const height = to.last_y + (to.computedHeight ?? 20) - y - 2;
     ctx.save();
-    ctx.strokeStyle = w.value ? colorTrue : colorFalse;
+    ctx.strokeStyle = color;
     ctx.lineWidth = 2;
-    ctx.strokeRect(0, w.last_y - 2, node.size[0], w.computedHeight ?? 20);
+    ctx.strokeRect(0, y, node.size[0], height);
     ctx.restore();
 };
