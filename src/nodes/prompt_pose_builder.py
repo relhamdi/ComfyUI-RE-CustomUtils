@@ -22,8 +22,13 @@ class PromptPoseBuilder:
                 "arms": (get_builder_config_key(_CFG, "arms"),),
                 "first_arm": (get_builder_config_key(_CFG, "arm"),),
                 "second_arm": (get_builder_config_key(_CFG, "arm"),),
+                "split_hands": ("BOOLEAN", {"default": False}),
+                "hands": (get_builder_config_key(_CFG, "hands"),),
+                "first_hand": (get_builder_config_key(_CFG, "hand"),),
+                "second_hand": (get_builder_config_key(_CFG, "hand"),),
                 "holding": (get_builder_config_key(_CFG, "holding"),),
                 "legs": (get_builder_config_key(_CFG, "legs"),),
+                "feet": (get_builder_config_key(_CFG, "feet"),),
                 "action_options": ("STRING", {"multiline": True, "default": ""}),
                 "action_selected": ("STRING", {"default": ""}),
                 "preset_data": ("STRING", {"default": "{}"}),
@@ -46,8 +51,13 @@ class PromptPoseBuilder:
         arms,
         first_arm,
         second_arm,
+        split_hands,
+        hands,
+        first_hand,
+        second_hand,
         holding,
         legs,
+        feet,
         action_options,
         action_selected,
         preset_data,
@@ -67,9 +77,20 @@ class PromptPoseBuilder:
             if v := clean_val(arms):
                 pose_parts.append(v)
 
+        if split_hands:
+            if v := clean_val(first_hand):
+                pose_parts.append(v)
+            if v := clean_val(second_hand):
+                pose_parts.append(v)
+        else:
+            if v := clean_val(hands):
+                pose_parts.append(v)
+
         if v := clean_val(holding):
             pose_parts.append(f"holding {v}")
         if v := clean_val(legs):
+            pose_parts.append(v)
+        if v := clean_val(feet):
             pose_parts.append(v)
 
         action_parts = []

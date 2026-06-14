@@ -26,8 +26,11 @@ with patch(
         "posture": ["--", "contrapposto"],
         "arms": ["--", "arms at sides"],
         "arm": ["--", "arm raised"],
+        "hands": ["--", "hands on hips"],
+        "hand": ["--", "hand raised"],
         "holding": ["--", "sword"],
         "legs": ["--", "legs together"],
+        "feet": ["--", "bare feet"],
     },
 ):
     from src.nodes.prompt_pose_builder import PromptPoseBuilder
@@ -99,8 +102,13 @@ def run_pose(node, **kwargs):
         arms="--",
         first_arm="--",
         second_arm="--",
+        split_hands=False,
+        hands="--",
+        first_hand="--",
+        second_hand="--",
         holding="--",
         legs="--",
+        feet="--",
         action_options="",
         action_selected="",
     )
@@ -248,6 +256,22 @@ class TestPoseBuilder:
         assert "arm raised" not in text
         assert "arm at side" not in text
 
+    def test_hands_when_not_split(self, pose):
+        (text,) = run_pose(pose, hands="hands on hips", split_hands=False)
+        assert "hands on hips" in text
+
+    def test_first_hand_when_split(self, pose):
+        (text,) = run_pose(pose, first_hand="hand raised", split_hands=True)
+        assert "hand raised" in text
+
+    def test_second_hand_when_split(self, pose):
+        (text,) = run_pose(pose, second_hand="hand at side", split_hands=True)
+        assert "hand at side" in text
+
+    def test_hands_excluded_when_split(self, pose):
+        (text,) = run_pose(pose, hands="hands on hips", split_hands=True)
+        assert "hands on hips" not in text
+
     def test_holding_prepends_holding(self, pose):
         (text,) = run_pose(pose, holding="sword")
         assert "holding sword" in text
@@ -255,6 +279,10 @@ class TestPoseBuilder:
     def test_legs_included(self, pose):
         (text,) = run_pose(pose, legs="legs together")
         assert "legs together" in text
+
+    def test_feet_included(self, pose):
+        (text,) = run_pose(pose, feet="bare feet")
+        assert "bare feet" in text
 
     def test_action_included(self, pose):
         (text,) = run_pose(pose, action_selected="walking")

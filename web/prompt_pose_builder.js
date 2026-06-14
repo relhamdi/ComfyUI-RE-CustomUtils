@@ -2,7 +2,7 @@ import { COLORS } from "./constants.js";
 import { attachInlineSelector } from "./inline_selector.js";
 import { createPresetManager } from "./preset_manager.js";
 import {
-    drawWidgetBorder,
+    drawGroupBorder,
     findWidget,
     hideWidget,
     registerNode,
@@ -19,13 +19,19 @@ const COMBO_FIELDS = [
     "arms",
     "first_arm",
     "second_arm",
+    "hands",
+    "first_hand",
+    "second_hand",
     "holding",
     "legs",
+    "feet",
 ];
 
 const SPLIT_ARMS_FIELDS = ["first_arm", "second_arm"];
 const SINGLE_ARM_FIELDS = ["arms"];
-const BOOL_FIELDS = ["split_arms"];
+const SPLIT_HANDS_FIELDS = ["first_hand", "second_hand"];
+const SINGLE_HAND_FIELDS = ["hands"];
+const BOOL_FIELDS = ["split_arms", "split_hands"];
 
 // --- Capture / Recall ---
 
@@ -81,8 +87,6 @@ const updateArmsVisibility = (node, splitArms) => {
             w.computeSize = null;
         } else {
             hideWidget(w);
-            // w.type = "hidden";
-            // w.computeSize = () => [0, -4];
         }
     }
     for (const field of SINGLE_ARM_FIELDS) {
@@ -93,11 +97,32 @@ const updateArmsVisibility = (node, splitArms) => {
             w.computeSize = null;
         } else {
             hideWidget(w);
-            // w.type = "hidden";
-            // w.computeSize = () => [0, -4];
         }
     }
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
 
+const updateHandsVisibility = (node, splitHands) => {
+    for (const field of SPLIT_HANDS_FIELDS) {
+        const w = findWidget(node, field);
+        if (!w) continue;
+        if (splitHands) {
+            w.type = "combo";
+            w.computeSize = null;
+        } else {
+            hideWidget(w);
+        }
+    }
+    for (const field of SINGLE_HAND_FIELDS) {
+        const w = findWidget(node, field);
+        if (!w) continue;
+        if (!splitHands) {
+            w.type = "combo";
+            w.computeSize = null;
+        } else {
+            hideWidget(w);
+        }
+    }
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
@@ -115,6 +140,17 @@ const attachPoseBuilder = (node) => {
             updateArmsVisibility(node, value);
         };
         updateArmsVisibility(node, splitArmsWidget.value ?? false);
+    }
+
+    // --- split_hands toggle ---
+    const splitHandsWidget = findWidget(node, "split_hands");
+    if (splitHandsWidget) {
+        const original = splitHandsWidget.callback;
+        splitHandsWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateHandsVisibility(node, value);
+        };
+        updateHandsVisibility(node, splitHandsWidget.value ?? false);
     }
 
     const actionOptionsWidget = findWidget(node, "action_options");
@@ -135,10 +171,23 @@ const attachPoseBuilder = (node) => {
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
-        drawWidgetBorder(
+
+        const splitArms = findWidget(node, "split_arms")?.value ?? false;
+        drawGroupBorder(
             ctx,
             node,
             "split_arms",
+            splitArms ? "second_arm" : "arms",
+            COLORS.toggle_on,
+            COLORS.toggle_off,
+        );
+
+        const splitHands = findWidget(node, "split_hands")?.value ?? false;
+        drawGroupBorder(
+            ctx,
+            node,
+            "split_hands",
+            splitHands ? "second_hand" : "hands",
             COLORS.toggle_on,
             COLORS.toggle_off,
         );
