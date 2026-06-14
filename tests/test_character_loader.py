@@ -3,8 +3,60 @@ import os
 
 import pytest
 from aiohttp import web
-from src.nodes.character_loader import CHARACTER_TEMPLATE
+from src.nodes.character_loader import CHARACTER_TEMPLATE, CharacterLoader
 from src.utils_loader import safe_relative_path
+
+
+@pytest.fixture
+def node():
+    return CharacterLoader()
+
+
+def run(node, **kwargs):
+    defaults = dict(
+        character_file="--",
+        eyes="",
+        eye_type="--",
+        eyewear="",
+        hair_color="",
+        hair_style_options="",
+        hair_style_selected="",
+        makeup="",
+        nails="",
+        piercings="",
+        body_type="",
+    )
+    defaults.update(kwargs)
+    return node.load_character(**defaults)
+
+
+# --- Base cases ---
+
+
+def test_eye_type_appended_to_eyes(node):
+    (eyes, *_) = run(node, eyes="blue eyes", eye_type="almond eyes")
+    assert eyes == "blue eyes, almond eyes"
+
+
+def test_eye_type_no_double_comma(node):
+    (eyes, *_) = run(node, eyes="blue eyes,", eye_type="almond eyes")
+    assert ",," not in eyes
+
+
+def test_eye_type_alone_when_eyes_empty(node):
+    (eyes, *_) = run(node, eyes="", eye_type="almond eyes")
+    assert eyes == "almond eyes"
+
+
+def test_eye_type_dash_ignored(node):
+    (eyes, *_) = run(node, eyes="blue eyes", eye_type="--")
+    assert eyes == "blue eyes"
+
+
+def test_eye_type_both_empty(node):
+    (eyes, *_) = run(node, eyes="", eye_type="--")
+    assert eyes == ""
+
 
 # --- CHARACTER_TEMPLATE ---
 
@@ -12,6 +64,7 @@ from src.utils_loader import safe_relative_path
 def test_character_template_has_required_keys():
     for key in [
         "eyes",
+        "eye_type",
         "eyewear",
         "hair_color",
         "hair_style_options",
@@ -27,6 +80,7 @@ def test_character_template_has_required_keys():
 def test_character_template_defaults():
     for key in [
         "eyes",
+        "eye_type",
         "eyewear",
         "hair_color",
         "hair_style_options",
@@ -194,6 +248,7 @@ async def test_new_template_has_expected_fields(client):
     parsed = json.loads(data["content"])
     for field in [
         "eyes",
+        "eye_type",
         "eyewear",
         "hair_color",
         "hair_style_options",

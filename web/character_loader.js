@@ -18,6 +18,7 @@ const BASE_ENDPOINT = `${API_ROOT}/characters`;
 
 const CHARACTER_TEMPLATE = {
     eyes: "",
+    eye_type: EMPTY_VALUE,
     eyewear: "",
     hair_color: "",
     hair_style_options: "",

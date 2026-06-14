@@ -5,14 +5,20 @@ from aiohttp import web
 
 from server import PromptServer
 
-from ..config import API_ROOT, DATA_DIR, NODE_CATEGORY
+from ..config import API_ROOT, DATA_DIR, EMPTY_VALUE, NODE_CATEGORY
 from ..utils_loader import (
+    clean_val,
     delete_file,
+    get_builder_config_key,
+    load_builder_config,
     load_json_file,
     safe_relative_path,
     save_json_file,
     scan_files,
 )
+
+_CFG = load_builder_config("character")
+
 
 # --- Constants ---
 
@@ -24,6 +30,7 @@ BASE_ENDPOINT = f"{API_ROOT}/characters"
 
 CHARACTER_TEMPLATE = {
     "eyes": "",
+    "eye_type": EMPTY_VALUE,
     "eyewear": "",
     "hair_color": "",
     "hair_style_options": "",
@@ -52,6 +59,7 @@ class CharacterLoader:
             "required": {
                 "character_file": (scan_files(_get_characters_dir()),),
                 "eyes": ("STRING", {"multiline": True, "default": ""}),
+                "eye_type": (get_builder_config_key(_CFG, "eye_type"),),
                 "eyewear": ("STRING", {"default": ""}),
                 "hair_color": ("STRING", {"default": ""}),
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
@@ -90,6 +98,7 @@ class CharacterLoader:
         self,
         character_file,
         eyes,
+        eye_type,
         eyewear,
         hair_color,
         hair_style_options,
@@ -99,8 +108,16 @@ class CharacterLoader:
         piercings,
         body_type,
     ):
+        if v := clean_val(eye_type):
+            if eyes.strip():
+                eyes_clean = eyes.strip().rstrip(",").strip()
+                eyes_out = f"{eyes_clean}, {v}"
+            else:
+                eyes_out = v
+        else:
+            eyes_out = eyes.strip()
         return (
-            eyes,
+            eyes_out,
             eyewear,
             hair_color,
             hair_style_selected,
