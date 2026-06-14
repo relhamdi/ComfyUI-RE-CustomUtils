@@ -80,7 +80,6 @@ def test_character_template_has_required_keys():
 def test_character_template_defaults():
     for key in [
         "eyes",
-        "eye_type",
         "eyewear",
         "hair_color",
         "hair_style_options",
@@ -91,6 +90,7 @@ def test_character_template_defaults():
         "body_type",
     ]:
         assert CHARACTER_TEMPLATE[key] == ""
+        assert CHARACTER_TEMPLATE["eye_type"] == "--"
 
 
 # --- Fixtures ---
