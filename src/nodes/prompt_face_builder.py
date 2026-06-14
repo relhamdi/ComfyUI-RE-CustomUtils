@@ -20,7 +20,7 @@ class PromptFaceBuilder:
                 "pupils": (get_builder_config_key(_CFG, "pupils"),),
                 "eye_state": (get_builder_config_key(_CFG, "eye_state"),),
                 "gaze": (get_builder_config_key(_CFG, "gaze"),),
-                "show_eyewear": ("BOOLEAN", {"default": False}),
+                "show_eyewear": ("BOOLEAN", {"default": True}),
                 "blush": (get_builder_config_key(_CFG, "blush"),),
                 "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
