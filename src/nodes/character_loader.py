@@ -7,7 +7,6 @@ from server import PromptServer
 
 from ..config import API_ROOT, DATA_DIR, EMPTY_VALUE, NODE_CATEGORY
 from ..utils_loader import (
-    clean_val,
     delete_file,
     get_builder_config_key,
     load_builder_config,
@@ -80,9 +79,11 @@ class CharacterLoader:
         "STRING",
         "STRING",
         "STRING",
+        "STRING",
     )
     RETURN_NAMES = (
         "eyes",
+        "eye_type",
         "eyewear",
         "hair_color",
         "hair_style",
@@ -108,17 +109,11 @@ class CharacterLoader:
         piercings,
         body_type,
     ):
-        if v := clean_val(eye_type):
-            if eyes.strip():
-                eyes_clean = eyes.strip().rstrip(",").strip()
-                eyes_out = f"{eyes_clean}, {v}"
-            else:
-                eyes_out = v
-        else:
-            eyes_out = eyes.strip()
+        eye_type_out = eye_type if eye_type and eye_type != EMPTY_VALUE else ""
         return (
-            eyes_out,
-            eyewear,
+            eyes.strip(),
+            eye_type_out,
+            eyewear.strip(),
             hair_color,
             hair_style_selected,
             makeup,
