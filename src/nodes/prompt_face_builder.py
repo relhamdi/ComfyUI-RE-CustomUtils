@@ -23,9 +23,11 @@ class PromptFaceBuilder:
                 "gaze": (get_builder_config_key(_CFG, "gaze"),),
                 "show_eyewear": ("BOOLEAN", {"default": False}),
                 "blush": (get_builder_config_key(_CFG, "blush"),),
+                "teeth": (get_builder_config_key(_CFG, "teeth"),),
+                "mouth_details": (get_builder_config_key(_CFG, "mouth_details"),),
                 "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
-                "mouth_action": (get_builder_config_key(_CFG, "mouth_action"),),
-                "expression": (get_builder_config_key(_CFG, "expression"),),
+                "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
+                "emotion": (get_builder_config_key(_CFG, "emotion"),),
                 "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
                 "preset_data": ("STRING", {"default": "{}"}),
             },
@@ -50,9 +52,11 @@ class PromptFaceBuilder:
         gaze,
         show_eyewear,
         blush,
+        teeth,
+        mouth_details,
         mouth_state,
-        mouth_action,
-        expression,
+        mouth_expression,
+        emotion,
         head_angle,
         preset_data,
     ):
@@ -76,11 +80,15 @@ class PromptFaceBuilder:
                 face_parts.append(v)
         if v := clean_val(blush):
             face_parts.append(v)
+        if v := clean_val(teeth):
+            face_parts.append(v)
+        if v := clean_val(mouth_details):
+            face_parts.append(v)
         if v := clean_val(mouth_state):
             face_parts.append(v)
-        if v := clean_val(mouth_action):
+        if v := clean_val(mouth_expression):
             face_parts.append(v)
-        if v := clean_val(expression):
+        if v := clean_val(emotion):
             face_parts.append(v)
         if v := clean_val(head_angle):
             face_parts.append(v)

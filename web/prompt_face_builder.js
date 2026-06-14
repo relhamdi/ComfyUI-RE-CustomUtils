@@ -17,9 +17,11 @@ const COMBO_FIELDS = [
     "eye_state",
     "gaze",
     "blush",
+    "teeth",
+    "mouth_details",
     "mouth_state",
-    "mouth_action",
-    "expression",
+    "mouth_expression",
+    "emotion",
     "head_angle",
 ];
 

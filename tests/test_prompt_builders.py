@@ -11,9 +11,11 @@ with patch(
         "eye_state": ["--", "half closed eyes"],
         "gaze": ["--", "looking at viewer"],
         "blush": ["--", "light blush"],
+        "teeth": ["--", "teeth"],
+        "mouth_details": ["--", "tongue out"],
         "mouth_state": ["--", "closed mouth"],
-        "mouth_action": ["--", "smile"],
-        "expression": ["--", "neutral"],
+        "mouth_expression": ["--", "smile"],
+        "emotion": ["--", "neutral"],
         "head_angle": ["--", "head tilt"],
     },
 ):
@@ -83,9 +85,11 @@ def run_face(node, **kwargs):
         gaze="--",
         show_eyewear=False,
         blush="--",
+        teeth="--",
+        mouth_details="--",
         mouth_state="--",
-        mouth_action="--",
-        expression="--",
+        mouth_expression="--",
+        emotion="--",
         head_angle="--",
     )
     defaults.update(kwargs)
@@ -181,12 +185,20 @@ class TestFaceBuilder:
         (text,) = run_face(face, mouth_state="closed mouth")
         assert "closed mouth" in text
 
-    def test_mouth_action_included(self, face):
-        (text,) = run_face(face, mouth_action="smile")
+    def test_teeth_included(self, face):
+        (text,) = run_face(face, teeth="teeth")
+        assert "teeth" in text
+
+    def test_mouth_details_included(self, face):
+        (text,) = run_face(face, mouth_details="tongue out")
+        assert "tongue out" in text
+
+    def test_mouth_expression_included(self, face):
+        (text,) = run_face(face, mouth_expression="smile")
         assert "smile" in text
 
-    def test_expression_included(self, face):
-        (text,) = run_face(face, expression="neutral")
+    def test_emotion_included(self, face):
+        (text,) = run_face(face, emotion="neutral")
         assert "neutral" in text
 
     def test_head_angle_included(self, face):
@@ -208,7 +220,7 @@ class TestFaceBuilder:
         assert "(blue eyes, round pupils)" in text
 
     def test_face_group_in_parentheses(self, face):
-        (text,) = run_face(face, blush="light blush", expression="neutral")
+        (text,) = run_face(face, blush="light blush", emotion="neutral")
         assert "(light blush" in text
         assert "neutral)" in text
 
