@@ -27,7 +27,7 @@ const CHARACTER_TEMPLATE = {
     makeup: "",
     nail_color: "",
     nail_type: EMPTY_VALUE,
-    piercings: "",
+    facial_piercings: "",
     body_type: "",
 };
 

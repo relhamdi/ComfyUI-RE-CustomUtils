@@ -38,7 +38,7 @@ CHARACTER_TEMPLATE = {
     "makeup": "",
     "nail_color": "",
     "nail_type": EMPTY_VALUE,
-    "piercings": "",
+    "facial_piercings": "",
     "body_type": "",
 }
 
@@ -69,7 +69,7 @@ class CharacterLoader:
                 "makeup": ("STRING", {"multiline": True, "default": ""}),
                 "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
-                "piercings": ("STRING", {"multiline": True, "default": ""}),
+                "facial_piercings": ("STRING", {"multiline": True, "default": ""}),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
             }
         }
@@ -97,7 +97,7 @@ class CharacterLoader:
         "makeup",
         "nail_color",
         "nail_type",
-        "piercings",
+        "facial_piercings",
         "body_type",
     )
     FUNCTION = "load_character"
@@ -116,7 +116,7 @@ class CharacterLoader:
         makeup,
         nail_color,
         nail_type,
-        piercings,
+        facial_piercings,
         body_type,
     ):
         eye_type_out = eye_type if eye_type and eye_type != EMPTY_VALUE else ""
@@ -130,7 +130,7 @@ class CharacterLoader:
             makeup,
             nail_color,
             nail_type,
-            piercings,
+            facial_piercings,
             body_type,
         )
 
