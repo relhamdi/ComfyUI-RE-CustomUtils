@@ -125,7 +125,7 @@ const attachFaceBuilder = (node) => {
             ctx,
             node,
             "show_eyes",
-            "show_eyes",
+            "gaze",
             COLORS.toggle_on,
             COLORS.toggle_off,
         );
