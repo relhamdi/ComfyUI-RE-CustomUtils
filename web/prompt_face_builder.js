@@ -1,7 +1,7 @@
 import { COLORS } from "./constants.js";
 import { createPresetManager } from "./preset_manager.js";
 import {
-    drawWidgetBorder,
+    drawGroupBorder,
     findWidget,
     registerNode,
     waitForWidgets,
@@ -116,16 +116,18 @@ const attachFaceBuilder = (node) => {
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
-        drawWidgetBorder(
+        drawGroupBorder(
             ctx,
             node,
+            "show_eyes",
             "show_eyes",
             COLORS.toggle_on,
             COLORS.toggle_off,
         );
-        drawWidgetBorder(
+        drawGroupBorder(
             ctx,
             node,
+            "show_eyewear",
             "show_eyewear",
             COLORS.toggle_on,
             COLORS.toggle_off,
