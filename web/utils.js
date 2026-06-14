@@ -456,7 +456,7 @@ export const drawGroupBorder = (
     ctx.restore();
 };
 
-const setInputDotColor = (node, inputName, active) => {
+export const setInputDotColor = (node, inputName, active) => {
     const inp = node.inputs?.find((i) => i.name === inputName);
     if (!inp) return;
     inp.color_on = active ? undefined : COLORS.inactive;

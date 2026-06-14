@@ -4,6 +4,7 @@ import {
     drawGroupBorder,
     findWidget,
     registerNode,
+    setInputDotColor,
     waitForWidgets,
 } from "./utils.js";
 
