@@ -186,49 +186,28 @@ const attachFaceBuilder = (node) => {
     }
 
     // --- Borders ---
+
+    const groups = [
+        { start: "show_eyes", end: "gaze" },
+        { start: "show_eyewear", end: "show_eyewear" },
+        { start: "show_piercings", end: "show_piercings" },
+        { start: "show_nails", end: "show_nails" },
+        { start: "show_makeup", end: "show_makeup" },
+    ];
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
-        drawGroupBorder(
-            ctx,
-            node,
-            "show_eyes",
-            "gaze",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
-        drawGroupBorder(
-            ctx,
-            node,
-            "show_eyewear",
-            "show_eyewear",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
-        drawGroupBorder(
-            ctx,
-            node,
-            "show_piercings",
-            "show_piercings",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
-        drawGroupBorder(
-            ctx,
-            node,
-            "show_nails",
-            "show_nails",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
-        drawGroupBorder(
-            ctx,
-            node,
-            "show_makeup",
-            "show_makeup",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
+
+        for (const group of groups) {
+            drawGroupBorder(
+                ctx,
+                node,
+                group.start,
+                group.end,
+                COLORS.toggle_on,
+                COLORS.toggle_off,
+            );
+        }
     };
 
     // --- Preset manager ---
