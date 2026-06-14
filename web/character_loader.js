@@ -25,7 +25,8 @@ const CHARACTER_TEMPLATE = {
     hair_style_options: "",
     hair_style_selected: "",
     makeup: "",
-    nails: "",
+    nail_color: "",
+    nail_type: EMPTY_VALUE,
     piercings: "",
     body_type: "",
 };

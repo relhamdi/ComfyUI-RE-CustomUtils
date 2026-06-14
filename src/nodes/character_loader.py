@@ -36,7 +36,8 @@ CHARACTER_TEMPLATE = {
     "hair_style_options": "",
     "hair_style_selected": "",
     "makeup": "",
-    "nails": "",
+    "nail_color": "",
+    "nail_type": EMPTY_VALUE,
     "piercings": "",
     "body_type": "",
 }
@@ -66,13 +67,15 @@ class CharacterLoader:
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
                 "hair_style_selected": ("STRING", {"default": ""}),
                 "makeup": ("STRING", {"multiline": True, "default": ""}),
-                "nails": ("STRING", {"default": ""}),
+                "nail_color": ("STRING", {"default": ""}),
+                "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
                 "piercings": ("STRING", {"multiline": True, "default": ""}),
                 "body_type": ("STRING", {"multiline": True, "default": ""}),
             }
         }
 
     RETURN_TYPES = (
+        "STRING",
         "STRING",
         "STRING",
         "STRING",
@@ -92,7 +95,8 @@ class CharacterLoader:
         "hair_color",
         "hair_style",
         "makeup",
-        "nails",
+        "nail_color",
+        "nail_type",
         "piercings",
         "body_type",
     )
@@ -110,7 +114,8 @@ class CharacterLoader:
         hair_style_options,
         hair_style_selected,
         makeup,
-        nails,
+        nail_color,
+        nail_type,
         piercings,
         body_type,
     ):
@@ -123,7 +128,8 @@ class CharacterLoader:
             hair_color,
             hair_style_selected,
             makeup,
-            nails,
+            nail_color,
+            nail_type,
             piercings,
             body_type,
         )
