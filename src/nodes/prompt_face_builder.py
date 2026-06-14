@@ -26,15 +26,21 @@ class PromptFaceBuilder:
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
                 "emotion": (get_builder_config_key(_CFG, "emotion"),),
                 "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
+                "show_nails": ("BOOLEAN", {"default": True}),
+                "show_makeup": ("BOOLEAN", {"default": True}),
                 "preset_data": ("STRING", {"default": "{}"}),
             },
             "optional": {
                 "eyes": ("STRING", {"forceInput": True}),
                 "eye_type": ("STRING", {"forceInput": True}),
                 "eyewear": ("STRING", {"forceInput": True}),
-                "teeth": ("STRING", {"forceInput": True}),
                 "eye_modifiers": ("STRING", {"forceInput": True}),
+                "teeth": ("STRING", {"forceInput": True}),
                 "mouth_modifiers": ("STRING", {"forceInput": True}),
+                "nail_type": ("STRING", {"forceInput": True}),
+                "nail_color": ("STRING", {"forceInput": True}),
+                "makeup": ("STRING", {"forceInput": True}),
+                "makeup_modifiers": ("STRING", {"forceInput": True}),
                 "face_modifiers": ("STRING", {"forceInput": True}),
             },
         }
@@ -55,13 +61,19 @@ class PromptFaceBuilder:
         mouth_expression,
         emotion,
         head_angle,
+        show_nails,
+        show_makeup,
         preset_data,
         eyes,
         eye_type="",
         eyewear="",
-        teeth="",
         eye_modifiers="",
+        teeth="",
         mouth_modifiers="",
+        nail_type="",
+        nail_color="",
+        makeup="",
+        makeup_modifiers="",
         face_modifiers="",
     ):
         eye_parts = []
@@ -101,17 +113,28 @@ class PromptFaceBuilder:
         if v := clean_val(head_angle):
             face_parts.append(v)
 
-        face_modifiers_parts = []
+        extra_parts = []
+        if show_makeup:
+            if v := clean_val(makeup):
+                extra_parts.append(v)
+            if v := clean_val(makeup_modifiers):
+                extra_parts.append(v)
+        if show_nails:
+            if v := clean_val(nail_type):
+                extra_parts.append(v)
+        if show_makeup and show_nails:
+            if v := clean_val(nail_color):
+                extra_parts.append(v)
         if v := clean_val(face_modifiers):
-            face_modifiers_parts.append(v)
+            extra_parts.append(v)
 
         parts = []
         if eye_parts:
             parts.append(f"({', '.join(eye_parts)})")
         if face_parts:
             parts.append(f"({', '.join(face_parts)})")
-        if face_modifiers_parts:
-            parts.append(f"({', '.join(face_modifiers_parts)})")
+        if extra_parts:
+            parts.append(f"({', '.join(extra_parts)})")
 
         return (clean_prompt(", ".join(parts)),)
 

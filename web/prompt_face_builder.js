@@ -23,7 +23,16 @@ const COMBO_FIELDS = [
 ];
 
 const EYE_FIELDS = ["pupils", "gaze"];
-const BOOL_FIELDS = ["show_eyes", "show_eyewear"];
+const BOOL_FIELDS = ["show_eyes", "show_eyewear", "show_nails", "show_makeup"];
+
+// --- Helpers ---
+
+const setInputDotColor = (node, inputName, active) => {
+    const inp = node.inputs?.find((i) => i.name === inputName);
+    if (!inp) return;
+    inp.color_on = active ? undefined : COLORS.inactive;
+    inp.color_off = inp.color_on;
+};
 
 // --- Capture / Recall ---
 
@@ -53,8 +62,14 @@ const recallState = (node, state) => {
     updateEyeVisibility(node, findWidget(node, "show_eyes")?.value ?? true);
     updateEyewearVisibility(
         node,
-        findWidget(node, "show_eyewear")?.value ?? false,
+        findWidget(node, "show_eyewear")?.value ?? true,
     );
+
+    const showNails = findWidget(node, "show_nails")?.value ?? true;
+    const showMakeup = findWidget(node, "show_makeup")?.value ?? true;
+    updateNailsVisibility(node, showNails, showMakeup);
+    updateMakeupVisibility(node, showNails, showMakeup);
+
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
@@ -66,27 +81,32 @@ const updateEyeVisibility = (node, value) => {
         if (w) w.disabled = !value;
     }
     // Color input dots
-    const eyesInput = node.inputs?.find((inp) => inp.name === "eyes");
-    if (eyesInput) {
-        eyesInput.color_on = value ? undefined : COLORS.inactive;
-        eyesInput.color_off = eyesInput.color_on;
-    }
-    const eyeTypeInput = node.inputs?.find((inp) => inp.name === "eye_type");
-    if (eyeTypeInput) {
-        eyeTypeInput.color_on = value ? undefined : COLORS.inactive;
-        eyeTypeInput.color_off = eyeTypeInput.color_on;
-    }
+    setInputDotColor(node, "eyes", value);
+    setInputDotColor(node, "eye_type", value);
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
 const updateEyewearVisibility = (node, value) => {
     // Color input dot
-    const eyewearInput = node.inputs?.find((inp) => inp.name === "eyewear");
-    if (eyewearInput) {
-        eyewearInput.color_on = value ? undefined : COLORS.inactive;
-        eyewearInput.color_off = eyewearInput.color_on;
-    }
+    setInputDotColor(node, "eyewear", value);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const updateNailsVisibility = (node, showNails, showMakeup) => {
+    // Color input dots
+    setInputDotColor(node, "nail_type", showNails);
+    setInputDotColor(node, "nail_color", showNails && showMakeup);
+
+    if (node.graph) node.graph.setDirtyCanvas(true, true);
+};
+
+const updateMakeupVisibility = (node, showNails, showMakeup) => {
+    // Color input dots
+    setInputDotColor(node, "makeup", showMakeup);
+    setInputDotColor(node, "makeup_modifiers", showMakeup);
+    setInputDotColor(node, "nail_color", showNails && showMakeup);
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
@@ -94,7 +114,8 @@ const updateEyewearVisibility = (node, value) => {
 // --- Attach ---
 
 const attachFaceBuilder = (node) => {
-    // --- show_eyes toggle ---
+    // --- Toggles ---
+
     const showEyesWidget = findWidget(node, "show_eyes");
     if (showEyesWidget) {
         const original = showEyesWidget.callback;
@@ -105,7 +126,6 @@ const attachFaceBuilder = (node) => {
         updateEyeVisibility(node, showEyesWidget.value ?? true);
     }
 
-    // --- show_eyewear toggle ---
     const showEyewearWidget = findWidget(node, "show_eyewear");
     if (showEyewearWidget) {
         const original = showEyewearWidget.callback;
@@ -113,10 +133,37 @@ const attachFaceBuilder = (node) => {
             if (original) original.call(this, value);
             updateEyewearVisibility(node, value);
         };
-        updateEyewearVisibility(node, showEyewearWidget.value ?? false);
+        updateEyewearVisibility(node, showEyewearWidget.value ?? true);
     }
 
-    // Draw border on toggles for visibility
+    const showNailsWidget = findWidget(node, "show_nails");
+    const showMakeupWidget = findWidget(node, "show_makeup");
+    if (showNailsWidget) {
+        const original = showNailsWidget.callback;
+        showNailsWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateNailsVisibility(node, value, showMakeupWidget.value ?? true);
+        };
+        updateNailsVisibility(
+            node,
+            showNailsWidget.value ?? true,
+            showMakeupWidget.value ?? true,
+        );
+    }
+    if (showMakeupWidget) {
+        const original = showMakeupWidget.callback;
+        showMakeupWidget.callback = function (value) {
+            if (original) original.call(this, value);
+            updateMakeupVisibility(node, showNailsWidget.value ?? true, value);
+        };
+        updateMakeupVisibility(
+            node,
+            showNailsWidget.value ?? true,
+            showMakeupWidget.value ?? true,
+        );
+    }
+
+    // --- Borders ---
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
@@ -136,9 +183,26 @@ const attachFaceBuilder = (node) => {
             COLORS.toggle_on,
             COLORS.toggle_off,
         );
+        drawGroupBorder(
+            ctx,
+            node,
+            "show_nails",
+            "show_nails",
+            COLORS.toggle_on,
+            COLORS.toggle_off,
+        );
+        drawGroupBorder(
+            ctx,
+            node,
+            "show_makeup",
+            "show_makeup",
+            COLORS.toggle_on,
+            COLORS.toggle_off,
+        );
     };
 
     // --- Preset manager ---
+
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),
