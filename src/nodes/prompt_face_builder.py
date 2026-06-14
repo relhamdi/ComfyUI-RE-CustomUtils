@@ -45,13 +45,6 @@ class PromptFaceBuilder:
 
     def build(
         self,
-        eyes,
-        eye_type,
-        eyewear,
-        teeth,
-        eye_modifiers,
-        mouth_modifiers,
-        face_modifiers,
         show_eyes,
         pupils,
         eye_state,
@@ -63,6 +56,13 @@ class PromptFaceBuilder:
         emotion,
         head_angle,
         preset_data,
+        eyes,
+        eye_type="",
+        eyewear="",
+        teeth="",
+        eye_modifiers="",
+        mouth_modifiers="",
+        face_modifiers="",
     ):
         eye_parts = []
         if show_eyes:
