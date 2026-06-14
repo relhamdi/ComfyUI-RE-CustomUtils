@@ -13,19 +13,17 @@ const NODE_NAME = "PromptFaceBuilder";
 
 const COMBO_FIELDS = [
     "pupils",
-    "eye_details",
     "eye_state",
     "gaze",
     "blush",
     "teeth",
-    "mouth_details",
     "mouth_state",
     "mouth_expression",
     "emotion",
     "head_angle",
 ];
 
-const EYE_FIELDS = ["pupils", "eye_details", "gaze"];
+const EYE_FIELDS = ["pupils", "gaze"];
 const BOOL_FIELDS = ["show_eyes", "show_eyewear"];
 
 // --- Capture / Recall ---
@@ -68,11 +66,16 @@ const updateEyeVisibility = (node, value) => {
         const w = findWidget(node, field);
         if (w) w.disabled = !value;
     }
-    // Color input dot
+    // Color input dots
     const eyesInput = node.inputs?.find((inp) => inp.name === "eyes");
     if (eyesInput) {
         eyesInput.color_on = value ? undefined : COLORS.inactive;
         eyesInput.color_off = eyesInput.color_on;
+    }
+    const eyeTypeInput = node.inputs?.find((inp) => inp.name === "eye_type");
+    if (eyeTypeInput) {
+        eyeTypeInput.color_on = value ? undefined : COLORS.inactive;
+        eyeTypeInput.color_off = eyeTypeInput.color_on;
     }
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);

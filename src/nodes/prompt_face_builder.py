@@ -18,13 +18,11 @@ class PromptFaceBuilder:
             "required": {
                 "show_eyes": ("BOOLEAN", {"default": True}),
                 "pupils": (get_builder_config_key(_CFG, "pupils"),),
-                "eye_details": (get_builder_config_key(_CFG, "eye_details"),),
                 "eye_state": (get_builder_config_key(_CFG, "eye_state"),),
                 "gaze": (get_builder_config_key(_CFG, "gaze"),),
                 "show_eyewear": ("BOOLEAN", {"default": False}),
                 "blush": (get_builder_config_key(_CFG, "blush"),),
                 "teeth": (get_builder_config_key(_CFG, "teeth"),),
-                "mouth_details": (get_builder_config_key(_CFG, "mouth_details"),),
                 "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
                 "emotion": (get_builder_config_key(_CFG, "emotion"),),
@@ -33,7 +31,10 @@ class PromptFaceBuilder:
             },
             "optional": {
                 "eyes": ("STRING", {"forceInput": True}),
+                "eye_type": ("STRING", {"forceInput": True}),
                 "eyewear": ("STRING", {"forceInput": True}),
+                "eye_modifiers": ("STRING", {"forceInput": True}),
+                "mouth_modifiers": ("STRING", {"forceInput": True}),
             },
         }
 
@@ -44,16 +45,17 @@ class PromptFaceBuilder:
     def build(
         self,
         eyes,
+        eye_type,
         eyewear,
+        eye_modifiers,
+        mouth_modifiers,
         show_eyes,
         pupils,
-        eye_details,
         eye_state,
         gaze,
         show_eyewear,
         blush,
         teeth,
-        mouth_details,
         mouth_state,
         mouth_expression,
         emotion,
@@ -66,13 +68,17 @@ class PromptFaceBuilder:
                 eye_parts.append(v)
             if v := clean_val(pupils):
                 eye_parts.append(v)
-            if v := clean_val(eye_details):
+            if v := clean_val(eye_type):
+                eye_parts.append(v)
+            if v := clean_val(eye_state):
                 eye_parts.append(v)
         if v := clean_val(eye_state):
             eye_parts.append(v)
         if show_eyewear:
             if v := clean_val(eyewear):
                 eye_parts.append(v)
+        if v := clean_val(eye_modifiers):
+            eye_parts.append(v)
 
         face_parts = []
         if show_eyes:
@@ -82,11 +88,11 @@ class PromptFaceBuilder:
             face_parts.append(v)
         if v := clean_val(teeth):
             face_parts.append(v)
-        if v := clean_val(mouth_details):
-            face_parts.append(v)
         if v := clean_val(mouth_state):
             face_parts.append(v)
         if v := clean_val(mouth_expression):
+            face_parts.append(v)
+        if v := clean_val(mouth_modifiers):
             face_parts.append(v)
         if v := clean_val(emotion):
             face_parts.append(v)
