@@ -1,6 +1,6 @@
 import { COLORS } from "../constants.js";
 
-const ROW_HEIGHT = 36;
+const ROW_HEIGHT = 25;
 const ROW_MARGIN = 10;
 const INNER_MARGIN = 4;
 

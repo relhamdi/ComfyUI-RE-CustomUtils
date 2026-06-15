@@ -2,7 +2,7 @@ import { COLORS, EMPTY_VALUE } from "../constants.js";
 
 // --- Constants ---
 
-const ROW_HEIGHT = 20;
+const ROW_HEIGHT = 17;
 const ROW_MARGIN = 10;
 const INNER_MARGIN = 4;
 const BTN_WIDTH = 36;
