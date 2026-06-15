@@ -5,6 +5,7 @@ import {
     drawGroupBorder,
     findWidget,
     hideWidget,
+    hideWidgetInput,
     registerNode,
     setInputDotColor,
     waitForWidgets,
@@ -228,7 +229,8 @@ const attachPoseBuilder = (node) => {
     const actionOptionsWidget = findWidget(node, "action_options");
     const actionSelectedWidget = findWidget(node, "action_selected");
     if (actionOptionsWidget && actionSelectedWidget) {
-        hideWidget(actionSelectedWidget);
+        hideWidget(actionSelectedWidget, true);
+        hideWidgetInput(node, actionSelectedWidget);
         actionSelector = attachInlineSelector(
             node,
             actionOptionsWidget,

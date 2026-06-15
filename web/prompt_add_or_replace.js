@@ -4,6 +4,7 @@ import {
     drawGroupBorder,
     findWidget,
     hideWidget,
+    hideWidgetInput,
     registerNode,
     waitForWidget,
 } from "./utils.js";
@@ -21,7 +22,8 @@ const attachAddOrReplace = (node) => {
 
     if (!optionsWidget || !selectedWidget || !modeToggleWidget) return;
 
-    hideWidget(selectedWidget);
+    hideWidget(selectedWidget, true);
+    hideWidgetInput(node, selectedWidget);
 
     // Inline selector
     attachInlineSelector(node, optionsWidget, selectedWidget, {

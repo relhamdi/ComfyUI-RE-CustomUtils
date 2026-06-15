@@ -2,6 +2,7 @@ import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
 import {
     findWidget,
     flashButton,
+    hideWidget,
     patchFileDropdown,
     registerNode,
     setWidgetValue,
@@ -494,7 +495,7 @@ const attachStyleLoader = (node) => {
             }
         }
         if (lorasDataWidget) {
-            lorasDataWidget.hidden = true;
+            hideWidget(lorasDataWidget, true);
         }
 
         // Load initial file + preview

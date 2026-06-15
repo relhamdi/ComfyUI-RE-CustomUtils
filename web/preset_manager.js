@@ -1,4 +1,4 @@
-import { findWidget, hideWidget } from "./utils.js";
+import { findWidget, hideWidget, hideWidgetInput } from "./utils.js";
 import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { PresetRowWidget } from "./widgets/preset_row_widget.js";
 
@@ -147,7 +147,8 @@ export const createPresetManager = (
 
     // Initialize presets from stored data
     if (presetDataWidget) {
-        hideWidget(presetDataWidget);
+        hideWidget(presetDataWidget, true);
+        hideWidgetInput(node, presetDataWidget);
         const data = loadPresets(node, presetDataKey);
         presetRow.setPresets(getPresetNames(data));
         if (node.graph) node.graph.setDirtyCanvas(true, true);

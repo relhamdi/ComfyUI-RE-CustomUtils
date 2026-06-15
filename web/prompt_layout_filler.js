@@ -5,6 +5,7 @@ import {
     debounce,
     escapeHtml,
     findWidget,
+    hideWidget,
     registerNode,
     updateSlotVisibility,
     waitForWidget,
@@ -171,7 +172,7 @@ const attachEditor = (node) => {
     // Insert preset widgets after preset_data
     const presetDataWidget = findWidget(node, "preset_data");
     if (presetDataWidget) {
-        presetDataWidget.hidden = true;
+        hideWidget(presetDataWidget);
         const idx = node.widgets.indexOf(presetDataWidget);
         node.widgets.splice(idx + 1, 0, presetRow);
         node.widgets.splice(idx + 2, 0, exportImportRow);
