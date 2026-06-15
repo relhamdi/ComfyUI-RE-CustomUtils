@@ -4,6 +4,7 @@ import {
     escapeHtml,
     findWidget,
     hideWidget,
+    hideWidgetInput,
     hookWidget,
     registerNode,
     restoreCaretPosition,
@@ -99,7 +100,8 @@ const attachMultiPicker = (node) => {
     const selectedWidget = findWidget(node, "selected");
     if (!optionsWidget || !selectedWidget) return;
 
-    hideWidget(selectedWidget);
+    hideWidget(selectedWidget, true);
+    hideWidgetInput(node, selectedWidget);
 
     const textarea = optionsWidget.inputEl || optionsWidget.element;
     if (!textarea?.parentNode) return;
@@ -140,6 +142,10 @@ const attachMultiPicker = (node) => {
 
     // Move Clear All after selected widget
     const selectedIdx = node.widgets.indexOf(selectedWidget);
+    const currentIdx = node.widgets.indexOf(clearBtn);
+    if (currentIdx !== -1) {
+        node.widgets.splice(currentIdx, 1);
+    }
     node.widgets.splice(selectedIdx + 1, 0, clearBtn);
 
     // Create editor
