@@ -39,9 +39,19 @@ export const setWidgetValue = (widget, value) => {
 };
 
 // Hide ComfyUI widget component
-export const hideWidget = (widgetName) => {
-    widgetName.type = "hidden";
-    widgetName.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
+export const hideWidget = (widget, force = false) => {
+    widget.type = "hidden";
+    widget.computeSize = () => [0, -4]; // -4 to cancel ComfyUI padding
+    if (force) {
+        widget.hidden = true;
+    }
+};
+
+export const hideWidgetInput = (node, widget) => {
+    const inputIdx = node.inputs?.findIndex(
+        (inp) => inp.widget?.name === widget.name,
+    );
+    if (inputIdx !== -1) node.inputs.splice(inputIdx, 1);
 };
 
 // Hook into ComfyUI widget callback (reliable change detection)
