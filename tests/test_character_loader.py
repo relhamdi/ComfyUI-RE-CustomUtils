@@ -1,10 +1,22 @@
 import json
 import os
+from unittest.mock import patch
 
 import pytest
 from aiohttp import web
 from src.nodes.character_loader import CHARACTER_TEMPLATE, CharacterLoader
 from src.utils_loader import safe_relative_path
+
+_CFG = {
+    "eye_type": ["--", "almond eyes"],
+    "teeth": ["--", "teeth"],
+    "nail_type": ["--", "long nails"],
+    "base_body": ["--", "slim"],
+    "upper_body": ["--", "large chest"],
+}
+
+with patch("src.nodes.character_loader.load_builder_config", return_value=_CFG):
+    from src.nodes.character_loader import CharacterLoader
 
 
 @pytest.fixture
@@ -18,13 +30,19 @@ def run(node, **kwargs):
         eyes="",
         eye_type="--",
         eyewear="",
+        teeth="--",
         hair_color="",
         hair_style_options="",
         hair_style_selected="",
+        facial_piercings="",
+        nail_color="",
+        nail_type="--",
         makeup="",
-        nails="",
-        piercings="",
+        base_body="--",
         body_type="",
+        body_piercings="",
+        upper_body="--",
+        lower_body="",
     )
     defaults.update(kwargs)
     return node.load_character(**defaults)
@@ -33,29 +51,119 @@ def run(node, **kwargs):
 # --- Base cases ---
 
 
-def test_eye_type_appended_to_eyes(node):
-    (eyes, *_) = run(node, eyes="blue eyes", eye_type="almond eyes")
-    assert eyes == "blue eyes, almond eyes"
+def test_eyes_returned(node):
+    result = run(node, eyes="blue eyes")
+    assert result[0] == "blue eyes"
 
 
-def test_eye_type_no_double_comma(node):
-    (eyes, *_) = run(node, eyes="blue eyes,", eye_type="almond eyes")
-    assert ",," not in eyes
+def test_eyes_stripped(node):
+    result = run(node, eyes="  blue eyes  ")
+    assert result[0] == "blue eyes"
 
 
-def test_eye_type_alone_when_eyes_empty(node):
-    (eyes, *_) = run(node, eyes="", eye_type="almond eyes")
-    assert eyes == "almond eyes"
+def test_eye_type_returned(node):
+    result = run(node, eye_type="almond eyes")
+    assert result[1] == "almond eyes"
 
 
-def test_eye_type_dash_ignored(node):
-    (eyes, *_) = run(node, eyes="blue eyes", eye_type="--")
-    assert eyes == "blue eyes"
+def test_eye_type_dash_returns_empty(node):
+    result = run(node, eye_type="--")
+    assert result[1] == ""
 
 
-def test_eye_type_both_empty(node):
-    (eyes, *_) = run(node, eyes="", eye_type="--")
-    assert eyes == ""
+def test_eyewear_returned(node):
+    result = run(node, eyewear="sunglasses")
+    assert result[2] == "sunglasses"
+
+
+def test_teeth_returned(node):
+    result = run(node, teeth="teeth")
+    assert result[3] == "teeth"
+
+
+def test_teeth_dash_returns_empty(node):
+    result = run(node, teeth="--")
+    assert result[3] == ""
+
+
+def test_hair_color_returned(node):
+    result = run(node, hair_color="black hair")
+    assert result[4] == "black hair"
+
+
+def test_hair_style_selected_returned(node):
+    result = run(node, hair_style_selected="long hair")
+    assert result[5] == "long hair"
+
+
+def test_facial_piercings_returned(node):
+    result = run(node, facial_piercings="nose ring")
+    assert result[6] == "nose ring"
+
+
+def test_nail_color_returned(node):
+    result = run(node, nail_color="red nails")
+    assert result[7] == "red nails"
+
+
+def test_nail_type_returned(node):
+    result = run(node, nail_type="long nails")
+    assert result[8] == "long nails"
+
+
+def test_nail_type_dash_returns_empty(node):
+    result = run(node, nail_type="--")
+    assert result[8] == ""
+
+
+def test_makeup_returned(node):
+    result = run(node, makeup="red lipstick")
+    assert result[9] == "red lipstick"
+
+
+def test_base_body_returned(node):
+    result = run(node, base_body="slim")
+    assert result[10] == "slim"
+
+
+def test_base_body_dash_returns_empty(node):
+    result = run(node, base_body="--")
+    assert result[10] == ""
+
+
+def test_body_type_returned(node):
+    result = run(node, body_type="tall")
+    assert result[11] == "tall"
+
+
+def test_body_piercings_returned(node):
+    result = run(node, body_piercings="navel piercing")
+    assert result[12] == "navel piercing"
+
+
+def test_upper_body_returned(node):
+    result = run(node, upper_body="large chest")
+    assert result[13] == "large chest"
+
+
+def test_upper_body_dash_returns_empty(node):
+    result = run(node, upper_body="--")
+    assert result[13] == ""
+
+
+def test_lower_body_returned(node):
+    result = run(node, lower_body="wide hips")
+    assert result[14] == "wide hips"
+
+
+def test_return_count(node):
+    result = run(node)
+    assert len(result) == 15
+
+
+def test_all_empty(node):
+    result = run(node)
+    assert all(v == "" for v in result)
 
 
 # --- CHARACTER_TEMPLATE ---
@@ -66,13 +174,19 @@ def test_character_template_has_required_keys():
         "eyes",
         "eye_type",
         "eyewear",
+        "teeth",
         "hair_color",
         "hair_style_options",
         "hair_style_selected",
         "makeup",
-        "nails",
-        "piercings",
+        "nail_color",
+        "nail_type",
+        "facial_piercings",
+        "base_body",
         "body_type",
+        "body_piercings",
+        "upper_body",
+        "lower_body",
     ]:
         assert key in CHARACTER_TEMPLATE
 
@@ -85,12 +199,21 @@ def test_character_template_defaults():
         "hair_style_options",
         "hair_style_selected",
         "makeup",
-        "nails",
-        "piercings",
+        "nail_color",
+        "facial_piercings",
         "body_type",
+        "body_piercings",
+        "lower_body",
     ]:
         assert CHARACTER_TEMPLATE[key] == ""
-        assert CHARACTER_TEMPLATE["eye_type"] == "--"
+    for key in [
+        "eye_type",
+        "teeth",
+        "nail_type",
+        "base_body",
+        "upper_body",
+    ]:
+        assert CHARACTER_TEMPLATE[key] == "--"
 
 
 # --- Fixtures ---
@@ -250,13 +373,19 @@ async def test_new_template_has_expected_fields(client):
         "eyes",
         "eye_type",
         "eyewear",
+        "teeth",
         "hair_color",
         "hair_style_options",
         "hair_style_selected",
         "makeup",
-        "nails",
-        "piercings",
+        "nail_color",
+        "nail_type",
+        "facial_piercings",
+        "base_body",
         "body_type",
+        "body_piercings",
+        "upper_body",
+        "lower_body",
     ]:
         assert field in parsed
 
