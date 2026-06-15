@@ -24,6 +24,8 @@ const COMBO_FIELDS = [
 ];
 
 const EYE_FIELDS = ["pupils", "gaze"];
+const EYEWEAR_FIELDS = ["eyewear_override"];
+const NAIL_COLOR_FIELDS = ["nail_color_override"];
 const BOOL_FIELDS = [
     "show_eyes",
     "show_eyewear",
@@ -89,6 +91,10 @@ const updateEyeVisibility = (node, value) => {
 };
 
 const updateEyewearVisibility = (node, value) => {
+    for (const field of EYEWEAR_FIELDS) {
+        const w = findWidget(node, field);
+        if (w) w.disabled = !value;
+    }
     setInputDotColor(node, "eyewear", value);
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
@@ -101,6 +107,10 @@ const updatePiercingsVisibility = (node, value) => {
 };
 
 const updateNailsVisibility = (node, showNails, showMakeup) => {
+    for (const field of NAIL_COLOR_FIELDS) {
+        const w = findWidget(node, field);
+        if (w) w.disabled = !showNails || !showMakeup;
+    }
     setInputDotColor(node, "nail_type", showNails);
     setInputDotColor(node, "nail_color", showNails && showMakeup);
 
@@ -108,6 +118,10 @@ const updateNailsVisibility = (node, showNails, showMakeup) => {
 };
 
 const updateMakeupVisibility = (node, showNails, showMakeup) => {
+    for (const field of NAIL_COLOR_FIELDS) {
+        const w = findWidget(node, field);
+        if (w) w.disabled = !showNails || !showMakeup;
+    }
     setInputDotColor(node, "makeup", showMakeup);
     setInputDotColor(node, "makeup_modifiers", showMakeup);
     setInputDotColor(node, "nail_color", showNails && showMakeup);
@@ -181,9 +195,9 @@ const attachFaceBuilder = (node) => {
 
     const groups = [
         { start: "show_eyes", end: "gaze" },
-        { start: "show_eyewear", end: "show_eyewear" },
+        { start: "show_eyewear", end: "eyewear_override" },
         { start: "show_piercings", end: "show_piercings" },
-        { start: "show_nails", end: "show_nails" },
+        { start: "show_nails", end: "nail_color_override" },
         { start: "show_makeup", end: "show_makeup" },
     ];
     const original = node.onDrawForeground;

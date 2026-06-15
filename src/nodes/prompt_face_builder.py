@@ -21,6 +21,7 @@ class PromptFaceBuilder:
                 "eye_state": (get_builder_config_key(_CFG, "eye_state"),),
                 "gaze": (get_builder_config_key(_CFG, "gaze"),),
                 "show_eyewear": ("BOOLEAN", {"default": True}),
+                "eyewear_override": ("STRING", {"default": ""}),
                 "blush": (get_builder_config_key(_CFG, "blush"),),
                 "mouth_state": (get_builder_config_key(_CFG, "mouth_state"),),
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
@@ -28,6 +29,7 @@ class PromptFaceBuilder:
                 "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
                 "show_piercings": ("BOOLEAN", {"default": True}),
                 "show_nails": ("BOOLEAN", {"default": True}),
+                "nail_color_override": ("STRING", {"default": ""}),
                 "show_makeup": ("BOOLEAN", {"default": True}),
                 "preset_data": ("STRING", {"default": "{}"}),
             },
@@ -60,6 +62,7 @@ class PromptFaceBuilder:
         eye_state,
         gaze,
         show_eyewear,
+        eyewear_override,
         blush,
         mouth_state,
         mouth_expression,
@@ -67,6 +70,7 @@ class PromptFaceBuilder:
         head_angle,
         show_piercings,
         show_nails,
+        nail_color_override,
         show_makeup,
         preset_data,
         eyes,
@@ -92,12 +96,12 @@ class PromptFaceBuilder:
                 eye_parts.append(v)
             if v := clean_val(eye_type):
                 eye_parts.append(v)
-            if v := clean_val(eye_state):
-                eye_parts.append(v)
         if v := clean_val(eye_state):
             eye_parts.append(v)
         if show_eyewear:
-            if v := clean_val(eyewear):
+            if v := clean_val(eyewear_override):
+                eye_parts.append(v)
+            elif v := clean_val(eyewear):
                 eye_parts.append(v)
         if v := clean_val(eye_modifiers):
             eye_parts.append(v)
@@ -140,7 +144,9 @@ class PromptFaceBuilder:
             if v := clean_val(nail_type):
                 makeup_parts.append(v)
         if show_makeup and show_nails:
-            if v := clean_val(nail_color):
+            if v := clean_val(nail_color_override):
+                makeup_parts.append(v)
+            elif v := clean_val(nail_color):
                 makeup_parts.append(v)
 
         extra_parts = []
