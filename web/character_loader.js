@@ -248,11 +248,9 @@ const attachCharacterLoader = (node) => {
     }
 
     // Reload on file change
-    const originalCallback = characterFileWidget.callback;
-    characterFileWidget.callback = function (value) {
-        if (originalCallback) originalCallback.call(this, value);
-        loadFileIntoWidgets(value, node);
-    };
+    hookWidget(characterFileWidget, (value) =>
+        loadFileIntoWidgets(value, node),
+    );
 
     const outlines = [
         { name: "narrow_waist" },

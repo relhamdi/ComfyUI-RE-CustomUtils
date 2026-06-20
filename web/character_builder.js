@@ -294,12 +294,7 @@ const attachCharacterBuilder = (node) => {
     ];
     for (const name of toggleNames) {
         const w = findWidget(node, name);
-        if (!w) continue;
-        const original = w.callback;
-        w.callback = function (value) {
-            if (original) original.call(this, value);
-            applyAllVisibility(node, toggleWidgets);
-        };
+        if (w) hookWidget(w, () => applyAllVisibility(node, toggleWidgets));
     }
 
     // Initial visibility
