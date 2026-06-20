@@ -194,11 +194,11 @@ const attachFaceBuilder = (node) => {
     // --- Borders ---
 
     const groups = [
-        { start: "show_eyes", end: "gaze" },
-        { start: "show_eyewear", end: "eyewear_override" },
-        { start: "show_piercings", end: "show_piercings" },
-        { start: "show_nails", end: "nail_color_override" },
-        { start: "show_makeup", end: "show_makeup" },
+        { from: "show_eyes", to: "gaze" },
+        { from: "show_eyewear", to: "eyewear_override" },
+        { from: "show_piercings", to: "show_piercings" },
+        { from: "show_nails", to: "nail_color_override" },
+        { from: "show_makeup", to: "show_makeup" },
     ];
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
@@ -208,8 +208,8 @@ const attachFaceBuilder = (node) => {
             drawGroupBorder(
                 ctx,
                 node,
-                group.start,
-                group.end,
+                group.from,
+                group.to,
                 COLORS.toggle_on,
                 COLORS.toggle_off,
             );

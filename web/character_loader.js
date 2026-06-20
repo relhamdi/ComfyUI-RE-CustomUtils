@@ -1,6 +1,7 @@
 import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
 import { attachInlineSelector } from "./inline_selector.js";
 import {
+    drawGroupBorder,
     drawWidgetOutline,
     findWidget,
     flashButton,
@@ -253,36 +254,42 @@ const attachCharacterLoader = (node) => {
         loadFileIntoWidgets(value, node);
     };
 
+    const outlines = [
+        { name: "narrow_waist" },
+        { name: "muffin_top" },
+        { name: "hip_dips" },
+    ];
     const groups = [
-        { start: "eye_type", end: "eye_type", tag: "combo" },
-        { start: "pupils", end: "pupils", tag: "combo" },
-        { start: "teeth", end: "teeth", tag: "combo" },
-        { start: "mouth_type", end: "mouth_type", tag: "combo" },
-        { start: "nail_type", end: "nail_type", tag: "combo" },
-        { start: "base_body", end: "base_body", tag: "combo" },
-        { start: "body_type", end: "body_type", tag: "combo" },
-        { start: "skin_color", end: "skin_color", tag: "combo" },
-        { start: "chest", end: "chest", tag: "combo" },
-        { start: "chest_details", end: "chest_details", tag: "combo" },
-        { start: "stomach", end: "stomach", tag: "combo" },
-        { start: "narrow_waist", end: "narrow_waist", tag: "toggle" },
-        { start: "muffin_top", end: "muffin_top", tag: "toggle" },
-        { start: "hips", end: "hips", tag: "combo" },
-        { start: "hip_dips", end: "hip_dips", tag: "toggle" },
-        { start: "thighs", end: "thighs", tag: "combo" },
-        { start: "butt", end: "butt", tag: "combo" },
+        { from: "eye_color", to: "eye_details" },
+        { from: "teeth", to: "mouth_type" },
+        { from: "face_details", to: "face_piercings" },
+        { from: "nail_color", to: "nail_type" },
+        { from: "face_accessories", to: "hand_details" },
+        { from: "base_body", to: "body_details" },
+        { from: "upper_body", to: "upper_piercings" },
+        { from: "stomach", to: "mid_piercings" },
+        { from: "lower_body", to: "lower_piercings" },
     ];
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
 
-        for (const group of groups) {
+        for (const widget of outlines) {
             drawWidgetOutline(
                 ctx,
                 node,
-                group.start,
-                group.tag == "toggle" ? COLORS.orange : COLORS.highlight,
-                group.tag == "toggle" ? COLORS.blue : COLORS.highlight,
+                widget.name,
+                COLORS.orange,
+                COLORS.blue,
+            );
+        }
+        for (const group of groups) {
+            drawGroupBorder(
+                ctx,
+                node,
+                group.from,
+                group.to,
+                COLORS.highlight,
             );
         }
     };

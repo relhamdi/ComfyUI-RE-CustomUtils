@@ -1,7 +1,7 @@
 import { COLORS } from "./constants.js";
 import { attachInlineSelector } from "./inline_selector.js";
 import {
-    drawGroupBorder,
+    drawWidgetOutline,
     findWidget,
     hideWidget,
     hideWidgetInput,
@@ -34,14 +34,7 @@ const attachAddOrReplace = (node) => {
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
-        drawGroupBorder(
-            ctx,
-            node,
-            "mode_toggle",
-            "mode_toggle",
-            COLORS.toggle_on,
-            COLORS.toggle_off,
-        );
+        drawWidgetOutline(ctx, node, "mode_toggle", COLORS.toggle_on, COLORS.toggle_off);
     };
 };
 

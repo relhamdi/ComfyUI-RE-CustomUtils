@@ -3,6 +3,7 @@ import { attachInlineSelector } from "./inline_selector.js";
 import { createPresetManager } from "./preset_manager.js";
 import {
     drawGroupBorder,
+    drawWidgetOutline,
     findWidget,
     hideWidget,
     hideWidgetInput,
@@ -79,6 +80,7 @@ const convertToInlineTextToggle = (node, textWidget, modeWidget) => {
     node.widgets[idx] = newWidget;
 
     hideWidget(modeWidget, true);
+    hideWidgetInput(node, modeWidget);
 
     return helper;
 };
@@ -330,25 +332,40 @@ const attachCharacterBuilder = (node) => {
     applyAllVisibility(node, toggleWidgets);
 
     // --- Toggle borders ---
+    const outlines = [
+        { name: "show_eyeballs" },
+        { name: "show_makeup" },
+        { name: "show_upper_body" },
+        { name: "show_mid_body" },
+        { name: "show_lower_body" },
+        { name: "show_butt" },
+    ];
     const groups = [
-        { start: "show_eyes", end: "show_eyes" },
-        { start: "show_eyeballs", end: "show_eyeballs" },
-        { start: "show_piercings", end: "show_piercings" },
-        { start: "show_nails", end: "show_nails" },
-        { start: "show_makeup", end: "show_makeup" },
-        { start: "toggle_accessories", end: "toggle_accessories" },
-        { start: "show_body", end: "show_butt" },
+        { from: "show_eyes", to: "face_details_override" },
+        { from: "show_piercings", to: "lower_piercings_override" },
+        { from: "show_nails", to: "show_makeup" },
+        { from: "toggle_accessories", to: "hand_details_override" },
+        { from: "show_body", to: "show_butt" },
     ];
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {
         if (original) original.call(this, ctx);
 
+        for (const widget of outlines) {
+            drawWidgetOutline(
+                ctx,
+                node,
+                widget.name,
+                COLORS.orange,
+                COLORS.blue,
+            );
+        }
         for (const group of groups) {
             drawGroupBorder(
                 ctx,
                 node,
-                group.start,
-                group.end,
+                group.from,
+                group.to,
                 COLORS.toggle_on,
                 COLORS.toggle_off,
             );

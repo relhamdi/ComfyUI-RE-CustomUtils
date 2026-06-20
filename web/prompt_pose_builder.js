@@ -250,19 +250,19 @@ const attachPoseBuilder = (node) => {
         const splitArms = findWidget(node, "split_arms")?.value ?? false;
         const splitHands = findWidget(node, "split_hands")?.value ?? false;
         const groups = [
-            { start: "split_arms", end: splitArms ? "second_arm" : "arms" },
-            { start: "split_hands", end: splitHands ? "second_hand" : "hands" },
-            { start: "show_piercings", end: "show_piercings" },
-            { start: "show_upper_body", end: "show_upper_body" },
-            { start: "show_lower_body", end: "show_lower_body" },
+            { from: "split_arms", to: splitArms ? "second_arm" : "arms" },
+            { from: "split_hands", to: splitHands ? "second_hand" : "hands" },
+            { from: "show_piercings", to: "show_piercings" },
+            { from: "show_upper_body", to: "show_upper_body" },
+            { from: "show_lower_body", to: "show_lower_body" },
         ];
 
         for (const group of groups) {
             drawGroupBorder(
                 ctx,
                 node,
-                group.start,
-                group.end,
+                group.from,
+                group.to,
                 COLORS.toggle_on,
                 COLORS.toggle_off,
             );
