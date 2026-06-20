@@ -253,6 +253,40 @@ const attachCharacterLoader = (node) => {
         loadFileIntoWidgets(value, node);
     };
 
+    const groups = [
+        { start: "eye_type", end: "eye_type", tag: "combo" },
+        { start: "pupils", end: "pupils", tag: "combo" },
+        { start: "teeth", end: "teeth", tag: "combo" },
+        { start: "mouth_type", end: "mouth_type", tag: "combo" },
+        { start: "nail_type", end: "nail_type", tag: "combo" },
+        { start: "base_body", end: "base_body", tag: "combo" },
+        { start: "body_type", end: "body_type", tag: "combo" },
+        { start: "skin_color", end: "skin_color", tag: "combo" },
+        { start: "chest", end: "chest", tag: "combo" },
+        { start: "chest_details", end: "chest_details", tag: "combo" },
+        { start: "stomach", end: "stomach", tag: "combo" },
+        { start: "narrow_waist", end: "narrow_waist", tag: "toggle" },
+        { start: "muffin_top", end: "muffin_top", tag: "toggle" },
+        { start: "hips", end: "hips", tag: "combo" },
+        { start: "hip_dips", end: "hip_dips", tag: "toggle" },
+        { start: "thighs", end: "thighs", tag: "combo" },
+        { start: "butt", end: "butt", tag: "combo" },
+    ];
+    const original = node.onDrawForeground;
+    node.onDrawForeground = function (ctx) {
+        if (original) original.call(this, ctx);
+
+        for (const group of groups) {
+            drawWidgetOutline(
+                ctx,
+                node,
+                group.start,
+                group.tag == "toggle" ? COLORS.orange : COLORS.highlight,
+                group.tag == "toggle" ? COLORS.blue : COLORS.highlight,
+            );
+        }
+    };
+
     // Load initial file
     loadFileIntoWidgets(characterFileWidget.value, node);
 };
