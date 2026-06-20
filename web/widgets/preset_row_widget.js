@@ -1,4 +1,5 @@
 import { COLORS, EMPTY_VALUE } from "../constants.js";
+import { fitString } from "../utils.js";
 
 // --- Constants ---
 
@@ -189,13 +190,3 @@ export class PresetRowWidget {
         });
     }
 }
-
-// --- Helpers ---
-
-const fitString = (ctx, str, maxWidth) => {
-    if (ctx.measureText(str).width <= maxWidth) return str;
-    while (str.length > 1 && ctx.measureText(str + "…").width > maxWidth) {
-        str = str.slice(0, -1);
-    }
-    return str + "…";
-};

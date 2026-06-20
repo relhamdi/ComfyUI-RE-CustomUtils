@@ -26,6 +26,15 @@ export const escapeHtml = (str) =>
             })[c],
     );
 
+// Fit string to width (truncate with ellipsis)
+export const fitString = (ctx, str, maxWidth) => {
+    if (ctx.measureText(str).width <= maxWidth) return str;
+    while (str.length > 1 && ctx.measureText(str + "…").width > maxWidth) {
+        str = str.slice(0, -1);
+    }
+    return str + "…";
+};
+
 // --- Widget helpers ---
 
 // Find widget by name

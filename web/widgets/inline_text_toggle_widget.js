@@ -1,4 +1,5 @@
 import { COLORS } from "../constants.js";
+import { fitString } from "../utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -115,13 +116,3 @@ export class InlineTextToggleWidget {
         return x >= hit[0] && x <= hit[0] + hit[1];
     }
 }
-
-// --- Helpers ---
-
-const fitString = (ctx, str, maxWidth) => {
-    if (ctx.measureText(str).width <= maxWidth) return str;
-    while (str.length > 1 && ctx.measureText(str + "…").width > maxWidth) {
-        str = str.slice(0, -1);
-    }
-    return str + "…";
-};
