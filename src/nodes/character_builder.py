@@ -60,12 +60,12 @@ class CharacterBuilder:
                 "show_makeup": ("BOOLEAN", {"default": True}),
                 # Accessories
                 "toggle_accessories": ("BOOLEAN", {"default": True}),
-                "face_accessories_override": ("STRING", {"default": ""}),
-                "face_accessories_override_mode": ("BOOLEAN", {"default": False}),
-                "neck_details_override": ("STRING", {"default": ""}),
-                "neck_details_override_mode": ("BOOLEAN", {"default": False}),
-                "hand_details_override": ("STRING", {"default": ""}),
-                "hand_details_override_mode": ("BOOLEAN", {"default": False}),
+                "facewear_override": ("STRING", {"default": ""}),
+                "facewear_override_mode": ("BOOLEAN", {"default": False}),
+                "neckwear_override": ("STRING", {"default": ""}),
+                "neckwear_override_mode": ("BOOLEAN", {"default": False}),
+                "armwear_override": ("STRING", {"default": ""}),
+                "armwear_override_mode": ("BOOLEAN", {"default": False}),
                 # Body
                 "show_body": ("BOOLEAN", {"default": True}),
                 "show_upper_body": ("BOOLEAN", {"default": True}),
@@ -95,9 +95,9 @@ class CharacterBuilder:
                 "makeup": ("STRING", {"forceInput": True}),
                 "makeup_modifiers": ("STRING", {"forceInput": True}),
                 # Accessories
-                "face_accessories": ("STRING", {"forceInput": True}),
-                "neck_details": ("STRING", {"forceInput": True}),
-                "hand_details": ("STRING", {"forceInput": True}),
+                "facewear": ("STRING", {"forceInput": True}),
+                "neckwear": ("STRING", {"forceInput": True}),
+                "armwear": ("STRING", {"forceInput": True}),
                 # Body
                 "base_body": ("STRING", {"forceInput": True}),
                 "body_type": ("STRING", {"forceInput": True}),
@@ -144,12 +144,12 @@ class CharacterBuilder:
         nail_color_override_mode,
         show_makeup,
         toggle_accessories,
-        face_accessories_override,
-        face_accessories_override_mode,
-        neck_details_override,
-        neck_details_override_mode,
-        hand_details_override,
-        hand_details_override_mode,
+        facewear_override,
+        facewear_override_mode,
+        neckwear_override,
+        neckwear_override_mode,
+        armwear_override,
+        armwear_override_mode,
         show_body,
         show_upper_body,
         show_mid_body,
@@ -172,9 +172,9 @@ class CharacterBuilder:
         nail_type="",
         makeup="",
         makeup_modifiers="",
-        face_accessories="",
-        neck_details="",
-        hand_details="",
+        facewear="",
+        neckwear="",
+        armwear="",
         base_body="",
         body_type="",
         skin_color="",
@@ -266,21 +266,21 @@ class CharacterBuilder:
         acc_parts = []
         if toggle_accessories:
             if v := _override(
-                face_accessories_override,
-                face_accessories_override_mode,
-                clean_val(face_accessories),
+                facewear_override,
+                facewear_override_mode,
+                clean_val(facewear),
             ):
                 acc_parts.append(v)
             if v := _override(
-                neck_details_override,
-                neck_details_override_mode,
-                clean_val(neck_details),
+                neckwear_override,
+                neckwear_override_mode,
+                clean_val(neckwear),
             ):
                 acc_parts.append(v)
             if v := _override(
-                hand_details_override,
-                hand_details_override_mode,
-                clean_val(hand_details),
+                armwear_override,
+                armwear_override_mode,
+                clean_val(armwear),
             ):
                 acc_parts.append(v)
         acc_out = clean_prompt(f"({', '.join(acc_parts)})") if acc_parts else ""

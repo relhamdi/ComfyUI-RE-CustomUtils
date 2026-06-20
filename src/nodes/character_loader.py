@@ -49,9 +49,9 @@ CHARACTER_TEMPLATE = {
     "nail_color": "",
     "nail_type": EMPTY_VALUE,
     # Accessories
-    "face_accessories": "",
-    "neck_details": "",
-    "hand_details": "",
+    "facewear": "",
+    "neckwear": "",
+    "armwear": "",
     # Body base
     "base_body": EMPTY_VALUE,
     "body_type": EMPTY_VALUE,
@@ -116,9 +116,9 @@ class CharacterLoader:
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
                 "makeup": ("STRING", {"default": ""}),
                 # Accessories
-                "face_accessories": ("STRING", {"default": ""}),
-                "neck_details": ("STRING", {"default": ""}),
-                "hand_details": ("STRING", {"default": ""}),
+                "facewear": ("STRING", {"default": ""}),
+                "neckwear": ("STRING", {"default": ""}),
+                "armwear": ("STRING", {"default": ""}),
                 # Body base
                 "base_body": (get_builder_config_key(_CFG, "base_body"),),
                 "body_type": (get_builder_config_key(_CFG, "body_type"),),
@@ -166,9 +166,9 @@ class CharacterLoader:
         "nail_type",
         "makeup",
         # Accessories
-        "face_accessories",
-        "neck_details",
-        "hand_details",
+        "facewear",
+        "neckwear",
+        "armwear",
         # Body base
         "base_body",
         "body_type",
@@ -203,9 +203,9 @@ class CharacterLoader:
         nail_color,
         nail_type,
         makeup,
-        face_accessories,
-        neck_details,
-        hand_details,
+        facewear,
+        neckwear,
+        armwear,
         base_body,
         body_type,
         skin_color,
@@ -280,9 +280,9 @@ class CharacterLoader:
             clean_val(nail_type),
             clean_val(makeup),
             # Accessories
-            clean_val(face_accessories),
-            clean_val(neck_details),
-            clean_val(hand_details),
+            clean_val(facewear),
+            clean_val(neckwear),
+            clean_val(armwear),
             # Body base
             clean_val(base_body),
             clean_val(body_type),

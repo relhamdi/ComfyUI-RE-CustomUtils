@@ -38,12 +38,12 @@ def run(node, **kwargs):
         nail_color_override_mode=False,
         show_makeup=True,
         toggle_accessories=True,
-        face_accessories_override="",
-        face_accessories_override_mode=False,
-        neck_details_override="",
-        neck_details_override_mode=False,
-        hand_details_override="",
-        hand_details_override_mode=False,
+        facewear_override="",
+        facewear_override_mode=False,
+        neckwear_override="",
+        neckwear_override_mode=False,
+        armwear_override="",
+        armwear_override_mode=False,
         show_body=True,
         show_upper_body=True,
         show_mid_body=True,
@@ -66,9 +66,9 @@ def run(node, **kwargs):
         nail_type="",
         makeup="",
         makeup_modifiers="",
-        face_accessories="",
-        neck_details="",
-        hand_details="",
+        facewear="",
+        neckwear="",
+        armwear="",
         base_body="",
         body_type="",
         skin_color="",
@@ -267,29 +267,29 @@ class TestCharacterBuilderHead:
 
 
 class TestCharacterBuilderAccessories:
-    def test_face_accessories_override_replace(self, node):
+    def test_facewear_override_replace(self, node):
         _, acc, _ = run(
             node,
-            face_accessories="sticker",
-            face_accessories_override="tattoo",
-            face_accessories_override_mode=True,
+            facewear="sticker",
+            facewear_override="tattoo",
+            facewear_override_mode=True,
         )
         assert "tattoo" in acc
         assert "sticker" not in acc
 
-    def test_neck_details_included(self, node):
-        _, acc, _ = run(node, neck_details="choker")
+    def test_neckwear_included(self, node):
+        _, acc, _ = run(node, neckwear="choker")
         assert "choker" in acc
 
-    def test_hand_details_included(self, node):
-        _, acc, _ = run(node, hand_details="ring")
+    def test_armwear_included(self, node):
+        _, acc, _ = run(node, armwear="ring")
         assert "ring" in acc
 
     def test_accessories_excluded_when_toggle_false(self, node):
         _, acc, _ = run(
             node,
-            face_accessories="sticker",
-            neck_details="choker",
+            facewear="sticker",
+            neckwear="choker",
             toggle_accessories=False,
         )
         assert acc == ""
@@ -299,7 +299,7 @@ class TestCharacterBuilderAccessories:
         assert acc == ""
 
     def test_accessories_in_parentheses(self, node):
-        _, acc, _ = run(node, neck_details="choker")
+        _, acc, _ = run(node, neckwear="choker")
         assert acc == "(choker)"
 
 

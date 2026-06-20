@@ -26,9 +26,9 @@ const OVERRIDE_FIELDS = [
     "mid_piercings_override",
     "lower_piercings_override",
     "nail_color_override",
-    "face_accessories_override",
-    "neck_details_override",
-    "hand_details_override",
+    "facewear_override",
+    "neckwear_override",
+    "armwear_override",
 ];
 
 const BOOL_FIELDS = [
@@ -248,16 +248,12 @@ const applyAllVisibility = (node, toggleWidgets) => {
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
-        [
-            "face_accessories_override",
-            "neck_details_override",
-            "hand_details_override",
-        ],
+        ["facewear_override", "neckwear_override", "armwear_override"],
         !toggleAccessories,
     );
     setDotsDisabled(
         node,
-        ["face_accessories", "neck_details", "hand_details"],
+        ["facewear", "neckwear", "armwear"],
         !toggleAccessories,
     );
 
@@ -323,7 +319,7 @@ const attachCharacterBuilder = (node) => {
         { from: "bald", to: "bald" },
         { from: "show_piercings", to: "lower_piercings_override" },
         { from: "show_nails", to: "show_makeup" },
-        { from: "toggle_accessories", to: "hand_details_override" },
+        { from: "toggle_accessories", to: "armwear_override" },
         { from: "show_body", to: "show_butt" },
     ];
     const original = node.onDrawForeground;

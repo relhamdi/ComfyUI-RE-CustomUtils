@@ -39,9 +39,9 @@ const CHARACTER_TEMPLATE = {
     nail_type: EMPTY_VALUE,
     makeup: "",
     // Accessories
-    face_accessories: "",
-    neck_details: "",
-    hand_details: "",
+    facewear: "",
+    neckwear: "",
+    armwear: "",
     // Body base
     base_body: EMPTY_VALUE,
     body_type: EMPTY_VALUE,
@@ -264,7 +264,7 @@ const attachCharacterLoader = (node) => {
         { from: "teeth", to: "mouth_type" },
         { from: "face_details", to: "face_piercings" },
         { from: "nail_color", to: "nail_type" },
-        { from: "face_accessories", to: "hand_details" },
+        { from: "facewear", to: "armwear" },
         { from: "base_body", to: "body_details" },
         { from: "upper_body", to: "upper_piercings" },
         { from: "stomach", to: "mid_piercings" },
@@ -284,13 +284,7 @@ const attachCharacterLoader = (node) => {
             );
         }
         for (const group of groups) {
-            drawGroupBorder(
-                ctx,
-                node,
-                group.from,
-                group.to,
-                COLORS.highlight,
-            );
+            drawGroupBorder(ctx, node, group.from, group.to, COLORS.highlight);
         }
     };
 

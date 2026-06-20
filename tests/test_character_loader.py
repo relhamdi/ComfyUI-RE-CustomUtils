@@ -46,9 +46,9 @@ def run(node, **kwargs):
         nail_color="",
         nail_type="--",
         makeup="",
-        face_accessories="",
-        neck_details="",
-        hand_details="",
+        facewear="",
+        neckwear="",
+        armwear="",
         base_body="--",
         body_type="--",
         skin_color="--",
@@ -88,9 +88,9 @@ IDX = {
     "nail_color": 11,
     "nail_type": 12,
     "makeup": 13,
-    "face_accessories": 14,
-    "neck_details": 15,
-    "hand_details": 16,
+    "facewear": 14,
+    "neckwear": 15,
+    "armwear": 16,
     "base_body": 17,
     "body_type": 18,
     "skin_color": 19,
@@ -193,19 +193,19 @@ def test_makeup_returned(node):
     assert result[IDX["makeup"]] == "red lipstick"
 
 
-def test_face_accessories_returned(node):
-    result = run(node, face_accessories="freckle sticker")
-    assert result[IDX["face_accessories"]] == "freckle sticker"
+def test_facewear_returned(node):
+    result = run(node, facewear="freckle sticker")
+    assert result[IDX["facewear"]] == "freckle sticker"
 
 
-def test_neck_details_returned(node):
-    result = run(node, neck_details="choker")
-    assert result[IDX["neck_details"]] == "choker"
+def test_neckwear_returned(node):
+    result = run(node, neckwear="choker")
+    assert result[IDX["neckwear"]] == "choker"
 
 
-def test_hand_details_returned(node):
-    result = run(node, hand_details="ring")
-    assert result[IDX["hand_details"]] == "ring"
+def test_armwear_returned(node):
+    result = run(node, armwear="ring")
+    assert result[IDX["armwear"]] == "ring"
 
 
 def test_base_body_returned(node):
