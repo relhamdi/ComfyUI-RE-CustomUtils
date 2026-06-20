@@ -30,24 +30,25 @@ BASE_ENDPOINT = f"{API_ROOT}/characters"
 
 CHARACTER_TEMPLATE = {
     # Eyes
-    "eye_color": "",
     "eye_type": EMPTY_VALUE,
+    "eye_color": "",
     "pupils": EMPTY_VALUE,
     "eye_details": "",
     "eyewear": "",
-    # Face
-    "teeth": EMPTY_VALUE,
+    # Mouth
     "mouth_type": EMPTY_VALUE,
-    "face_details": "",
-    "face_piercings": "",
+    "teeth": EMPTY_VALUE,
     # Hair
     "hair_color": "",
     "hair_style_options": "",
     "hair_style_selected": "",
+    # Face details
+    "face_details": "",
+    "face_piercings": "",
     # Nails / Makeup
-    "makeup": "",
-    "nail_color": "",
     "nail_type": EMPTY_VALUE,
+    "nail_color": "",
+    "makeup": "",
     # Accessories
     "facewear": "",
     "neckwear": "",
@@ -97,23 +98,24 @@ class CharacterLoader:
             "required": {
                 "character_file": (scan_files(_get_characters_dir()),),
                 # Eyes
-                "eye_color": ("STRING", {"default": ""}),
                 "eye_type": (get_builder_config_key(_CFG, "eye_type"),),
+                "eye_color": ("STRING", {"default": ""}),
                 "pupils": (get_builder_config_key(_CFG, "pupils"),),
                 "eye_details": ("STRING", {"default": ""}),
                 "eyewear": ("STRING", {"default": ""}),
-                # Face
-                "teeth": (get_builder_config_key(_CFG, "teeth"),),
+                # Mouth
                 "mouth_type": (get_builder_config_key(_CFG, "mouth_type"),),
-                "face_details": ("STRING", {"default": ""}),
-                "face_piercings": ("STRING", {"default": ""}),
+                "teeth": (get_builder_config_key(_CFG, "teeth"),),
                 # Hair
                 "hair_color": ("STRING", {"default": ""}),
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
                 "hair_style_selected": ("STRING", {"default": ""}),
+                # Face details
+                "face_details": ("STRING", {"default": ""}),
+                "face_piercings": ("STRING", {"default": ""}),
                 # Nails / Makeup
-                "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
+                "nail_color": ("STRING", {"default": ""}),
                 "makeup": ("STRING", {"default": ""}),
                 # Accessories
                 "facewear": ("STRING", {"default": ""}),
@@ -148,22 +150,23 @@ class CharacterLoader:
     RETURN_TYPES = ("STRING",) * 28
     RETURN_NAMES = (
         # Eyes
-        "eye_color",
         "eye_type",
+        "eye_color",
         "pupils",
         "eye_details",
         "eyewear",
-        # Face
-        "teeth",
+        # Mouth
         "mouth_type",
-        "face_details",
-        "face_piercings",
+        "teeth",
         # Hair
         "hair_color",
         "hair_style",
+        # Face details
+        "face_details",
+        "face_piercings",
         # Nails / Makeup
-        "nail_color",
         "nail_type",
+        "nail_color",
         "makeup",
         # Accessories
         "facewear",
@@ -188,20 +191,20 @@ class CharacterLoader:
     def load_character(
         self,
         character_file,
-        eye_color,
         eye_type,
+        eye_color,
         pupils,
         eye_details,
         eyewear,
-        teeth,
         mouth_type,
-        face_details,
-        face_piercings,
+        teeth,
         hair_color,
         hair_style_options,
         hair_style_selected,
-        nail_color,
+        face_details,
+        face_piercings,
         nail_type,
+        nail_color,
         makeup,
         facewear,
         neckwear,
@@ -262,22 +265,23 @@ class CharacterLoader:
 
         return (
             # Eyes
-            clean_val(eye_color),
             clean_val(eye_type),
+            clean_val(eye_color),
             clean_val(pupils),
             clean_val(eye_details),
             clean_val(eyewear),
-            # Face
-            clean_val(teeth),
+            # Mouth
             clean_val(mouth_type),
-            clean_val(face_details),
-            clean_val(face_piercings),
+            clean_val(teeth),
             # Hair
             clean_val(hair_color),
             clean_val(hair_style_selected),
+            # Face details
+            clean_val(face_details),
+            clean_val(face_piercings),
             # Nails / Makeup
-            clean_val(nail_color),
             clean_val(nail_type),
+            clean_val(nail_color),
             clean_val(makeup),
             # Accessories
             clean_val(facewear),

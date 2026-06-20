@@ -20,23 +20,24 @@ const BASE_ENDPOINT = `${API_ROOT}/characters`;
 
 const CHARACTER_TEMPLATE = {
     // Eyes
-    eye_color: "",
     eye_type: EMPTY_VALUE,
+    eye_color: "",
     pupils: EMPTY_VALUE,
     eye_details: "",
     eyewear: "",
-    // Face
-    teeth: EMPTY_VALUE,
+    // Mouth
     mouth_type: EMPTY_VALUE,
-    face_details: "",
-    face_piercings: "",
+    teeth: EMPTY_VALUE,
     // Hair
     hair_color: "",
     hair_style_options: "",
     hair_style_selected: "",
+    // Face details
+    face_details: "",
+    face_piercings: "",
     // Nails / Makeup
-    nail_color: "",
     nail_type: EMPTY_VALUE,
+    nail_color: "",
     makeup: "",
     // Accessories
     facewear: "",
@@ -259,9 +260,9 @@ const attachCharacterLoader = (node) => {
     ];
     const groups = [
         { from: "eye_color", to: "eye_details" },
-        { from: "teeth", to: "mouth_type" },
+        { from: "mouth_type", to: "teeth" },
         { from: "face_details", to: "face_piercings" },
-        { from: "nail_color", to: "nail_type" },
+        { from: "nail_type", to: "makeup" },
         { from: "facewear", to: "armwear" },
         { from: "base_body", to: "body_details" },
         { from: "upper_body", to: "upper_details" },
