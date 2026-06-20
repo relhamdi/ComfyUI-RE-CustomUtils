@@ -185,7 +185,7 @@ const applyAllVisibility = (node, toggleWidgets) => {
     );
 
     // bald -> hair_color + hair_style dots
-    setDotsDisabled(node, ["hair_color", "hair_style"], !isBald);
+    setDotsDisabled(node, ["hair_color", "hair_style"], isBald);
 
     // show_nails -> nail_color_override toggle widget + nail_type/nail_color dots
     setDotsDisabled(node, ["nail_type"], !showNails);
