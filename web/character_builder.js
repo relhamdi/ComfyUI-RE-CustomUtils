@@ -1,5 +1,4 @@
 import { COLORS } from "./constants.js";
-import { attachInlineSelector } from "./inline_selector.js";
 import { createPresetManager } from "./preset_manager.js";
 import {
     drawGroupBorder,
@@ -20,9 +19,7 @@ const NODE_NAME = "CharacterBuilder";
 // Override pairs: text widget name -> mode widget name
 const OVERRIDE_FIELDS = [
     "eyes_override",
-    "pupils_override",
     "eyewear_override",
-    "teeth_override",
     "face_details_override",
     "face_piercings_override",
     "upper_piercings_override",
@@ -37,6 +34,7 @@ const OVERRIDE_FIELDS = [
 const BOOL_FIELDS = [
     "show_eyes",
     "show_eyeballs",
+    "bald",
     "show_piercings",
     "show_nails",
     "show_makeup",
@@ -115,26 +113,18 @@ const captureState = (node) => {
         const w = findWidget(node, field);
         if (w) state[field] = w.value ?? "";
     }
-    const hairSelected = findWidget(node, "hair_style_override_selected");
-    if (hairSelected)
-        state["hair_style_override_selected"] = hairSelected.value ?? "";
     return state;
 };
 
-const recallState = (node, state, hairSelector) => {
-    for (const field of [
-        ...BOOL_FIELDS,
-        ...OVERRIDE_FIELDS,
-        "hair_style_override_selected",
-    ]) {
+const recallState = (node, state, toggleWidgets) => {
+    for (const field of [...BOOL_FIELDS, ...OVERRIDE_FIELDS]) {
         if (!(field in state)) continue;
         const w = findWidget(node, field);
         if (!w) continue;
         w.value = state[field];
         w.callback?.(state[field]);
     }
-    hairSelector?.renderColored();
-    applyAllVisibility(node);
+    applyAllVisibility(node, toggleWidgets);
     if (node.graph) node.graph.setDirtyCanvas(true, true);
 };
 
@@ -165,6 +155,7 @@ const applyAllVisibility = (node, toggleWidgets) => {
 
     const showEyes = get("show_eyes");
     const showEyeballs = get("show_eyeballs");
+    const isBald = get("bald");
     const showPiercings = get("show_piercings");
     const showNails = get("show_nails");
     const showMakeup = get("show_makeup");
@@ -179,11 +170,11 @@ const applyAllVisibility = (node, toggleWidgets) => {
     setDisabled(node, ["show_eyeballs"], !showEyes);
     setDotsDisabled(node, ["eye_details"], !showEyes);
 
-    // show_eyeballs -> eyes_override + pupils_override toggle widgets, + raw dots
+    // show_eyeballs -> eyes_override + raw dots
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
-        ["eyes_override", "pupils_override"],
+        ["eyes_override"],
         !(showEyes && showEyeballs),
     );
     setDotsDisabled(
@@ -191,6 +182,9 @@ const applyAllVisibility = (node, toggleWidgets) => {
         ["eye_color", "eye_type", "pupils"],
         !(showEyes && showEyeballs),
     );
+
+    // bald -> hair_color + hair_style dots
+    setDotsDisabled(node, ["hair_color", "hair_style"], !isBald);
 
     // show_piercings -> 4 piercing override toggle widgets + raw dots
     setToggleWidgetDisabled(
@@ -287,27 +281,11 @@ const attachCharacterBuilder = (node) => {
     // --- Replace override pairs with InlineTextToggleWidget ---
     const toggleWidgets = replaceWithToggleWidgets(node);
 
-    // --- Hair style override inline selector ---
-    const hairOptionsWidget = findWidget(node, "hair_style_override_options");
-    const hairSelectedWidget = findWidget(node, "hair_style_override_selected");
-    let hairSelector = null;
-    if (hairOptionsWidget && hairSelectedWidget) {
-        hideWidget(hairSelectedWidget, true);
-        hideWidgetInput(node, hairSelectedWidget);
-        hairSelector = attachInlineSelector(
-            node,
-            hairOptionsWidget,
-            hairSelectedWidget,
-            {
-                placeholder: "hair style override",
-            },
-        );
-    }
-
     // --- Hook all toggle bools to re-apply visibility cascade ---
     const toggleNames = [
         "show_eyes",
         "show_eyeballs",
+        "bald",
         "show_piercings",
         "show_nails",
         "show_makeup",
@@ -342,6 +320,7 @@ const attachCharacterBuilder = (node) => {
     ];
     const groups = [
         { from: "show_eyes", to: "face_details_override" },
+        { from: "bald", to: "bald" },
         { from: "show_piercings", to: "lower_piercings_override" },
         { from: "show_nails", to: "show_makeup" },
         { from: "toggle_accessories", to: "hand_details_override" },
@@ -376,7 +355,7 @@ const attachCharacterBuilder = (node) => {
     const { presetRow, exportImportRow } = createPresetManager(node, {
         nodeLabel: NODE_NAME,
         onCapture: () => captureState(node),
-        onRecall: (state) => recallState(node, state, hairSelector),
+        onRecall: (state) => recallState(node, state, toggleWidgets),
     });
 
     node.widgets.push(presetRow);

@@ -36,22 +36,13 @@ class CharacterBuilder:
                 "show_eyeballs": ("BOOLEAN", {"default": True}),
                 "eyes_override": ("STRING", {"default": ""}),
                 "eyes_override_mode": ("BOOLEAN", {"default": False}),
-                "pupils_override": ("STRING", {"default": ""}),
-                "pupils_override_mode": ("BOOLEAN", {"default": False}),
                 "eyewear_override": ("STRING", {"default": ""}),
                 "eyewear_override_mode": ("BOOLEAN", {"default": False}),
-                # Mouth
-                "teeth_override": ("STRING", {"default": ""}),
-                "teeth_override_mode": ("BOOLEAN", {"default": False}),
                 # Face
                 "face_details_override": ("STRING", {"default": ""}),
                 "face_details_override_mode": ("BOOLEAN", {"default": False}),
                 # Hair
-                "hair_style_override_options": (
-                    "STRING",
-                    {"multiline": True, "default": ""},
-                ),
-                "hair_style_override_selected": ("STRING", {"default": ""}),
+                "bald": ("BOOLEAN", {"default": False}),
                 # Piercings
                 "show_piercings": ("BOOLEAN", {"default": True}),
                 "face_piercings_override": ("STRING", {"default": ""}),
@@ -134,16 +125,11 @@ class CharacterBuilder:
         show_eyeballs,
         eyes_override,
         eyes_override_mode,
-        pupils_override,
-        pupils_override_mode,
         eyewear_override,
         eyewear_override_mode,
-        teeth_override,
-        teeth_override_mode,
         face_details_override,
         face_details_override_mode,
-        hair_style_override_options,
-        hair_style_override_selected,
+        bald,
         show_piercings,
         face_piercings_override,
         face_piercings_override_mode,
@@ -213,9 +199,7 @@ class CharacterBuilder:
                 if v := _override(eyes_override, eyes_override_mode, base_eyes):
                     eyes_group.append(v)
                 # pupils
-                if v := _override(
-                    pupils_override, pupils_override_mode, clean_val(pupils)
-                ):
+                if v := clean_val(pupils):
                     eyes_group.append(v)
             if v := clean_val(eye_details):
                 eyes_group.append(v)
@@ -226,18 +210,18 @@ class CharacterBuilder:
             eyes_group.append(v)
         if v := clean_val(mouth_type):
             eyes_group.append(v)
-        if v := _override(teeth_override, teeth_override_mode, clean_val(teeth)):
+        if v := clean_val(teeth):
             eyes_group.append(v)
 
-        # --- Head group 2: hair ---
+        # --- Head group 2: hair/bald ---
         hair_group = []
-        if v := clean_val(hair_color):
-            hair_group.append(v)
-        hair_style_out = clean_val(hair_style_override_selected) or clean_val(
-            hair_style
-        )
-        if hair_style_out:
-            hair_group.append(hair_style_out)
+        if bald:
+            hair_group.append("bald, bald head, no hair")
+        else:
+            if v := clean_val(hair_color):
+                hair_group.append(v)
+            if v := clean_val(hair_style):
+                hair_group.append(v)
 
         # --- Head group 3: face details / makeup ---
         face_group = []
