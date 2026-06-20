@@ -12,7 +12,7 @@ export const COLORS = {
     red: "#ef9a9a",
     dark_red: "#4a1a1a",
 
-    highlight: "#D794F8",
+    highlight: "#B268D6",
     toggle_on: "#81c784",
     toggle_off: "#e57373",
 };

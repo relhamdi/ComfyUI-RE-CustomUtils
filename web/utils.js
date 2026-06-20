@@ -466,7 +466,7 @@ export const drawGroupBorder = (
 
     const y = from.last_y - 2;
     const height = to.last_y + (to.computedHeight ?? 20) - y - 2;
-    const margin = 3;
+    const margin = 9;
     const radius = 5;
 
     ctx.save();
@@ -479,13 +479,7 @@ export const drawGroupBorder = (
     ctx.restore();
 };
 
-export const drawWidgetOutline = (
-    ctx,
-    node,
-    widgetName,
-    colorTrue,
-    colorOff,
-) => {
+export const drawWidgetOutline = (ctx, node, widgetName, colorOn, colorOff) => {
     const w = findWidget(node, widgetName);
     if (!w) return;
 
@@ -495,7 +489,7 @@ export const drawWidgetOutline = (
     const radius = 15;
 
     ctx.save();
-    ctx.strokeStyle = w.value ? colorTrue : colorOff;
+    ctx.strokeStyle = w.value ? colorOn : colorOff;
 
     ctx.lineWidth = 1.5;
     ctx.beginPath();
