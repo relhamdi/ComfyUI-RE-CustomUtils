@@ -4,6 +4,7 @@ export const EMPTY_VALUE = "--";
 export const COLORS = {
     text: "#e0e0e0",
     inactive: "#888888",
+
     orange: "#ff9800",
     blue: "#64b5f6",
     cyan: "#4dd0e1",
@@ -11,6 +12,7 @@ export const COLORS = {
     red: "#ef9a9a",
     dark_red: "#4a1a1a",
 
+    highlight: "#D794F8",
     toggle_on: "#81c784",
     toggle_off: "#e57373",
 };
