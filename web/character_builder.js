@@ -6,6 +6,7 @@ import {
     findWidget,
     hideWidget,
     hideWidgetInput,
+    hookWidget,
     registerNode,
     setInputDotColor,
     waitForWidgets,

@@ -6,6 +6,7 @@ import {
     findWidget,
     flashButton,
     hideWidget,
+    hookWidget,
     patchFileDropdown,
     registerNode,
     setWidgetValue,
