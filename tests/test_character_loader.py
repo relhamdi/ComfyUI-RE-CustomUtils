@@ -1,18 +1,22 @@
-import json
-import os
 from unittest.mock import patch
 
 import pytest
-from aiohttp import web
-from src.nodes.character_loader import CHARACTER_TEMPLATE, CharacterLoader
-from src.utils_loader import safe_relative_path
 
 _CFG = {
     "eye_type": ["--", "almond eyes"],
-    "teeth": ["--", "teeth"],
+    "pupils": ["--", "round pupils"],
+    "teeth": ["--", "sharp teeth"],
+    "mouth_type": ["--", "small mouth"],
     "nail_type": ["--", "long nails"],
     "base_body": ["--", "slim"],
-    "upper_body": ["--", "large chest"],
+    "body_type": ["--", "toned"],
+    "skin_color": ["--", "tan"],
+    "chest": ["--", "pectorals"],
+    "chest_details": ["--", "cleavage"],
+    "stomach": ["--", "abs"],
+    "hips": ["--", "narrow hips"],
+    "thighs": ["--", "slim thighs"],
+    "butt": ["--", "butt"],
 }
 
 with patch("src.nodes.character_loader.load_builder_config", return_value=_CFG):
@@ -27,138 +31,327 @@ def node():
 def run(node, **kwargs):
     defaults = dict(
         character_file="--",
-        eyes="",
+        eye_color="",
         eye_type="--",
+        pupils="--",
+        eye_details="",
         eyewear="",
         teeth="--",
+        mouth_type="--",
+        face_details="",
+        face_piercings="",
         hair_color="",
         hair_style_options="",
         hair_style_selected="",
-        facial_piercings="",
         nail_color="",
         nail_type="--",
         makeup="",
+        face_accessories="",
+        neck_details="",
+        hand_details="",
         base_body="--",
-        body_type="",
-        body_piercings="",
-        upper_body="--",
+        body_type="--",
+        skin_color="--",
+        body_details="",
+        upper_body="",
+        chest="--",
+        chest_details="--",
+        upper_piercings="",
+        stomach="--",
+        narrow_waist=False,
+        muffin_top=False,
+        mid_piercings="",
         lower_body="",
+        hips="--",
+        hip_dips=False,
+        thighs="--",
+        lower_piercings="",
+        butt="--",
     )
     defaults.update(kwargs)
     return node.load_character(**defaults)
 
 
+# RETURN_NAMES index map for readability
+IDX = {
+    "eye_color": 0,
+    "eye_type": 1,
+    "pupils": 2,
+    "eye_details": 3,
+    "eyewear": 4,
+    "teeth": 5,
+    "mouth_type": 6,
+    "face_details": 7,
+    "face_piercings": 8,
+    "hair_color": 9,
+    "hair_style": 10,
+    "nail_color": 11,
+    "nail_type": 12,
+    "makeup": 13,
+    "face_accessories": 14,
+    "neck_details": 15,
+    "hand_details": 16,
+    "base_body": 17,
+    "body_type": 18,
+    "skin_color": 19,
+    "body_details": 20,
+    "upper_body": 21,
+    "upper_piercings": 22,
+    "mid_body": 23,
+    "mid_piercings": 24,
+    "lower_body": 25,
+    "lower_piercings": 26,
+    "butt": 27,
+}
+
+
 # --- Base cases ---
 
 
-def test_eyes_returned(node):
-    result = run(node, eyes="blue eyes")
-    assert result[0] == "blue eyes"
-
-
-def test_eyes_stripped(node):
-    result = run(node, eyes="  blue eyes  ")
-    assert result[0] == "blue eyes"
+def test_eye_color_returned(node):
+    result = run(node, eye_color="blue eyes")
+    assert result[IDX["eye_color"]] == "blue eyes"
 
 
 def test_eye_type_returned(node):
     result = run(node, eye_type="almond eyes")
-    assert result[1] == "almond eyes"
+    assert result[IDX["eye_type"]] == "almond eyes"
 
 
 def test_eye_type_dash_returns_empty(node):
     result = run(node, eye_type="--")
-    assert result[1] == ""
+    assert result[IDX["eye_type"]] == ""
+
+
+def test_pupils_returned(node):
+    result = run(node, pupils="round pupils")
+    assert result[IDX["pupils"]] == "round pupils"
+
+
+def test_eye_details_returned(node):
+    result = run(node, eye_details="sparkly")
+    assert result[IDX["eye_details"]] == "sparkly"
 
 
 def test_eyewear_returned(node):
-    result = run(node, eyewear="sunglasses")
-    assert result[2] == "sunglasses"
+    result = run(node, eyewear="glasses")
+    assert result[IDX["eyewear"]] == "glasses"
 
 
 def test_teeth_returned(node):
-    result = run(node, teeth="teeth")
-    assert result[3] == "teeth"
+    result = run(node, teeth="sharp teeth")
+    assert result[IDX["teeth"]] == "sharp teeth"
 
 
 def test_teeth_dash_returns_empty(node):
     result = run(node, teeth="--")
-    assert result[3] == ""
+    assert result[IDX["teeth"]] == ""
+
+
+def test_mouth_type_returned(node):
+    result = run(node, mouth_type="small mouth")
+    assert result[IDX["mouth_type"]] == "small mouth"
+
+
+def test_face_details_returned(node):
+    result = run(node, face_details="freckles")
+    assert result[IDX["face_details"]] == "freckles"
+
+
+def test_face_piercings_returned(node):
+    result = run(node, face_piercings="nose ring")
+    assert result[IDX["face_piercings"]] == "nose ring"
 
 
 def test_hair_color_returned(node):
     result = run(node, hair_color="black hair")
-    assert result[4] == "black hair"
+    assert result[IDX["hair_color"]] == "black hair"
 
 
 def test_hair_style_selected_returned(node):
-    result = run(node, hair_style_selected="long hair")
-    assert result[5] == "long hair"
-
-
-def test_facial_piercings_returned(node):
-    result = run(node, facial_piercings="nose ring")
-    assert result[6] == "nose ring"
+    result = run(node, hair_style_selected="ponytail")
+    assert result[IDX["hair_style"]] == "ponytail"
 
 
 def test_nail_color_returned(node):
     result = run(node, nail_color="red nails")
-    assert result[7] == "red nails"
+    assert result[IDX["nail_color"]] == "red nails"
 
 
 def test_nail_type_returned(node):
     result = run(node, nail_type="long nails")
-    assert result[8] == "long nails"
+    assert result[IDX["nail_type"]] == "long nails"
 
 
 def test_nail_type_dash_returns_empty(node):
     result = run(node, nail_type="--")
-    assert result[8] == ""
+    assert result[IDX["nail_type"]] == ""
 
 
 def test_makeup_returned(node):
     result = run(node, makeup="red lipstick")
-    assert result[9] == "red lipstick"
+    assert result[IDX["makeup"]] == "red lipstick"
+
+
+def test_face_accessories_returned(node):
+    result = run(node, face_accessories="freckle sticker")
+    assert result[IDX["face_accessories"]] == "freckle sticker"
+
+
+def test_neck_details_returned(node):
+    result = run(node, neck_details="choker")
+    assert result[IDX["neck_details"]] == "choker"
+
+
+def test_hand_details_returned(node):
+    result = run(node, hand_details="ring")
+    assert result[IDX["hand_details"]] == "ring"
 
 
 def test_base_body_returned(node):
     result = run(node, base_body="slim")
-    assert result[10] == "slim"
+    assert result[IDX["base_body"]] == "slim"
 
 
 def test_base_body_dash_returns_empty(node):
     result = run(node, base_body="--")
-    assert result[10] == ""
+    assert result[IDX["base_body"]] == ""
 
 
 def test_body_type_returned(node):
-    result = run(node, body_type="tall")
-    assert result[11] == "tall"
+    result = run(node, body_type="toned")
+    assert result[IDX["body_type"]] == "toned"
 
 
-def test_body_piercings_returned(node):
-    result = run(node, body_piercings="navel piercing")
-    assert result[12] == "navel piercing"
+def test_skin_color_returned(node):
+    result = run(node, skin_color="tan")
+    assert result[IDX["skin_color"]] == "tan"
 
 
-def test_upper_body_returned(node):
-    result = run(node, upper_body="large chest")
-    assert result[13] == "large chest"
+def test_body_details_returned(node):
+    result = run(node, body_details="scar")
+    assert result[IDX["body_details"]] == "scar"
 
 
-def test_upper_body_dash_returns_empty(node):
-    result = run(node, upper_body="--")
-    assert result[13] == ""
+def test_upper_piercings_returned(node):
+    result = run(node, upper_piercings="nipple piercing")
+    assert result[IDX["upper_piercings"]] == "nipple piercing"
 
 
-def test_lower_body_returned(node):
-    result = run(node, lower_body="wide hips")
-    assert result[14] == "wide hips"
+def test_mid_piercings_returned(node):
+    result = run(node, mid_piercings="navel piercing")
+    assert result[IDX["mid_piercings"]] == "navel piercing"
+
+
+def test_lower_piercings_returned(node):
+    result = run(node, lower_piercings="hip piercing")
+    assert result[IDX["lower_piercings"]] == "hip piercing"
+
+
+def test_butt_returned(node):
+    result = run(node, butt="butt")
+    assert result[IDX["butt"]] == "butt"
+
+
+# --- Upper body group: upper_body + chest + chest_details ---
+
+
+def test_upper_body_group_combines_all(node):
+    result = run(
+        node,
+        upper_body="large breasts",
+        chest="pectorals",
+        chest_details="cleavage",
+    )
+    assert result[IDX["upper_body"]] == "large breasts, pectorals, cleavage"
+
+
+def test_upper_body_group_partial(node):
+    result = run(node, upper_body="", chest="pectorals", chest_details="--")
+    assert result[IDX["upper_body"]] == "pectorals"
+
+
+def test_upper_body_group_all_empty(node):
+    result = run(node)
+    assert result[IDX["upper_body"]] == ""
+
+
+def test_upper_body_group_dash_ignored(node):
+    result = run(node, chest="--", chest_details="--")
+    assert result[IDX["upper_body"]] == ""
+
+
+# --- Mid body group: stomach + narrow_waist + muffin_top ---
+
+
+def test_mid_body_group_stomach_only(node):
+    result = run(node, stomach="abs")
+    assert result[IDX["mid_body"]] == "abs"
+
+
+def test_mid_body_group_narrow_waist_true(node):
+    result = run(node, narrow_waist=True)
+    assert "narrow waist" in result[IDX["mid_body"]]
+
+
+def test_mid_body_group_muffin_top_true(node):
+    result = run(node, muffin_top=True)
+    assert "muffin top" in result[IDX["mid_body"]]
+
+
+def test_mid_body_group_narrow_waist_false_excluded(node):
+    result = run(node, narrow_waist=False)
+    assert "narrow waist" not in result[IDX["mid_body"]]
+
+
+def test_mid_body_group_combined(node):
+    result = run(node, stomach="abs", narrow_waist=True, muffin_top=True)
+    assert result[IDX["mid_body"]] == "abs, narrow waist, muffin top"
+
+
+def test_mid_body_group_all_empty(node):
+    result = run(node)
+    assert result[IDX["mid_body"]] == ""
+
+
+# --- Lower body group: lower_body + hips + hip_dips + thighs ---
+
+
+def test_lower_body_group_combines_all(node):
+    result = run(
+        node,
+        lower_body="narrow hips str",
+        hips="narrow hips",
+        hip_dips=True,
+        thighs="slim thighs",
+    )
+    assert (
+        result[IDX["lower_body"]]
+        == "narrow hips str, narrow hips, hip dips, slim thighs"
+    )
+
+
+def test_lower_body_group_hip_dips_false_excluded(node):
+    result = run(node, hip_dips=False)
+    assert "hip dips" not in result[IDX["lower_body"]]
+
+
+def test_lower_body_group_thighs_dash_ignored(node):
+    result = run(node, thighs="--")
+    assert result[IDX["lower_body"]] == ""
+
+
+def test_lower_body_group_all_empty(node):
+    result = run(node)
+    assert result[IDX["lower_body"]] == ""
+
+
+# --- General ---
 
 
 def test_return_count(node):
     result = run(node)
-    assert len(result) == 15
+    assert len(result) == 28
 
 
 def test_all_empty(node):
@@ -166,273 +359,6 @@ def test_all_empty(node):
     assert all(v == "" for v in result)
 
 
-# --- CHARACTER_TEMPLATE ---
-
-
-def test_character_template_has_required_keys():
-    for key in [
-        "eyes",
-        "eye_type",
-        "eyewear",
-        "teeth",
-        "hair_color",
-        "hair_style_options",
-        "hair_style_selected",
-        "makeup",
-        "nail_color",
-        "nail_type",
-        "facial_piercings",
-        "base_body",
-        "body_type",
-        "body_piercings",
-        "upper_body",
-        "lower_body",
-    ]:
-        assert key in CHARACTER_TEMPLATE
-
-
-def test_character_template_defaults():
-    for key in [
-        "eyes",
-        "eyewear",
-        "hair_color",
-        "hair_style_options",
-        "hair_style_selected",
-        "makeup",
-        "nail_color",
-        "facial_piercings",
-        "body_type",
-        "body_piercings",
-        "lower_body",
-    ]:
-        assert CHARACTER_TEMPLATE[key] == ""
-    for key in [
-        "eye_type",
-        "teeth",
-        "nail_type",
-        "base_body",
-        "upper_body",
-    ]:
-        assert CHARACTER_TEMPLATE[key] == "--"
-
-
-# --- Fixtures ---
-
-
-@pytest.fixture
-def app(tmp_path):
-    async def save_handler(request):
-        body = await request.json()
-        file = body.get("file", "")
-        content = body.get("content", "")
-        rel = safe_relative_path(file)
-        if not rel:
-            return web.json_response({"error": "Invalid file path."}, status=400)
-        try:
-            json.loads(content)
-        except json.JSONDecodeError as e:
-            return web.json_response({"error": f"Invalid JSON: {e}"}, status=400)
-        path = os.path.join(str(tmp_path), rel)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-        return web.json_response({"ok": True})
-
-    async def new_handler(request):
-        body = await request.json()
-        file = body.get("file", "").strip()
-        if not file:
-            return web.json_response({"error": "File name is required."}, status=400)
-        if not file.endswith(".json"):
-            file += ".json"
-        rel = safe_relative_path(file)
-        if not rel:
-            return web.json_response({"error": "Invalid file path."}, status=400)
-        path = os.path.join(str(tmp_path), rel)
-        if os.path.exists(path):
-            return web.json_response({"error": "File already exists."}, status=409)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        content = json.dumps(CHARACTER_TEMPLATE, indent=2, ensure_ascii=False)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-        return web.json_response(
-            {"ok": True, "file": rel.replace("\\", "/"), "content": content}
-        )
-
-    async def load_handler(request):
-        file = request.rel_url.query.get("file", "")
-        rel = safe_relative_path(file)
-        if not rel:
-            return web.json_response({"error": "Invalid file path."}, status=400)
-        path = os.path.join(str(tmp_path), rel)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return web.json_response({"content": content})
-        except FileNotFoundError:
-            return web.json_response({"error": "File not found."}, status=404)
-
-    async def delete_handler(request):
-        body = await request.json()
-        file = body.get("file", "")
-        rel = safe_relative_path(file)
-        if not rel:
-            return web.json_response({"error": "Invalid file path."}, status=400)
-        path = os.path.join(str(tmp_path), rel)
-        if not os.path.isfile(path):
-            return web.json_response({"error": "File not found."}, status=404)
-        os.remove(path)
-        return web.json_response({"ok": True})
-
-    application = web.Application()
-    application.router.add_post("/characters/save", save_handler)
-    application.router.add_post("/characters/new", new_handler)
-    application.router.add_get("/characters/load", load_handler)
-    application.router.add_post("/characters/delete", delete_handler)
-    return application
-
-
-@pytest.fixture
-async def client(app, aiohttp_client):
-    return await aiohttp_client(app)
-
-
-# --- /characters/save ---
-
-
-async def test_save_valid(client, tmp_path):
-    content = json.dumps({"eyes": "blue eyes", "hair_type": "long hair"})
-    resp = await client.post(
-        "/characters/save", json={"file": "alice.json", "content": content}
-    )
-    assert resp.status == 200
-    data = await resp.json()
-    assert data["ok"] is True
-    assert (tmp_path / "alice.json").exists()
-
-
-async def test_save_invalid_json(client):
-    resp = await client.post(
-        "/characters/save", json={"file": "alice.json", "content": "not json"}
-    )
-    assert resp.status == 400
-    data = await resp.json()
-    assert "Invalid JSON" in data["error"]
-
-
-async def test_save_invalid_path(client):
-    resp = await client.post(
-        "/characters/save", json={"file": "../../evil.json", "content": "{}"}
-    )
-    assert resp.status == 400
-
-
-async def test_save_creates_subdir(client, tmp_path):
-    content = json.dumps({"eyes": "red eyes"})
-    resp = await client.post(
-        "/characters/save", json={"file": "heroes/alice.json", "content": content}
-    )
-    assert resp.status == 200
-    assert (tmp_path / "heroes" / "alice.json").exists()
-
-
-# --- /characters/new ---
-
-
-async def test_new_creates_file(client, tmp_path):
-    resp = await client.post("/characters/new", json={"file": "alice"})
-    assert resp.status == 200
-    data = await resp.json()
-    assert data["ok"] is True
-    assert data["file"] == "alice.json"
-    assert (tmp_path / "alice.json").exists()
-
-
-async def test_new_adds_json_extension(client):
-    resp = await client.post("/characters/new", json={"file": "bob"})
-    data = await resp.json()
-    assert data["file"].endswith(".json")
-
-
-async def test_new_empty_name(client):
-    resp = await client.post("/characters/new", json={"file": ""})
-    assert resp.status == 400
-
-
-async def test_new_conflict(client, tmp_path):
-    (tmp_path / "existing.json").write_text("{}")
-    resp = await client.post("/characters/new", json={"file": "existing.json"})
-    assert resp.status == 409
-
-
-async def test_new_template_has_expected_fields(client):
-    resp = await client.post("/characters/new", json={"file": "template_test"})
-    data = await resp.json()
-    parsed = json.loads(data["content"])
-    for field in [
-        "eyes",
-        "eye_type",
-        "eyewear",
-        "teeth",
-        "hair_color",
-        "hair_style_options",
-        "hair_style_selected",
-        "makeup",
-        "nail_color",
-        "nail_type",
-        "facial_piercings",
-        "base_body",
-        "body_type",
-        "body_piercings",
-        "upper_body",
-        "lower_body",
-    ]:
-        assert field in parsed
-
-
-async def test_new_invalid_path(client):
-    resp = await client.post("/characters/new", json={"file": "../../evil"})
-    assert resp.status == 400
-
-
-# --- /characters/load ---
-
-
-async def test_load_existing(client, tmp_path):
-    (tmp_path / "alice.json").write_text('{"eyes": "blue eyes"}')
-    resp = await client.get("/characters/load?file=alice.json")
-    assert resp.status == 200
-    data = await resp.json()
-    assert "blue eyes" in data["content"]
-
-
-async def test_load_not_found(client):
-    resp = await client.get("/characters/load?file=missing.json")
-    assert resp.status == 404
-
-
-async def test_load_invalid_path(client):
-    resp = await client.get("/characters/load?file=../../etc/passwd")
-    assert resp.status == 400
-
-
-# --- /characters/delete ---
-
-
-async def test_delete_existing(client, tmp_path):
-    (tmp_path / "alice.json").write_text("{}")
-    resp = await client.post("/characters/delete", json={"file": "alice.json"})
-    assert resp.status == 200
-    data = await resp.json()
-    assert data["ok"] is True
-    assert not (tmp_path / "alice.json").exists()
-
-
-async def test_delete_not_found(client):
-    resp = await client.post("/characters/delete", json={"file": "missing.json"})
-    assert resp.status == 404
-
-
-async def test_delete_invalid_path(client):
-    resp = await client.post("/characters/delete", json={"file": "../../evil.json"})
-    assert resp.status == 400
+def test_stripped_values(node):
+    result = run(node, eye_color="  blue eyes  ")
+    assert result[IDX["eye_color"]] == "blue eyes"

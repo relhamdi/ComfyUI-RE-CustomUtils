@@ -29,22 +29,52 @@ CHARACTERS_DIR = os.path.join(
 BASE_ENDPOINT = f"{API_ROOT}/characters"
 
 CHARACTER_TEMPLATE = {
-    "eyes": "",
+    # Eyes
+    "eye_color": "",
     "eye_type": EMPTY_VALUE,
+    "pupils": EMPTY_VALUE,
+    "eye_details": "",
     "eyewear": "",
+    # Face
     "teeth": EMPTY_VALUE,
+    "mouth_type": EMPTY_VALUE,
+    "face_details": "",
+    "face_piercings": "",
+    # Hair
     "hair_color": "",
     "hair_style_options": "",
     "hair_style_selected": "",
+    # Nails / Makeup
     "makeup": "",
     "nail_color": "",
     "nail_type": EMPTY_VALUE,
-    "facial_piercings": "",
+    # Accessories
+    "face_accessories": "",
+    "neck_details": "",
+    "hand_details": "",
+    # Body base
     "base_body": EMPTY_VALUE,
-    "body_type": "",
-    "body_piercings": "",
-    "upper_body": EMPTY_VALUE,
+    "body_type": EMPTY_VALUE,
+    "skin_color": EMPTY_VALUE,
+    "body_details": "",
+    # Upper body
+    "upper_body": "",
+    "chest": EMPTY_VALUE,
+    "chest_details": EMPTY_VALUE,
+    "upper_piercings": "",
+    # Mid body
+    "stomach": EMPTY_VALUE,
+    "narrow_waist": False,
+    "muffin_top": False,
+    "mid_piercings": "",
+    # Lower body
     "lower_body": "",
+    "hips": EMPTY_VALUE,
+    "hip_dips": False,
+    "thighs": EMPTY_VALUE,
+    "lower_piercings": "",
+    # Butt
+    "butt": EMPTY_VALUE,
 }
 
 # --- Helpers ---
@@ -59,87 +89,213 @@ def _get_characters_dir() -> str:
 
 
 class CharacterLoader:
+    CATEGORY = NODE_CATEGORY
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "character_file": (scan_files(_get_characters_dir()),),
-                "eyes": ("STRING", {"multiline": True, "default": ""}),
+                # Eyes
+                "eye_color": ("STRING", {"default": ""}),
                 "eye_type": (get_builder_config_key(_CFG, "eye_type"),),
+                "pupils": (get_builder_config_key(_CFG, "pupils"),),
+                "eye_details": ("STRING", {"default": ""}),
                 "eyewear": ("STRING", {"default": ""}),
+                # Face
                 "teeth": (get_builder_config_key(_CFG, "teeth"),),
+                "mouth_type": (get_builder_config_key(_CFG, "mouth_type"),),
+                "face_details": ("STRING", {"default": ""}),
+                "face_piercings": ("STRING", {"default": ""}),
+                # Hair
                 "hair_color": ("STRING", {"default": ""}),
                 "hair_style_options": ("STRING", {"multiline": True, "default": ""}),
                 "hair_style_selected": ("STRING", {"default": ""}),
-                "facial_piercings": ("STRING", {"default": ""}),
+                # Nails / Makeup
                 "nail_color": ("STRING", {"default": ""}),
                 "nail_type": (get_builder_config_key(_CFG, "nail_type"),),
                 "makeup": ("STRING", {"default": ""}),
+                # Accessories
+                "face_accessories": ("STRING", {"default": ""}),
+                "neck_details": ("STRING", {"default": ""}),
+                "hand_details": ("STRING", {"default": ""}),
+                # Body base
                 "base_body": (get_builder_config_key(_CFG, "base_body"),),
-                "body_type": ("STRING", {"multiline": True, "default": ""}),
-                "body_piercings": ("STRING", {"default": ""}),
-                "upper_body": (get_builder_config_key(_CFG, "upper_body"),),
+                "body_type": (get_builder_config_key(_CFG, "body_type"),),
+                "skin_color": (get_builder_config_key(_CFG, "skin_color"),),
+                "body_details": ("STRING", {"default": ""}),
+                # Upper body
+                "upper_body": ("STRING", {"default": ""}),
+                "chest": (get_builder_config_key(_CFG, "chest"),),
+                "chest_details": (get_builder_config_key(_CFG, "chest_details"),),
+                "upper_piercings": ("STRING", {"default": ""}),
+                # Mid body
+                "stomach": (get_builder_config_key(_CFG, "stomach"),),
+                "narrow_waist": ("BOOLEAN", {"default": False}),
+                "muffin_top": ("BOOLEAN", {"default": False}),
+                "mid_piercings": ("STRING", {"default": ""}),
+                # Lower body
                 "lower_body": ("STRING", {"default": ""}),
+                "hips": (get_builder_config_key(_CFG, "hips"),),
+                "hip_dips": ("BOOLEAN", {"default": False}),
+                "thighs": (get_builder_config_key(_CFG, "thighs"),),
+                "lower_piercings": ("STRING", {"default": ""}),
+                # Butt
+                "butt": (get_builder_config_key(_CFG, "butt"),),
             }
         }
 
-    RETURN_TYPES = ("STRING",) * 15
+    RETURN_TYPES = ("STRING",) * 28
     RETURN_NAMES = (
-        "eyes",
+        # Eyes
+        "eye_color",
         "eye_type",
+        "pupils",
+        "eye_details",
         "eyewear",
+        # Face
         "teeth",
+        "mouth_type",
+        "face_details",
+        "face_piercings",
+        # Hair
         "hair_color",
         "hair_style",
-        "facial_piercings",
+        # Nails / Makeup
         "nail_color",
         "nail_type",
         "makeup",
+        # Accessories
+        "face_accessories",
+        "neck_details",
+        "hand_details",
+        # Body base
         "base_body",
         "body_type",
-        "body_piercings",
+        "skin_color",
+        "body_details",
+        # Body groups
         "upper_body",
+        "upper_piercings",
+        "mid_body",
+        "mid_piercings",
         "lower_body",
+        "lower_piercings",
+        "butt",
     )
     FUNCTION = "load_character"
-    CATEGORY = NODE_CATEGORY
 
     def load_character(
         self,
         character_file,
-        eyes,
+        eye_color,
         eye_type,
+        pupils,
+        eye_details,
         eyewear,
         teeth,
+        mouth_type,
+        face_details,
+        face_piercings,
         hair_color,
         hair_style_options,
         hair_style_selected,
-        facial_piercings,
         nail_color,
         nail_type,
         makeup,
+        face_accessories,
+        neck_details,
+        hand_details,
         base_body,
         body_type,
-        body_piercings,
+        skin_color,
+        body_details,
         upper_body,
+        chest,
+        chest_details,
+        upper_piercings,
+        stomach,
+        narrow_waist,
+        muffin_top,
+        mid_piercings,
         lower_body,
+        hips,
+        hip_dips,
+        thighs,
+        lower_piercings,
+        butt,
     ):
+        # Upper body group
+        upper_parts = [
+            p
+            for p in [
+                clean_val(upper_body),
+                clean_val(chest),
+                clean_val(chest_details),
+            ]
+            if p
+        ]
+        upper_body_out = ", ".join(upper_parts)
+
+        # Mid body group
+        mid_parts = [p for p in [clean_val(stomach)] if p]
+        if narrow_waist:
+            mid_parts.append("narrow waist")
+        if muffin_top:
+            mid_parts.append("muffin top")
+        mid_body_out = ", ".join(mid_parts)
+
+        # Lower body group
+        lower_parts = [
+            p
+            for p in [
+                clean_val(lower_body),
+                clean_val(hips),
+            ]
+            if p
+        ]
+        if hip_dips:
+            lower_parts.append("hip dips")
+        if v := clean_val(thighs):
+            lower_parts.append(v)
+        lower_body_out = ", ".join(lower_parts)
+
         return (
-            clean_val(eyes),
+            # Eyes
+            clean_val(eye_color),
             clean_val(eye_type),
+            clean_val(pupils),
+            clean_val(eye_details),
             clean_val(eyewear),
+            # Face
             clean_val(teeth),
+            clean_val(mouth_type),
+            clean_val(face_details),
+            clean_val(face_piercings),
+            # Hair
             clean_val(hair_color),
             clean_val(hair_style_selected),
-            clean_val(facial_piercings),
+            # Nails / Makeup
             clean_val(nail_color),
             clean_val(nail_type),
             clean_val(makeup),
+            # Accessories
+            clean_val(face_accessories),
+            clean_val(neck_details),
+            clean_val(hand_details),
+            # Body base
             clean_val(base_body),
             clean_val(body_type),
-            clean_val(body_piercings),
-            clean_val(upper_body),
-            clean_val(lower_body),
+            clean_val(skin_color),
+            clean_val(body_details),
+            # Body groups
+            upper_body_out,
+            clean_val(upper_piercings),
+            mid_body_out,
+            clean_val(mid_piercings),
+            lower_body_out,
+            clean_val(lower_piercings),
+            clean_val(butt),
         )
 
 
