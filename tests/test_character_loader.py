@@ -5,8 +5,8 @@ import pytest
 _CFG = {
     "eye_type": ["--", "almond eyes"],
     "pupils": ["--", "round pupils"],
-    "teeth": ["--", "sharp teeth"],
     "mouth_type": ["--", "small mouth"],
+    "teeth": ["--", "sharp teeth"],
     "nail_type": ["--", "long nails"],
     "base_body": ["--", "slim"],
     "body_type": ["--", "toned"],
@@ -31,20 +31,20 @@ def node():
 def run(node, **kwargs):
     defaults = dict(
         character_file="--",
-        eye_color="",
         eye_type="--",
+        eye_color="",
         pupils="--",
         eye_details="",
         eyewear="",
-        teeth="--",
         mouth_type="--",
-        face_details="",
-        face_piercings="",
+        teeth="--",
         hair_color="",
         hair_style_options="",
         hair_style_selected="",
-        nail_color="",
+        face_details="",
+        face_piercings="",
         nail_type="--",
+        nail_color="",
         makeup="",
         facewear="",
         neckwear="",
@@ -56,16 +56,16 @@ def run(node, **kwargs):
         upper_body="",
         chest="--",
         chest_details="--",
-        upper_piercings="",
+        upper_details="",
         stomach="--",
         narrow_waist=False,
         muffin_top=False,
-        mid_piercings="",
+        mid_details="",
         lower_body="",
         hips="--",
         hip_dips=False,
         thighs="--",
-        lower_piercings="",
+        lower_details="",
         butt="--",
     )
     defaults.update(kwargs)
@@ -74,19 +74,19 @@ def run(node, **kwargs):
 
 # RETURN_NAMES index map for readability
 IDX = {
-    "eye_color": 0,
-    "eye_type": 1,
+    "eye_type": 0,
+    "eye_color": 1,
     "pupils": 2,
     "eye_details": 3,
     "eyewear": 4,
-    "teeth": 5,
-    "mouth_type": 6,
-    "face_details": 7,
-    "face_piercings": 8,
-    "hair_color": 9,
-    "hair_style": 10,
-    "nail_color": 11,
-    "nail_type": 12,
+    "mouth_type": 5,
+    "teeth": 6,
+    "hair_color": 7,
+    "hair_style": 8,
+    "face_details": 9,
+    "face_piercings": 10,
+    "nail_type": 11,
+    "nail_color": 12,
     "makeup": 13,
     "facewear": 14,
     "neckwear": 15,
@@ -96,11 +96,11 @@ IDX = {
     "skin_color": 19,
     "body_details": 20,
     "upper_body": 21,
-    "upper_piercings": 22,
+    "upper_details": 22,
     "mid_body": 23,
-    "mid_piercings": 24,
+    "mid_details": 24,
     "lower_body": 25,
-    "lower_piercings": 26,
+    "lower_details": 26,
     "butt": 27,
 }
 
@@ -233,19 +233,19 @@ def test_body_details_returned(node):
     assert result[IDX["body_details"]] == "scar"
 
 
-def test_upper_piercings_returned(node):
-    result = run(node, upper_piercings="nipple piercing")
-    assert result[IDX["upper_piercings"]] == "nipple piercing"
+def test_upper_details_returned(node):
+    result = run(node, upper_details="scar")
+    assert result[IDX["upper_details"]] == "scar"
 
 
-def test_mid_piercings_returned(node):
-    result = run(node, mid_piercings="navel piercing")
-    assert result[IDX["mid_piercings"]] == "navel piercing"
+def test_mid_details_returned(node):
+    result = run(node, mid_details="navel piercing")
+    assert result[IDX["mid_details"]] == "navel piercing"
 
 
-def test_lower_piercings_returned(node):
-    result = run(node, lower_piercings="hip piercing")
-    assert result[IDX["lower_piercings"]] == "hip piercing"
+def test_lower_details_returned(node):
+    result = run(node, lower_details="hip piercing")
+    assert result[IDX["lower_details"]] == "hip piercing"
 
 
 def test_butt_returned(node):
@@ -259,11 +259,11 @@ def test_butt_returned(node):
 def test_upper_body_group_combines_all(node):
     result = run(
         node,
-        upper_body="large breasts",
+        upper_body="ribs",
         chest="pectorals",
         chest_details="cleavage",
     )
-    assert result[IDX["upper_body"]] == "large breasts, pectorals, cleavage"
+    assert result[IDX["upper_body"]] == "ribs, pectorals, cleavage"
 
 
 def test_upper_body_group_partial(node):
