@@ -115,7 +115,7 @@ class CharacterBuilder:
         }
 
     RETURN_TYPES = ("STRING",) * 5
-    RETURN_NAMES = ("head", "accessories", "body")
+    RETURN_NAMES = ("head", "body", "facewear", "neckwear", "armwear")
     FUNCTION = "build"
 
     def build(
