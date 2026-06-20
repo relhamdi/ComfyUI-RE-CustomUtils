@@ -1,6 +1,7 @@
 import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
 import { attachInlineSelector } from "./inline_selector.js";
 import {
+    drawWidgetOutline,
     findWidget,
     flashButton,
     hideWidget,
@@ -17,22 +18,52 @@ const NODE_NAME = "CharacterLoader";
 const BASE_ENDPOINT = `${API_ROOT}/characters`;
 
 const CHARACTER_TEMPLATE = {
-    eyes: "",
+    // Eyes
+    eye_color: "",
     eye_type: EMPTY_VALUE,
+    pupils: EMPTY_VALUE,
+    eye_details: "",
     eyewear: "",
+    // Face
     teeth: EMPTY_VALUE,
+    mouth_type: EMPTY_VALUE,
+    face_details: "",
+    face_piercings: "",
+    // Hair
     hair_color: "",
     hair_style_options: "",
     hair_style_selected: "",
-    facial_piercings: "",
+    // Nails / Makeup
     nail_color: "",
     nail_type: EMPTY_VALUE,
     makeup: "",
+    // Accessories
+    face_accessories: "",
+    neck_details: "",
+    hand_details: "",
+    // Body base
     base_body: EMPTY_VALUE,
-    body_type: "",
-    body_piercings: "",
-    upper_body: EMPTY_VALUE,
+    body_type: EMPTY_VALUE,
+    skin_color: EMPTY_VALUE,
+    body_details: "",
+    // Upper body
+    upper_body: "",
+    chest: EMPTY_VALUE,
+    chest_details: EMPTY_VALUE,
+    upper_piercings: "",
+    // Mid body
+    stomach: EMPTY_VALUE,
+    narrow_waist: false,
+    muffin_top: false,
+    mid_piercings: "",
+    // Lower body
     lower_body: "",
+    hips: EMPTY_VALUE,
+    hip_dips: false,
+    thighs: EMPTY_VALUE,
+    lower_piercings: "",
+    // Butt
+    butt: EMPTY_VALUE,
 };
 
 const FIELDS = Object.keys(CHARACTER_TEMPLATE);
@@ -215,15 +246,15 @@ const attachCharacterLoader = (node) => {
         });
     }
 
-    // Load initial file
-    loadFileIntoWidgets(characterFileWidget.value, node);
-
     // Reload on file change
     const originalCallback = characterFileWidget.callback;
     characterFileWidget.callback = function (value) {
         if (originalCallback) originalCallback.call(this, value);
         loadFileIntoWidgets(value, node);
     };
+
+    // Load initial file
+    loadFileIntoWidgets(characterFileWidget.value, node);
 };
 
 // --- Registration ---
