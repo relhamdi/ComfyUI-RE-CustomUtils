@@ -114,7 +114,7 @@ class CharacterBuilder:
             },
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING")
+    RETURN_TYPES = ("STRING",) * 5
     RETURN_NAMES = ("head", "accessories", "body")
     FUNCTION = "build"
 
@@ -263,27 +263,28 @@ class CharacterBuilder:
         head_out = clean_prompt(", ".join(head_parts))
 
         # --- Accessories ---
-        acc_parts = []
+        facewear_out = ""
+        neckwear_out = ""
+        armwear_out = ""
         if toggle_accessories:
             if v := _override(
                 facewear_override,
                 facewear_override_mode,
                 clean_val(facewear),
             ):
-                acc_parts.append(v)
+                facewear_out = v
             if v := _override(
                 neckwear_override,
                 neckwear_override_mode,
                 clean_val(neckwear),
             ):
-                acc_parts.append(v)
+                neckwear_out = v
             if v := _override(
                 armwear_override,
                 armwear_override_mode,
                 clean_val(armwear),
             ):
-                acc_parts.append(v)
-        acc_out = clean_prompt(f"({', '.join(acc_parts)})") if acc_parts else ""
+                armwear_out = v
 
         # --- Body ---
         body_parts = []
@@ -334,7 +335,7 @@ class CharacterBuilder:
 
         body_out = clean_prompt(f"({', '.join(body_parts)})") if body_parts else ""
 
-        return (head_out, acc_out, body_out)
+        return (head_out, body_out, facewear_out, neckwear_out, armwear_out)
 
 
 NODE_CLASS_MAPPINGS = {
