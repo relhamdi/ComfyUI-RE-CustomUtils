@@ -6,6 +6,12 @@ from .src.nodes.break_encoder import (
 from .src.nodes.break_encoder import (
     NODE_DISPLAY_NAME_MAPPINGS as BreakEncoderDisplayMappings,
 )
+from .src.nodes.character_builder import (
+    NODE_CLASS_MAPPINGS as CharacterBuilderMappings,
+)
+from .src.nodes.character_builder import (
+    NODE_DISPLAY_NAME_MAPPINGS as CharacterBuilderDisplayMappings,
+)
 from .src.nodes.character_loader import (
     NODE_CLASS_MAPPINGS as CharacterLoaderMappings,
 )
@@ -100,6 +106,7 @@ NODE_CLASS_MAPPINGS.update(PromptPoseBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptSceneBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptMultiPickerMappings)
 NODE_CLASS_MAPPINGS.update(PromptAddOrReplaceMappings)
+NODE_CLASS_MAPPINGS.update(CharacterBuilderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -116,6 +123,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update(PromptPoseBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptSceneBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptMultiPickerDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptAddOrReplaceDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(CharacterBuilderDisplayMappings)
 
 # Node registration
 __all__ = [
