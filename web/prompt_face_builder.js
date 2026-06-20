@@ -29,7 +29,7 @@ const NAIL_COLOR_FIELDS = ["nail_color_override"];
 const BOOL_FIELDS = [
     "show_eyes",
     "show_eyewear",
-    "show_piercings",
+    "show_body_details",
     "show_nails",
     "show_makeup",
 ];
@@ -66,7 +66,7 @@ const recallState = (node, state) => {
     );
     updatePiercingsVisibility(
         node,
-        findWidget(node, "show_piercings")?.value ?? true,
+        findWidget(node, "show_body_details")?.value ?? true,
     );
 
     const showNails = findWidget(node, "show_nails")?.value ?? true;
@@ -154,7 +154,7 @@ const attachFaceBuilder = (node) => {
         updateEyewearVisibility(node, showEyewearWidget.value ?? true);
     }
 
-    const showPiercingsWidget = findWidget(node, "show_piercings");
+    const showPiercingsWidget = findWidget(node, "show_body_details");
     if (showPiercingsWidget) {
         const original = showPiercingsWidget.callback;
         showPiercingsWidget.callback = function (value) {
@@ -196,7 +196,7 @@ const attachFaceBuilder = (node) => {
     const groups = [
         { from: "show_eyes", to: "gaze" },
         { from: "show_eyewear", to: "eyewear_override" },
-        { from: "show_piercings", to: "show_piercings" },
+        { from: "show_body_details", to: "show_body_details" },
         { from: "show_nails", to: "nail_color_override" },
         { from: "show_makeup", to: "show_makeup" },
     ];

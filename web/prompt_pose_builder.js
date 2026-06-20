@@ -36,7 +36,7 @@ const SINGLE_HAND_FIELDS = ["hands"];
 const BOOL_FIELDS = [
     "split_arms",
     "split_hands",
-    "show_piercings",
+    "show_body_details",
     "show_upper_body",
     "show_lower_body",
 ];
@@ -87,7 +87,7 @@ const recallState = (node, state) => {
     );
     updatePiercingsVisibility(
         node,
-        findWidget(node, "show_piercings")?.value ?? true,
+        findWidget(node, "show_body_details")?.value ?? true,
     );
     updateUpperBodyVisibility(
         node,
@@ -196,7 +196,7 @@ const attachPoseBuilder = (node) => {
         updateHandsVisibility(node, splitHandsWidget.value ?? false);
     }
 
-    const showPiercingsWidget = findWidget(node, "show_piercings");
+    const showPiercingsWidget = findWidget(node, "show_body_details");
     if (showPiercingsWidget) {
         const original = showPiercingsWidget.callback;
         showPiercingsWidget.callback = function (value) {
@@ -252,7 +252,7 @@ const attachPoseBuilder = (node) => {
         const groups = [
             { from: "split_arms", to: splitArms ? "second_arm" : "arms" },
             { from: "split_hands", to: splitHands ? "second_hand" : "hands" },
-            { from: "show_piercings", to: "show_piercings" },
+            { from: "show_body_details", to: "show_body_details" },
             { from: "show_upper_body", to: "show_upper_body" },
             { from: "show_lower_body", to: "show_lower_body" },
         ];

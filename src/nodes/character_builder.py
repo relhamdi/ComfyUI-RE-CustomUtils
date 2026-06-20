@@ -38,21 +38,21 @@ class CharacterBuilder:
                 "eyes_override_mode": ("BOOLEAN", {"default": False}),
                 "eyewear_override": ("STRING", {"default": ""}),
                 "eyewear_override_mode": ("BOOLEAN", {"default": False}),
-                # Face
+                # Face details
                 "face_details_override": ("STRING", {"default": ""}),
                 "face_details_override_mode": ("BOOLEAN", {"default": False}),
                 # Hair
                 "bald": ("BOOLEAN", {"default": False}),
-                # Piercings
-                "show_piercings": ("BOOLEAN", {"default": True}),
+                # Body details
+                "show_body_details": ("BOOLEAN", {"default": True}),
                 "face_piercings_override": ("STRING", {"default": ""}),
                 "face_piercings_override_mode": ("BOOLEAN", {"default": False}),
-                "upper_piercings_override": ("STRING", {"default": ""}),
-                "upper_piercings_override_mode": ("BOOLEAN", {"default": False}),
-                "mid_piercings_override": ("STRING", {"default": ""}),
-                "mid_piercings_override_mode": ("BOOLEAN", {"default": False}),
-                "lower_piercings_override": ("STRING", {"default": ""}),
-                "lower_piercings_override_mode": ("BOOLEAN", {"default": False}),
+                "upper_details_override": ("STRING", {"default": ""}),
+                "upper_details_override_mode": ("BOOLEAN", {"default": False}),
+                "mid_details_override": ("STRING", {"default": ""}),
+                "mid_details_override_mode": ("BOOLEAN", {"default": False}),
+                "lower_details_override": ("STRING", {"default": ""}),
+                "lower_details_override_mode": ("BOOLEAN", {"default": False}),
                 # Nails / Makeup
                 "show_nails": ("BOOLEAN", {"default": True}),
                 "nail_color_override": ("STRING", {"default": ""}),
@@ -104,11 +104,11 @@ class CharacterBuilder:
                 "skin_color": ("STRING", {"forceInput": True}),
                 "body_details": ("STRING", {"forceInput": True}),
                 "upper_body": ("STRING", {"forceInput": True}),
-                "upper_piercings": ("STRING", {"forceInput": True}),
+                "upper_details": ("STRING", {"forceInput": True}),
                 "mid_body": ("STRING", {"forceInput": True}),
-                "mid_piercings": ("STRING", {"forceInput": True}),
+                "mid_details": ("STRING", {"forceInput": True}),
                 "lower_body": ("STRING", {"forceInput": True}),
-                "lower_piercings": ("STRING", {"forceInput": True}),
+                "lower_details": ("STRING", {"forceInput": True}),
                 "butt": ("STRING", {"forceInput": True}),
                 "body_modifiers": ("STRING", {"forceInput": True}),
             },
@@ -130,15 +130,15 @@ class CharacterBuilder:
         face_details_override,
         face_details_override_mode,
         bald,
-        show_piercings,
+        show_body_details,
         face_piercings_override,
         face_piercings_override_mode,
-        upper_piercings_override,
-        upper_piercings_override_mode,
-        mid_piercings_override,
-        mid_piercings_override_mode,
-        lower_piercings_override,
-        lower_piercings_override_mode,
+        upper_details_override,
+        upper_details_override_mode,
+        mid_details_override,
+        mid_details_override_mode,
+        lower_details_override,
+        lower_details_override_mode,
         show_nails,
         nail_color_override,
         nail_color_override_mode,
@@ -180,11 +180,11 @@ class CharacterBuilder:
         skin_color="",
         body_details="",
         upper_body="",
-        upper_piercings="",
+        upper_details="",
         mid_body="",
-        mid_piercings="",
+        mid_details="",
         lower_body="",
-        lower_piercings="",
+        lower_details="",
         butt="",
         body_modifiers="",
     ):
@@ -229,13 +229,12 @@ class CharacterBuilder:
             face_details_override, face_details_override_mode, clean_val(face_details)
         ):
             face_group.append(v)
-        if show_piercings:
-            if v := _override(
-                face_piercings_override,
-                face_piercings_override_mode,
-                clean_val(face_piercings),
-            ):
-                face_group.append(v)
+        if v := _override(
+            face_piercings_override,
+            face_piercings_override_mode,
+            clean_val(face_piercings),
+        ):
+            face_group.append(v)
 
         if show_nails:
             if v := clean_val(nail_type):
@@ -300,31 +299,31 @@ class CharacterBuilder:
             if show_upper_body:
                 if v := clean_val(upper_body):
                     body_parts.append(v)
-                if show_piercings:
+                if show_body_details:
                     if v := _override(
-                        upper_piercings_override,
-                        upper_piercings_override_mode,
-                        clean_val(upper_piercings),
+                        upper_details_override,
+                        upper_details_override_mode,
+                        clean_val(upper_details),
                     ):
                         body_parts.append(v)
             if show_mid_body:
                 if v := clean_val(mid_body):
                     body_parts.append(v)
-                if show_piercings:
+                if show_body_details:
                     if v := _override(
-                        mid_piercings_override,
-                        mid_piercings_override_mode,
-                        clean_val(mid_piercings),
+                        mid_details_override,
+                        mid_details_override_mode,
+                        clean_val(mid_details),
                     ):
                         body_parts.append(v)
             if show_lower_body:
                 if v := clean_val(lower_body):
                     body_parts.append(v)
-                if show_piercings:
+                if show_body_details:
                     if v := _override(
-                        lower_piercings_override,
-                        lower_piercings_override_mode,
-                        clean_val(lower_piercings),
+                        lower_details_override,
+                        lower_details_override_mode,
+                        clean_val(lower_details),
                     ):
                         body_parts.append(v)
             if show_butt:

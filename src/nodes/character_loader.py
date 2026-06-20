@@ -61,18 +61,18 @@ CHARACTER_TEMPLATE = {
     "upper_body": "",
     "chest": EMPTY_VALUE,
     "chest_details": EMPTY_VALUE,
-    "upper_piercings": "",
+    "upper_details": "",
     # Mid body
     "stomach": EMPTY_VALUE,
     "narrow_waist": False,
     "muffin_top": False,
-    "mid_piercings": "",
+    "mid_details": "",
     # Lower body
     "lower_body": "",
     "hips": EMPTY_VALUE,
     "hip_dips": False,
     "thighs": EMPTY_VALUE,
-    "lower_piercings": "",
+    "lower_details": "",
     # Butt
     "butt": EMPTY_VALUE,
 }
@@ -128,18 +128,18 @@ class CharacterLoader:
                 "upper_body": ("STRING", {"default": ""}),
                 "chest": (get_builder_config_key(_CFG, "chest"),),
                 "chest_details": (get_builder_config_key(_CFG, "chest_details"),),
-                "upper_piercings": ("STRING", {"default": ""}),
+                "upper_details": ("STRING", {"default": ""}),
                 # Mid body
                 "stomach": (get_builder_config_key(_CFG, "stomach"),),
                 "narrow_waist": ("BOOLEAN", {"default": False}),
                 "muffin_top": ("BOOLEAN", {"default": False}),
-                "mid_piercings": ("STRING", {"default": ""}),
+                "mid_details": ("STRING", {"default": ""}),
                 # Lower body
                 "lower_body": ("STRING", {"default": ""}),
                 "hips": (get_builder_config_key(_CFG, "hips"),),
                 "hip_dips": ("BOOLEAN", {"default": False}),
                 "thighs": (get_builder_config_key(_CFG, "thighs"),),
-                "lower_piercings": ("STRING", {"default": ""}),
+                "lower_details": ("STRING", {"default": ""}),
                 # Butt
                 "butt": (get_builder_config_key(_CFG, "butt"),),
             }
@@ -176,11 +176,11 @@ class CharacterLoader:
         "body_details",
         # Body groups
         "upper_body",
-        "upper_piercings",
+        "upper_details",
         "mid_body",
-        "mid_piercings",
+        "mid_details",
         "lower_body",
-        "lower_piercings",
+        "lower_details",
         "butt",
     )
     FUNCTION = "load_character"
@@ -213,16 +213,16 @@ class CharacterLoader:
         upper_body,
         chest,
         chest_details,
-        upper_piercings,
+        upper_details,
         stomach,
         narrow_waist,
         muffin_top,
-        mid_piercings,
+        mid_details,
         lower_body,
         hips,
         hip_dips,
         thighs,
-        lower_piercings,
+        lower_details,
         butt,
     ):
         # Upper body group
@@ -290,11 +290,11 @@ class CharacterLoader:
             clean_val(body_details),
             # Body groups
             upper_body_out,
-            clean_val(upper_piercings),
+            clean_val(upper_details),
             mid_body_out,
-            clean_val(mid_piercings),
+            clean_val(mid_details),
             lower_body_out,
-            clean_val(lower_piercings),
+            clean_val(lower_details),
             clean_val(butt),
         )
 

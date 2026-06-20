@@ -51,18 +51,18 @@ const CHARACTER_TEMPLATE = {
     upper_body: "",
     chest: EMPTY_VALUE,
     chest_details: EMPTY_VALUE,
-    upper_piercings: "",
+    upper_details: "",
     // Mid body
     stomach: EMPTY_VALUE,
     narrow_waist: false,
     muffin_top: false,
-    mid_piercings: "",
+    mid_details: "",
     // Lower body
     lower_body: "",
     hips: EMPTY_VALUE,
     hip_dips: false,
     thighs: EMPTY_VALUE,
-    lower_piercings: "",
+    lower_details: "",
     // Butt
     butt: EMPTY_VALUE,
 };
@@ -264,9 +264,9 @@ const attachCharacterLoader = (node) => {
         { from: "nail_color", to: "nail_type" },
         { from: "facewear", to: "armwear" },
         { from: "base_body", to: "body_details" },
-        { from: "upper_body", to: "upper_piercings" },
-        { from: "stomach", to: "mid_piercings" },
-        { from: "lower_body", to: "lower_piercings" },
+        { from: "upper_body", to: "upper_details" },
+        { from: "stomach", to: "mid_details" },
+        { from: "lower_body", to: "lower_details" },
     ];
     const original = node.onDrawForeground;
     node.onDrawForeground = function (ctx) {

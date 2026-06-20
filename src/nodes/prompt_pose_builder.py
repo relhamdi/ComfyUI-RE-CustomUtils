@@ -29,7 +29,7 @@ class PromptPoseBuilder:
                 "holding": (get_builder_config_key(_CFG, "holding"),),
                 "legs": (get_builder_config_key(_CFG, "legs"),),
                 "feet": (get_builder_config_key(_CFG, "feet"),),
-                "show_piercings": ("BOOLEAN", {"default": True}),
+                "show_body_details": ("BOOLEAN", {"default": True}),
                 "show_upper_body": ("BOOLEAN", {"default": True}),
                 "show_lower_body": ("BOOLEAN", {"default": True}),
                 "action_options": ("STRING", {"multiline": True, "default": ""}),
@@ -66,7 +66,7 @@ class PromptPoseBuilder:
         holding,
         legs,
         feet,
-        show_piercings,
+        show_body_details,
         show_upper_body,
         show_lower_body,
         action_options,
@@ -85,7 +85,7 @@ class PromptPoseBuilder:
             body_parts.append(v)
         if v := clean_val(body_type):
             body_parts.append(v)
-        if show_piercings:
+        if show_body_details:
             if v := clean_val(body_piercings):
                 body_parts.append(v)
         if show_upper_body:

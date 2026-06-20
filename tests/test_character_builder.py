@@ -19,15 +19,15 @@ def run(node, **kwargs):
         face_details_override="",
         face_details_override_mode=False,
         bald=False,
-        show_piercings=True,
+        show_body_details=True,
         face_piercings_override="",
         face_piercings_override_mode=False,
-        upper_piercings_override="",
-        upper_piercings_override_mode=False,
-        mid_piercings_override="",
-        mid_piercings_override_mode=False,
-        lower_piercings_override="",
-        lower_piercings_override_mode=False,
+        upper_details_override="",
+        upper_details_override_mode=False,
+        mid_details_override="",
+        mid_details_override_mode=False,
+        lower_details_override="",
+        lower_details_override_mode=False,
         show_nails=True,
         nail_color_override="",
         nail_color_override_mode=False,
@@ -69,11 +69,11 @@ def run(node, **kwargs):
         skin_color="",
         body_details="",
         upper_body="",
-        upper_piercings="",
+        upper_details="",
         mid_body="",
-        mid_piercings="",
+        mid_details="",
         lower_body="",
-        lower_piercings="",
+        lower_details="",
         butt="",
         body_modifiers="",
     )
@@ -189,12 +189,14 @@ class TestCharacterBuilderHead:
         assert "freckles" in head
         assert "scar" in head
 
-    def test_face_piercings_included_when_show_piercings(self, node):
-        head, _, _, _, _ = run(node, face_piercings="nose ring", show_piercings=True)
+    def test_face_piercings_included_when_show_body_details(self, node):
+        head, _, _, _, _ = run(node, face_piercings="nose ring", show_body_details=True)
         assert "nose ring" in head
 
-    def test_face_piercings_excluded_when_show_piercings_false(self, node):
-        head, _, _, _, _ = run(node, face_piercings="nose ring", show_piercings=False)
+    def test_face_piercings_excluded_when_show_body_details_false(self, node):
+        head, _, _, _, _ = run(
+            node, face_piercings="nose ring", show_body_details=False
+        )
         assert "nose ring" not in head
 
     def test_nail_color_override_replace(self, node):
@@ -319,24 +321,24 @@ class TestCharacterBuilderBody:
         _, body, _, _, _ = run(node, upper_body="pectorals", show_upper_body=False)
         assert "pectorals" not in body
 
-    def test_upper_piercings_override_replace(self, node):
+    def test_upper_details_override_replace(self, node):
         _, body, _, _, _ = run(
             node,
-            upper_piercings="cross piercing",
-            upper_piercings_override="other ring",
-            upper_piercings_override_mode=True,
+            upper_details="cross piercing",
+            upper_details_override="other ring",
+            upper_details_override_mode=True,
             show_upper_body=True,
-            show_piercings=True,
+            show_body_details=True,
         )
         assert "other ring" in body
         assert "cross piercing" not in body
 
-    def test_upper_piercings_excluded_when_show_piercings_false(self, node):
+    def test_upper_details_excluded_when_show_body_details_false(self, node):
         _, body, _, _, _ = run(
             node,
-            upper_piercings="cross piercing",
+            upper_details="cross piercing",
             show_upper_body=True,
-            show_piercings=False,
+            show_body_details=False,
         )
         assert "cross piercing" not in body
 
@@ -348,14 +350,14 @@ class TestCharacterBuilderBody:
         _, body, _, _, _ = run(node, mid_body="abs", show_mid_body=False)
         assert "abs" not in body
 
-    def test_mid_piercings_override_replace(self, node):
+    def test_mid_details_override_replace(self, node):
         _, body, _, _, _ = run(
             node,
-            mid_piercings="navel piercing",
-            mid_piercings_override="other ring",
-            mid_piercings_override_mode=True,
+            mid_details="navel piercing",
+            mid_details_override="other ring",
+            mid_details_override_mode=True,
             show_mid_body=True,
-            show_piercings=True,
+            show_body_details=True,
         )
         assert "other ring" in body
         assert "navel piercing" not in body
@@ -368,14 +370,14 @@ class TestCharacterBuilderBody:
         _, body, _, _, _ = run(node, lower_body="wide hips", show_lower_body=False)
         assert "wide hips" not in body
 
-    def test_lower_piercings_override_replace(self, node):
+    def test_lower_details_override_replace(self, node):
         _, body, _, _, _ = run(
             node,
-            lower_piercings="hip ring",
-            lower_piercings_override="other ring",
-            lower_piercings_override_mode=True,
+            lower_details="hip ring",
+            lower_details_override="other ring",
+            lower_details_override_mode=True,
             show_lower_body=True,
-            show_piercings=True,
+            show_body_details=True,
         )
         assert "other ring" in body
         assert "hip ring" not in body

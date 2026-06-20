@@ -27,7 +27,7 @@ class PromptFaceBuilder:
                 "mouth_expression": (get_builder_config_key(_CFG, "mouth_expression"),),
                 "emotion": (get_builder_config_key(_CFG, "emotion"),),
                 "head_angle": (get_builder_config_key(_CFG, "head_angle"),),
-                "show_piercings": ("BOOLEAN", {"default": True}),
+                "show_body_details": ("BOOLEAN", {"default": True}),
                 "show_nails": ("BOOLEAN", {"default": True}),
                 "nail_color_override": ("STRING", {"default": ""}),
                 "show_makeup": ("BOOLEAN", {"default": True}),
@@ -68,7 +68,7 @@ class PromptFaceBuilder:
         mouth_expression,
         emotion,
         head_angle,
-        show_piercings,
+        show_body_details,
         show_nails,
         nail_color_override,
         show_makeup,
@@ -132,7 +132,7 @@ class PromptFaceBuilder:
             face_parts.append(v)
 
         makeup_parts = []
-        if show_piercings:
+        if show_body_details:
             if v := clean_val(facial_piercings):
                 makeup_parts.append(v)
         if show_makeup:

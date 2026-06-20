@@ -82,7 +82,7 @@ def run_face(node, **kwargs):
         mouth_expression="--",
         emotion="--",
         head_angle="--",
-        show_piercings=True,
+        show_body_details=True,
         show_nails=True,
         nail_color_override="",
         show_makeup=True,
@@ -108,7 +108,7 @@ def run_pose(node, **kwargs):
         holding="--",
         legs="--",
         feet="--",
-        show_piercings=True,
+        show_body_details=True,
         show_upper_body=True,
         show_lower_body=True,
         action_options="",
@@ -248,12 +248,12 @@ class TestFaceBuilder:
 
     # --- Makeup group ---
 
-    def test_piercings_included_when_show_piercings(self, face):
-        (text,) = run_face(face, facial_piercings="nose ring", show_piercings=True)
+    def test_piercings_included_when_show_body_details(self, face):
+        (text,) = run_face(face, facial_piercings="nose ring", show_body_details=True)
         assert "nose ring" in text
 
-    def test_piercings_excluded_when_show_piercings_false(self, face):
-        (text,) = run_face(face, facial_piercings="nose ring", show_piercings=False)
+    def test_piercings_excluded_when_show_body_details_false(self, face):
+        (text,) = run_face(face, facial_piercings="nose ring", show_body_details=False)
         assert "nose ring" not in text
 
     def test_makeup_included_when_show_makeup(self, face):
@@ -334,12 +334,16 @@ class TestPoseBuilder:
         (text,) = run_pose(pose, body_type="tall")
         assert "tall" in text
 
-    def test_body_piercings_included_when_show_piercings(self, pose):
-        (text,) = run_pose(pose, body_piercings="navel piercing", show_piercings=True)
+    def test_body_piercings_included_when_show_body_details(self, pose):
+        (text,) = run_pose(
+            pose, body_piercings="navel piercing", show_body_details=True
+        )
         assert "navel piercing" in text
 
-    def test_body_piercings_excluded_when_show_piercings_false(self, pose):
-        (text,) = run_pose(pose, body_piercings="navel piercing", show_piercings=False)
+    def test_body_piercings_excluded_when_show_body_details_false(self, pose):
+        (text,) = run_pose(
+            pose, body_piercings="navel piercing", show_body_details=False
+        )
         assert "navel piercing" not in text
 
     def test_upper_body_included_when_show_upper_body(self, pose):

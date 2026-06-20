@@ -22,9 +22,9 @@ const OVERRIDE_FIELDS = [
     "eyewear_override",
     "face_details_override",
     "face_piercings_override",
-    "upper_piercings_override",
-    "mid_piercings_override",
-    "lower_piercings_override",
+    "upper_details_override",
+    "mid_details_override",
+    "lower_details_override",
     "nail_color_override",
     "facewear_override",
     "neckwear_override",
@@ -35,7 +35,7 @@ const BOOL_FIELDS = [
     "show_eyes",
     "show_eyeballs",
     "bald",
-    "show_piercings",
+    "show_body_details",
     "show_nails",
     "show_makeup",
     "toggle_accessories",
@@ -156,7 +156,7 @@ const applyAllVisibility = (node, toggleWidgets) => {
     const showEyes = get("show_eyes");
     const showEyeballs = get("show_eyeballs");
     const isBald = get("bald");
-    const showPiercings = get("show_piercings");
+    const showPiercings = get("show_body_details");
     const showNails = get("show_nails");
     const showMakeup = get("show_makeup");
     const toggleAccessories = get("toggle_accessories");
@@ -186,7 +186,7 @@ const applyAllVisibility = (node, toggleWidgets) => {
     // bald -> hair_color + hair_style dots
     setDotsDisabled(node, ["hair_color", "hair_style"], !isBald);
 
-    // show_piercings -> 4 piercing override toggle widgets + raw dots
+    // show_body_details -> 4 piercing override toggle widgets + raw dots
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
@@ -197,37 +197,37 @@ const applyAllVisibility = (node, toggleWidgets) => {
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
-        ["upper_piercings_override"],
+        ["upper_details_override"],
         !(showBody && showUpperBody && showPiercings),
     );
 
     setDotsDisabled(
         node,
-        ["upper_piercings"],
+        ["upper_details"],
         !(showBody && showUpperBody && showPiercings),
     );
 
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
-        ["mid_piercings_override"],
+        ["mid_details_override"],
         !(showBody && showMidBody && showPiercings),
     );
     setDotsDisabled(
         node,
-        ["mid_piercings"],
+        ["mid_details"],
         !(showBody && showMidBody && showPiercings),
     );
 
     setToggleWidgetDisabled(
         node,
         toggleWidgets,
-        ["lower_piercings_override"],
+        ["lower_details_override"],
         !(showBody && showLowerBody && showPiercings),
     );
     setDotsDisabled(
         node,
-        ["lower_piercings"],
+        ["lower_details"],
         !(showBody && showLowerBody && showPiercings),
     );
 
@@ -282,7 +282,7 @@ const attachCharacterBuilder = (node) => {
         "show_eyes",
         "show_eyeballs",
         "bald",
-        "show_piercings",
+        "show_body_details",
         "show_nails",
         "show_makeup",
         "toggle_accessories",
@@ -312,7 +312,7 @@ const attachCharacterBuilder = (node) => {
     const groups = [
         { from: "show_eyes", to: "face_details_override" },
         { from: "bald", to: "bald" },
-        { from: "show_piercings", to: "lower_piercings_override" },
+        { from: "show_body_details", to: "lower_details_override" },
         { from: "show_nails", to: "show_makeup" },
         { from: "toggle_accessories", to: "armwear_override" },
         { from: "show_body", to: "show_butt" },
