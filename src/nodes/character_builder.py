@@ -287,15 +287,15 @@ class CharacterBuilder:
 
         # --- Body ---
         body_parts = []
+        if v := clean_val(base_body):
+            body_parts.append(v)
+        if v := clean_val(body_type):
+            body_parts.append(v)
+        if v := clean_val(skin_color):
+            body_parts.append(v)
+        if v := clean_val(body_details):
+            body_parts.append(v)
         if show_body:
-            if v := clean_val(base_body):
-                body_parts.append(v)
-            if v := clean_val(body_type):
-                body_parts.append(v)
-            if v := clean_val(skin_color):
-                body_parts.append(v)
-            if v := clean_val(body_details):
-                body_parts.append(v)
             if show_upper_body:
                 if v := clean_val(upper_body):
                     body_parts.append(v)
