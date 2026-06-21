@@ -1,6 +1,8 @@
 import re
 from itertools import product
 
+from .utils_loader import clean_val
+
 
 def clean_prompt(text: str) -> str:
     """Clean up residual artifacts from empty presets or slots."""
@@ -82,3 +84,23 @@ def parse_options(raw: str) -> list[str]:
         raise ValueError("parse_options: unclosed @combine block — missing @end.")
 
     return result
+
+
+def override(override_val, override_mode, base_val, join=", "):
+    """
+    Apply toggle override logic.
+    override_mode=False (add): base + override
+    override_mode=True (replace): override replaces base (or base if override empty)
+    """
+    ov = clean_val(override_val)
+    bv = clean_val(base_val)
+
+    # Replace mode
+    if override_mode:
+        return ov
+
+    # Add mode
+    if bv and ov:
+        return clean_prompt(bv + join + ov)
+
+    return bv or ov

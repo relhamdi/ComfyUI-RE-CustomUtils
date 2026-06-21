@@ -1,26 +1,6 @@
 from ..config import NODE_CATEGORY
-from ..utils import clean_prompt
+from ..utils import clean_prompt, override
 from ..utils_loader import clean_val
-
-
-def _override(override_val, override_mode, base_val, join=", "):
-    """
-    Apply toggle override logic.
-    override_mode=False (add): base + override
-    override_mode=True (replace): override replaces base (or base if override empty)
-    """
-    ov = clean_val(override_val)
-    bv = clean_val(base_val)
-
-    # Replace mode
-    if override_mode:
-        return ov
-
-    # Add mode
-    if bv and ov:
-        return clean_prompt(bv + join + ov)
-
-    return bv or ov
 
 
 class CharacterBuilder:
@@ -196,7 +176,7 @@ class CharacterBuilder:
                 base_eyes = ", ".join(
                     p for p in [clean_val(eye_color), clean_val(eye_type)] if p
                 )
-                if v := _override(eyes_override, eyes_override_mode, base_eyes):
+                if v := override(eyes_override, eyes_override_mode, base_eyes):
                     eyes_group.append(v)
                 # pupils
                 if v := clean_val(pupils):
@@ -206,7 +186,7 @@ class CharacterBuilder:
         if v := clean_val(eye_effects):
             eyes_group.append(v)
         # eyewear always if override or base
-        if v := _override(eyewear_override, eyewear_override_mode, clean_val(eyewear)):
+        if v := override(eyewear_override, eyewear_override_mode, clean_val(eyewear)):
             eyes_group.append(v)
         if v := clean_val(mouth_type):
             eyes_group.append(v)
@@ -225,11 +205,11 @@ class CharacterBuilder:
 
         # --- Head group 3: face details / makeup ---
         face_group = []
-        if v := _override(
+        if v := override(
             face_details_override, face_details_override_mode, clean_val(face_details)
         ):
             face_group.append(v)
-        if v := _override(
+        if v := override(
             face_piercings_override,
             face_piercings_override_mode,
             clean_val(face_piercings),
@@ -240,7 +220,7 @@ class CharacterBuilder:
             if v := clean_val(nail_type):
                 face_group.append(v)
         if show_nails and show_makeup:
-            if v := _override(
+            if v := override(
                 nail_color_override, nail_color_override_mode, clean_val(nail_color)
             ):
                 face_group.append(v)
@@ -266,19 +246,19 @@ class CharacterBuilder:
         neckwear_out = ""
         armwear_out = ""
         if toggle_accessories:
-            if v := _override(
+            if v := override(
                 facewear_override,
                 facewear_override_mode,
                 clean_val(facewear),
             ):
                 facewear_out = v
-            if v := _override(
+            if v := override(
                 neckwear_override,
                 neckwear_override_mode,
                 clean_val(neckwear),
             ):
                 neckwear_out = v
-            if v := _override(
+            if v := override(
                 armwear_override,
                 armwear_override_mode,
                 clean_val(armwear),
@@ -300,7 +280,7 @@ class CharacterBuilder:
                 if v := clean_val(upper_body):
                     body_parts.append(v)
                 if show_body_details:
-                    if v := _override(
+                    if v := override(
                         upper_details_override,
                         upper_details_override_mode,
                         clean_val(upper_details),
@@ -310,7 +290,7 @@ class CharacterBuilder:
                 if v := clean_val(mid_body):
                     body_parts.append(v)
                 if show_body_details:
-                    if v := _override(
+                    if v := override(
                         mid_details_override,
                         mid_details_override_mode,
                         clean_val(mid_details),
@@ -320,7 +300,7 @@ class CharacterBuilder:
                 if v := clean_val(lower_body):
                     body_parts.append(v)
                 if show_body_details:
-                    if v := _override(
+                    if v := override(
                         lower_details_override,
                         lower_details_override_mode,
                         clean_val(lower_details),
