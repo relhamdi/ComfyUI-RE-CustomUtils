@@ -4,14 +4,12 @@ import {
     drawGroupBorder,
     drawWidgetOutline,
     findWidget,
-    hideWidget,
-    hideWidgetInput,
     hookWidget,
     registerNode,
     setInputDotColor,
     waitForWidgets,
 } from "./utils.js";
-import { InlineTextToggleWidget } from "./widgets/inline_text_toggle_widget.js";
+import { replaceWithInlineTextToggle } from "./widgets/inline_text_toggle_widget.js";
 
 // --- Constants ---
 
@@ -50,40 +48,6 @@ const BOOL_FIELDS = [
 
 // --- Replace native widget pairs with InlineTextToggleWidget ---
 
-const convertToInlineTextToggle = (node, textWidget, modeWidget) => {
-    const helper = new InlineTextToggleWidget(
-        textWidget.name,
-        textWidget,
-        modeWidget,
-    );
-
-    // Build a brand new custom widget object
-    const newWidget = {
-        name: textWidget.name,
-        type: "custom",
-        value: textWidget.value, // Kept for compatibility, not used for render
-        get value() {
-            return textWidget.value;
-        },
-        set value(v) {
-            textWidget.value = v;
-        },
-        draw: (ctx, n, width, posY, height) =>
-            helper.draw(ctx, n, width, posY, height),
-        mouse: (event, pos, n) => helper.mouse(event, pos, n),
-        computeSize: () => helper.computeSize(),
-        serializeValue: textWidget.serializeValue,
-    };
-
-    const idx = node.widgets.indexOf(textWidget);
-    node.widgets[idx] = newWidget;
-
-    hideWidget(modeWidget, true);
-    hideWidgetInput(node, modeWidget);
-
-    return helper;
-};
-
 const replaceWithToggleWidgets = (node) => {
     const toggleWidgets = {};
 
@@ -92,7 +56,7 @@ const replaceWithToggleWidgets = (node) => {
         const modeWidget = findWidget(node, `${field}_mode`);
         if (!textWidget || !modeWidget) continue;
 
-        toggleWidgets[field] = convertToInlineTextToggle(
+        toggleWidgets[field] = replaceWithInlineTextToggle(
             node,
             textWidget,
             modeWidget,

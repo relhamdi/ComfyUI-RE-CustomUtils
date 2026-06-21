@@ -1,5 +1,5 @@
 import { COLORS } from "../constants.js";
-import { fitString } from "../utils.js";
+import { fitString, hideWidget, hideWidgetInput } from "../utils.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -116,3 +116,39 @@ export class InlineTextToggleWidget {
         return x >= hit[0] && x <= hit[0] + hit[1];
     }
 }
+
+// -- Extra --
+
+export const replaceWithInlineTextToggle = (node, textWidget, modeWidget) => {
+    const helper = new InlineTextToggleWidget(
+        textWidget.name,
+        textWidget,
+        modeWidget,
+    );
+
+    // Build a brand new custom widget object
+    const newWidget = {
+        name: textWidget.name,
+        type: "custom",
+        value: textWidget.value, // Kept for compatibility, not used for render
+        get value() {
+            return textWidget.value;
+        },
+        set value(v) {
+            textWidget.value = v;
+        },
+        draw: (ctx, n, width, posY, height) =>
+            helper.draw(ctx, n, width, posY, height),
+        mouse: (event, pos, n) => helper.mouse(event, pos, n),
+        computeSize: () => helper.computeSize(),
+        serializeValue: textWidget.serializeValue,
+    };
+
+    const idx = node.widgets.indexOf(textWidget);
+    node.widgets[idx] = newWidget;
+
+    hideWidget(modeWidget, true);
+    hideWidgetInput(node, modeWidget);
+
+    return helper;
+};
