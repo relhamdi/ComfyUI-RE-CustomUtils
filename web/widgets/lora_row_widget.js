@@ -1,5 +1,6 @@
 import { COLORS } from "../constants.js";
 import { fitString } from "../utils.js";
+import { showSearchOverlay } from "./search_overlay.js";
 import { app } from "/scripts/app.js";
 
 // --- Constants ---
@@ -238,131 +239,22 @@ export class LoraRowWidget {
     // --- Menu ---
 
     _showLoraMenu(event, node) {
-        // Destroy any previous menu
-        document.querySelector("._lora_picker_menu")?.remove();
-        document.removeEventListener("pointerdown", this._onOutside);
-
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("_lora_picker_menu");
-        wrapper.style.cssText = `
-            position: fixed;
-            z-index: 9999;
-            background: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            left: ${event.clientX}px;
-            top: ${event.clientY}px;
-        `;
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.placeholder = "Search LoRA...";
-        input.style.cssText = `
-            background: #111;
-            color: #e0e0e0;
-            border: none;
-            border-bottom: 1px solid #444;
-            padding: 4px 8px;
-            font-family: monospace;
-            font-size: 11px;
-            outline: none;
-        `;
-
-        const select = document.createElement("select");
-        select.size = 15;
-        select.style.cssText = `
-            background: #1a1a1a;
-            color: #e0e0e0;
-            border: none;
-            font-family: monospace;
-            font-size: 11px;
-            min-width: 250px;
-            max-height: 300px;
-            outline: none;
-            cursor: pointer;
-        `;
-
-        const populate = (filter = "") => {
-            select.innerHTML = "";
-            const filtered = filter
-                ? this.loras.filter((l) =>
-                      l.toLowerCase().includes(filter.toLowerCase()),
-                  )
-                : this.loras;
-            for (const lora of filtered) {
-                const opt = document.createElement("option");
-                opt.value = lora;
-                opt.textContent = lora;
-                if (lora === this.value.lora) opt.selected = true;
-                select.appendChild(opt);
-            }
-
-            // Adapt length to item count
-            select.size = Math.min(filtered.length, 15);
-            // If empty, display at least one line
-            if (select.size === 0) select.size = 1;
-        };
-
-        populate();
-        // --- Event listener - Input (Enter): Fill with search ---
-        input.addEventListener("input", () => populate(input.value));
-
-        const cleanup = () => {
-            document.querySelector("._lora_picker_menu")?.remove();
-            document.removeEventListener("pointerdown", this._onOutside);
-        };
-
-        this._onOutside = (e) => {
-            if (!wrapper.contains(e.target)) cleanup();
-        };
-
-        // --- Event listener - Keydown (Change): Select value ---
-        select.addEventListener("change", () => {
-            this.value.lora = select.value;
-            this.onChange("lora");
-            if (node.graph) node.graph.setDirtyCanvas(true, true);
-            cleanup();
-        });
-
-        input.addEventListener("keydown", (e) => {
-            // --- Event listener - Keydown (Arrow Up/Down): Keyboard navigation ---
-            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                e.preventDefault();
-                const current = select.selectedIndex;
-                if (e.key === "ArrowDown") {
-                    select.selectedIndex = Math.min(
-                        current + 1,
-                        select.options.length - 1,
-                    );
-                } else {
-                    select.selectedIndex = Math.max(current - 1, 0);
-                }
-                return;
-            }
-            // --- Event listener - Keydown (Enter): Validate search ---
-            if (e.key === "Enter" && select.options.length > 0) {
-                this.value.lora =
-                    select.selectedOptions[0]?.value ?? select.options[0].value;
+        showSearchOverlay(event, {
+            items: this.loras.map((l) => ({ label: l, value: l })),
+            placeholder: "Search LoRA...",
+            initialValue: this.value.lora,
+            maxVisible: 15,
+            onFilter: (query, items) =>
+                query
+                    ? items.filter((i) =>
+                          i.label.toLowerCase().includes(query.toLowerCase()),
+                      )
+                    : items,
+            onSelect: (value) => {
+                this.value.lora = value;
                 this.onChange("lora");
                 if (node.graph) node.graph.setDirtyCanvas(true, true);
-                cleanup();
-            }
-            // --- Event listener - Keydown (Escape): Cleanup ---
-            if (e.key === "Escape") {
-                cleanup();
-            }
+            },
         });
-
-        wrapper.appendChild(input);
-        wrapper.appendChild(select);
-        document.body.appendChild(wrapper);
-
-        setTimeout(() => {
-            document.addEventListener("pointerdown", this._onOutside);
-            input.focus();
-        }, 0);
     }
 }
