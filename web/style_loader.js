@@ -1,14 +1,13 @@
-import { API_ROOT, COLORS, EMPTY_VALUE } from "./constants.js";
+import { API_ROOT, EMPTY_VALUE } from "./constants.js";
+import { createLoaderCrud } from "./loader_crud.js";
 import {
     findWidget,
-    flashButton,
     hideWidget,
-    patchFileDropdown,
+    hookWidget,
     registerNode,
     setWidgetValue,
     waitForWidgets,
 } from "./utils.js";
-import { ButtonRowWidget } from "./widgets/button_row_widget.js";
 import { LoraRowWidget } from "./widgets/lora_row_widget.js";
 
 // --- Constants ---
@@ -174,7 +173,7 @@ const buildJsonFromWidgets = (node) => {
     );
 };
 
-const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
+const pushJsonToWidgets = (node, data, addButtonWidget) => {
     const safe = (key, fallback) =>
         data[key] !== undefined ? data[key] : fallback;
 
@@ -220,184 +219,9 @@ const pushJsonToWidgets = (node, data, addButtonWidget, loadLoras = true) => {
         safe("scheduler", STYLE_TEMPLATE.scheduler),
     );
 
-    // Only rebuild LoRAs if loras_data is empty (file load vs workflow restore)
-    if (loadLoras) {
-        rebuildLoraRows(
-            node,
-            safe("loras", STYLE_TEMPLATE.loras),
-            addButtonWidget,
-        );
-    }
+    rebuildLoraRows(node, safe("loras", STYLE_TEMPLATE.loras), addButtonWidget);
 
     if (node.graph) node.graph.setDirtyCanvas(true, true);
-};
-
-const clearWidgets = (node, addButtonWidget) => {
-    pushJsonToWidgets(node, STYLE_TEMPLATE, addButtonWidget, true);
-};
-
-// --- File loading ---
-
-const loadFileIntoWidgets = async (
-    file,
-    node,
-    addButtonWidget,
-    loadLoras = true,
-) => {
-    if (!file || file === EMPTY_VALUE) return;
-
-    // Empty loras_data before loading
-    const lorasDataWidget = findWidget(node, "loras_data");
-    if (lorasDataWidget) lorasDataWidget.value = "[]";
-
-    try {
-        const res = await fetch(
-            `${BASE_ENDPOINT}/load?file=${encodeURIComponent(file)}`,
-        );
-        const data = await res.json();
-        if (data.error) {
-            console.warn(`[${NODE_NAME}] Load error:`, data.error);
-            return;
-        }
-        pushJsonToWidgets(
-            node,
-            JSON.parse(data.content),
-            addButtonWidget,
-            loadLoras,
-        );
-    } catch (e) {
-        console.warn(`[${NODE_NAME}] Failed to load or parse file:`, e);
-    }
-};
-
-// --- Buttons ---
-
-const handleNew = async (node, styleFileWidget, addButtonWidget) => {
-    const name = prompt("New style file name (e.g. anime/illustrious):");
-    if (!name?.trim()) return;
-
-    const res = await fetch(`${BASE_ENDPOINT}/new`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file: name.trim() }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-        patchFileDropdown(styleFileWidget, EMPTY_VALUE, data.file);
-        pushJsonToWidgets(
-            node,
-            JSON.parse(data.content),
-            addButtonWidget,
-            true,
-        );
-        loadPreviewImage(data.file, node);
-        if (node.graph) node.graph.setDirtyCanvas(true, true);
-    } else {
-        alert(`[${NODE_NAME}] ${data.error}`);
-    }
-};
-
-const handleSave = async (node, styleFileWidget) => {
-    const file = styleFileWidget.value;
-    if (!file || file === EMPTY_VALUE) {
-        alert(`[${NODE_NAME}] No style file selected.`);
-        return;
-    }
-
-    const content = buildJsonFromWidgets(node);
-    const res = await fetch(`${BASE_ENDPOINT}/save`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file, content }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-        flashButton(node, 1, "✅ Saved!");
-    } else {
-        alert(`[${NODE_NAME}] Save failed: ${data.error}`);
-    }
-};
-
-const handleClone = async (node, styleFileWidget) => {
-    const name = prompt("Clone to new file (e.g. anime/illustrious_v2):");
-    if (!name?.trim()) return;
-
-    const content = buildJsonFromWidgets(node);
-    const file = name.trim().endsWith(".json")
-        ? name.trim()
-        : `${name.trim()}.json`;
-
-    const res = await fetch(`${BASE_ENDPOINT}/save`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file, content }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-        patchFileDropdown(styleFileWidget, EMPTY_VALUE, file);
-        loadPreviewImage(file, node);
-        if (node.graph) node.graph.setDirtyCanvas(true, true);
-    } else {
-        alert(`[${NODE_NAME}] Clone failed: ${data.error}`);
-    }
-};
-
-const handleDelete = async (node, styleFileWidget, addButtonWidget) => {
-    const file = styleFileWidget.value;
-    if (!file || file === EMPTY_VALUE) {
-        alert(`[${NODE_NAME}] No style file selected.`);
-        return;
-    }
-    if (!confirm(`Delete "${file}" ? This cannot be undone.`)) return;
-
-    const res = await fetch(`${BASE_ENDPOINT}/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-        const values = styleFileWidget.options?.values ?? [];
-        const idx = values.indexOf(file);
-        if (idx !== -1) values.splice(idx, 1);
-        if (!values.length) values.push(EMPTY_VALUE);
-
-        styleFileWidget.options.values = values;
-        styleFileWidget.value = values[0];
-        styleFileWidget.callback?.(values[0]);
-        if (values[0] === EMPTY_VALUE) clearWidgets(node, addButtonWidget);
-
-        if (node.graph) node.graph.setDirtyCanvas(true, true);
-    } else {
-        alert(`[${NODE_NAME}] Delete failed: ${data.error}`);
-    }
-};
-
-const addButtons = (node, styleFileWidget, addButtonWidget) => {
-    const buttonRowWidget = new ButtonRowWidget("action_buttons", [
-        {
-            label: "➕ New",
-            onClick: () => handleNew(node, styleFileWidget, addButtonWidget),
-        },
-        {
-            label: "💾 Save",
-            onClick: () => handleSave(node, styleFileWidget),
-        },
-        {
-            label: "📋 Clone",
-            onClick: () => handleClone(node, styleFileWidget),
-        },
-        {
-            label: "🗑️ Delete",
-            color: COLORS.dark_red,
-            onClick: () => handleDelete(node, styleFileWidget, addButtonWidget),
-        },
-    ]);
-    node.widgets.push(buttonRowWidget);
 };
 
 // --- Preview ---
@@ -472,53 +296,50 @@ const attachStyleLoader = (node) => {
         },
     );
 
-    // Action buttons
-    addButtons(node, styleFileWidget, addButtonWidget);
-
-    const init = async () => {
-        // Ensure assets are loaded
-        if (!ASSETS.loras.length) {
-            await fetchAssets();
-        }
-
-        // Restore loras_data first
-        let hasPersistedLoras = false;
-        if (lorasDataWidget?.value) {
-            try {
-                const loras = JSON.parse(lorasDataWidget.value);
-                if (loras.length) {
-                    rebuildLoraRows(node, loras, addButtonWidget);
-                    hasPersistedLoras = true;
-                }
-            } catch (e) {
-                console.warn(`[${NODE_NAME}] Failed to restore LoRA slots:`, e);
-            }
-        }
-        if (lorasDataWidget) {
-            hideWidget(lorasDataWidget, true);
-        }
-
-        // Load initial file + preview
-        loadFileIntoWidgets(
-            styleFileWidget.value,
-            node,
-            addButtonWidget,
-            !hasPersistedLoras,
-        );
-        loadPreviewImage(styleFileWidget.value, node);
-    };
+    const { loadFileIntoWidgets } = createLoaderCrud(node, styleFileWidget, {
+        baseEndpoint: BASE_ENDPOINT,
+        nodeLabel: NODE_NAME,
+        buildJson: buildJsonFromWidgets,
+        pushJson: (n, data) => pushJsonToWidgets(n, data, addButtonWidget),
+        template: STYLE_TEMPLATE,
+        newPlaceholder: "New style file name (e.g. anime/illustrious):",
+        clonePlaceholder: "Clone to new file (e.g. anime/illustrious_v2):",
+        onChange: () => loadPreviewImage(styleFileWidget.value, node),
+    });
 
     // Attach preview
     attachPreview(node);
-    init();
+    hideWidget(lorasDataWidget, true);
 
     // Reload on file change
-    const originalCallback = styleFileWidget.callback;
-    styleFileWidget.callback = function (value) {
-        if (originalCallback) originalCallback.call(this, value);
-        loadFileIntoWidgets(value, node, addButtonWidget);
+    hookWidget(styleFileWidget, async (value) => {
+        await loadFileIntoWidgets(value);
         loadPreviewImage(value, node);
+    });
+
+    let restoredFromWorkflow = false;
+
+    const originalConfigure = node.onConfigure;
+    node.onConfigure = function (info) {
+        if (originalConfigure) originalConfigure.call(this, info);
+        restoredFromWorkflow = true;
+
+        try {
+            const loras = JSON.parse(lorasDataWidget.value || "[]");
+            if (loras.length) rebuildLoraRows(node, loras, addButtonWidget);
+        } catch (e) {
+            console.warn(`[${NODE_NAME}] Failed to restore LoRA slots:`, e);
+        }
+        if (node.graph) node.graph.setDirtyCanvas(true, true);
     };
+
+    requestAnimationFrame(async () => {
+        if (!ASSETS.loras.length) await fetchAssets();
+        if (!restoredFromWorkflow) {
+            await loadFileIntoWidgets(styleFileWidget.value);
+        }
+        loadPreviewImage(styleFileWidget.value, node);
+    });
 };
 
 // --- Registration ---
