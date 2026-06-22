@@ -1,4 +1,4 @@
-import { COLORS } from "../constants.js";
+import { COLORS, DISABLED_OPACITY } from "../constants.js";
 import { fitString, hideWidget, hideWidgetInput } from "../utils.js";
 import { app } from "/scripts/app.js";
 
@@ -42,7 +42,7 @@ export class InlineTextToggleWidget {
         const isDisabled = this.disabled;
 
         ctx.save();
-        if (isDisabled) ctx.globalAlpha = 0.4;
+        if (isDisabled) ctx.globalAlpha = DISABLED_OPACITY;
 
         ctx.font = "11px monospace";
         ctx.textBaseline = "middle";

@@ -1,6 +1,8 @@
 export const API_ROOT = "/re-customutils";
 export const EMPTY_VALUE = "--";
 
+export const DISABLED_OPACITY = 0.4;
+
 export const COLORS = {
     text: "#e0e0e0",
     inactive: "#888888",
