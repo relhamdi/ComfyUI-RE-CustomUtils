@@ -483,13 +483,18 @@ export const drawWidgetOutline = (ctx, node, widgetName, colorOn, colorOff) => {
     const w = findWidget(node, widgetName);
     if (!w) return;
 
+    // If colorOff passed, toggle depending on widget value
+    const isOn = !!w.value;
+    const color =
+        colorOff !== undefined ? (isOn ? colorOn : colorOff) : colorOn;
+
     const y = w.last_y - 1;
     const height = w.computedHeight ?? 20;
     const margin = 14;
     const radius = 15;
 
     ctx.save();
-    ctx.strokeStyle = w.value ? colorOn : colorOff;
+    ctx.strokeStyle = color;
 
     ctx.lineWidth = 1.5;
     ctx.beginPath();
