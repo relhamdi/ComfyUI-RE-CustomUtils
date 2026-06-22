@@ -18,6 +18,12 @@ from .src.nodes.character_loader import (
 from .src.nodes.character_loader import (
     NODE_DISPLAY_NAME_MAPPINGS as CharacterLoaderDisplayMappings,
 )
+from .src.nodes.outfit_loader import (
+    NODE_CLASS_MAPPINGS as OutfitLoaderMappings,
+)
+from .src.nodes.outfit_loader import (
+    NODE_DISPLAY_NAME_MAPPINGS as OutfitLoaderDisplayMappings,
+)
 from .src.nodes.prompt_add_or_replace import (
     NODE_CLASS_MAPPINGS as PromptAddOrReplaceMappings,
 )
@@ -90,6 +96,12 @@ from .src.nodes.style_loader import (
 from .src.nodes.style_loader import (
     NODE_DISPLAY_NAME_MAPPINGS as StyleLoaderDisplayMappings,
 )
+from .src.nodes.outfit_builder import (
+    NODE_CLASS_MAPPINGS as OutfitBuilderMappings,
+)
+from .src.nodes.outfit_builder import (
+    NODE_DISPLAY_NAME_MAPPINGS as OutfitBuilderDisplayMappings,
+)
 
 NODE_CLASS_MAPPINGS = {}
 NODE_CLASS_MAPPINGS.update(PromptPresetSelectorMappings)
@@ -107,6 +119,8 @@ NODE_CLASS_MAPPINGS.update(PromptSceneBuilderMappings)
 NODE_CLASS_MAPPINGS.update(PromptMultiPickerMappings)
 NODE_CLASS_MAPPINGS.update(PromptAddOrReplaceMappings)
 NODE_CLASS_MAPPINGS.update(CharacterBuilderMappings)
+NODE_CLASS_MAPPINGS.update(OutfitLoaderMappings)
+NODE_CLASS_MAPPINGS.update(OutfitBuilderMappings)
 
 NODE_DISPLAY_NAME_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptPresetSelectorDisplayMappings)
@@ -124,6 +138,8 @@ NODE_DISPLAY_NAME_MAPPINGS.update(PromptSceneBuilderDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptMultiPickerDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(PromptAddOrReplaceDisplayMappings)
 NODE_DISPLAY_NAME_MAPPINGS.update(CharacterBuilderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(OutfitLoaderDisplayMappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(OutfitBuilderDisplayMappings)
 
 # Node registration
 __all__ = [
